@@ -4,7 +4,7 @@
 
 Build a real-time competitive trading game where two players trade a simulated BTC/USDT market over a fixed match window. Each player starts with the same virtual capital. Players submit long or short market orders during the match. At the end of the match, the server settles any remaining open exposure and the player with the highest final capital wins.
 
-The application will use Supabase for authentication and database storage, Next.js for the frontend and backend routes, and Socket.IO for countdown, chart, and trade updates.
+The application will use Supabase for authentication and Postgres database storage, Prisma for server-side database access and migrations, Next.js for the frontend and backend routes, and Socket.IO for countdown, chart, and trade updates.
 
 ## 2. Goals
 
@@ -19,6 +19,7 @@ The application will use Supabase for authentication and database storage, Next.
 - Compute balances, positions, PnL, final settlement, and winner server-side.
 - Store completed match history, chart data, and trades.
 - Show each user's games played and win percentage.
+- Use Prisma to model the relational game data, generate a type-safe database client, and keep database migrations versioned with the application code.
 
 ## 3. Non-Goals For MVP
 
@@ -201,6 +202,7 @@ Before implementing code, read the relevant local Next.js guide in `node_modules
 
 - Supabase Auth
 - Supabase Postgres database
+- Prisma ORM and Prisma Migrate for server-side Postgres access
 - Supabase Row Level Security policies
 - Socket.IO server and client
 - TradingView Lightweight Charts
@@ -214,10 +216,17 @@ Recommended MVP architecture:
 
 - Next.js app: UI, authenticated pages, server actions/API routes.
 - Supabase: auth, database, persisted match state.
+- Prisma: server-only database client, schema definition, and migration workflow for app tables.
 - Socket.IO Node server: realtime room and match engine.
 - Market data service module: fetches and normalizes candles.
 
+Prisma should be used only from trusted server contexts such as Next.js server actions/API routes and the Socket.IO Node server. Browser clients should continue to use Supabase Auth/session APIs only and must not receive direct Prisma access.
+
 ## 9. Data Model Draft
+
+The tables below should be represented in `prisma/schema.prisma` and mapped to Supabase Postgres tables. Prisma migrations should manage application-owned tables, enums, indexes, and relations. Supabase Auth-owned tables remain managed by Supabase; app tables should reference Supabase auth user ids with compatible `uuid` fields.
+
+Money-like and price fields must use decimal-safe Prisma/Postgres types, for example Prisma `Decimal` mapped to Postgres `numeric`, rather than JavaScript floating-point numbers.
 
 ### `profiles`
 
@@ -328,6 +337,7 @@ Recommended MVP architecture:
 ### Milestone 1: Foundation
 
 - Configure Supabase client and auth flow.
+- Add Prisma configuration, schema, generated client, and migration workflow.
 - Create database schema and RLS policies.
 - Add protected app routes.
 - Add profile creation after sign up.
@@ -369,6 +379,7 @@ Recommended MVP architecture:
 - Whether opponent trades are visible live or only after match.
 - Market data provider and rate limit strategy.
 - Deployment approach for Socket.IO server.
+- Whether Prisma migrations or Supabase SQL migrations will be the primary source of truth for application table changes.
 
 ## 14. Recommended MVP Decisions
 
@@ -381,12 +392,16 @@ Recommended MVP architecture:
 - Opponent trades hidden during live match, visible after completion.
 - Socket.IO for realtime gameplay updates.
 - Supabase database as persistence layer, not primary realtime engine.
+- Prisma as the primary server-side data access layer for application tables.
+- Prisma Migrate as the primary migration workflow for app-owned tables, with Supabase Auth and platform-managed objects left under Supabase control.
 - Separate Node.js Socket.IO server if deployment target does not support WebSockets in Next.js runtime.
 
 ## 15. Risks
 
 - Next.js deployment environments may not support Socket.IO cleanly without a custom server.
 - Supabase RLS must be designed carefully so users cannot edit balances, trades, or match results directly.
+- Prisma bypasses Supabase client-side RLS expectations when used with privileged database credentials, so all Prisma usage must stay server-side and enforce authorization in application logic.
+- Prisma and Supabase migration ownership can drift if both are used to alter the same app tables; choose one migration source of truth for MVP.
 - Market data provider limits may affect countdown data fetching.
 - Server clocks and client countdown displays must be synchronized from server timestamps.
 - Floating-point precision can create money calculation errors; use decimal-safe database numeric types and careful server calculations.
