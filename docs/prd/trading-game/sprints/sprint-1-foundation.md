@@ -1,5 +1,11 @@
 # Sprint 1 - Foundation
 
+## Delivery Status
+
+**Delivered:** Frontend foundation delivered on June 3, 2026.
+
+This sprint delivered the initial trading game frontend experience and authentication screens. The current implementation establishes the product direction, app shell, lobby UI, reusable duel components, and a client-side login/register flow that can be connected to Supabase in the next backend pass.
+
 ## Objective
 
 Complete Milestone 1: Foundation for the two-player trading game.
@@ -18,13 +24,21 @@ By the end of this sprint, the project should have authentication, database foun
 
 ## Tasks
 
+- [x] Build login and sign up UI.
+- [x] Add client-side login/register form validation and loading state.
+- [x] Add post-submit navigation into the app lobby.
+- [x] Build the main trading lobby screen.
+- [x] Build reusable duel UI components for active games, rooms, avatars, logo, icons, formatting, and shared types.
+- [x] Add the app shell and side navigation for the trading experience.
+- [x] Add mock lobby/game data so the frontend can be reviewed before realtime backend integration.
+- [x] Update global styling and app layout for the trading game theme.
+- [x] Add `lucide-react` for UI icons.
 - [ ] Create Supabase project and collect environment variables.
 - [ ] Add `.env.local` keys for Supabase URL and anon key.
 - [ ] Install Supabase packages.
 - [ ] Create Supabase browser client helper.
 - [ ] Create Supabase server client helper.
-- [ ] Build login and sign up UI.
-- [ ] Add logout flow.
+- [ ] Add logout flow backed by auth state.
 - [ ] Add route protection for lobby, rooms, matches, history, and profile.
 - [ ] Create `profiles` table.
 - [ ] Create initial `rooms`, `room_players`, `matches`, `match_players`, `match_candles`, and `trades` tables.
@@ -33,6 +47,33 @@ By the end of this sprint, the project should have authentication, database foun
 - [ ] Add RLS policies preventing direct client edits to server-owned match state.
 - [ ] Add profile creation after successful sign up.
 - [ ] Verify a new user can sign up, log in, access protected pages, and get a profile row.
+
+## Delivered Work
+
+- Implemented the first version of the trading game lobby at `app/page.tsx`.
+- Added a responsive login/register page at `app/login/page.tsx`.
+- Created reusable duel components under `app/components/duel/`:
+  - `side-nav.tsx`
+  - `lobby-screen.tsx`
+  - `room-card.tsx`
+  - `active-game-row.tsx`
+  - `avatar.tsx`
+  - `duel-icon.tsx`
+  - `logo.tsx`
+  - `format.ts`
+  - `types.ts`
+  - `data.ts`
+- Added placeholder data for open rooms and active matches to support frontend review.
+- Updated the global visual system in `app/globals.css`.
+- Updated the root app layout in `app/layout.tsx`.
+- Installed `lucide-react` for consistent icon usage.
+
+## Delivery Notes
+
+- Commit delivered: `786a9eb` - `feat: add initial implementation of trading game components and user authentication`.
+- The current authentication screen is frontend-only and uses client-side validation plus mock navigation.
+- Supabase Auth, database schema, RLS policies, protected routes, profile creation, and real logout are still pending backend integration.
+- Sprint 1 frontend work is ready for review and can be connected to the backend foundation in the next implementation pass.
 
 ## Member Status Board
 
