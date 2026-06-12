@@ -3,6 +3,7 @@ import { Avatar } from "./avatar";
 import { navItems } from "./data";
 import { Icon } from "./duel-icon";
 import { Logo } from "./logo";
+import { LogoutButton } from "../auth/logout-button";
 
 //  Children allows us to pass in data.
 export function SideNav({ children, user = "you_degen" }: { children: React.ReactNode; user?: string }) {
@@ -40,10 +41,7 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
               <span className="block text-xs text-[#5d6877]">Diamond II</span>
             </span>
           </button>
-          <Link href="/login" className="mt-1 flex w-full items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-medium text-[#5d6877] transition hover:bg-[#f6485d]/15 hover:text-[#f6485d]">
-            <Icon name="logout" className="size-5" />
-            Logout
-          </Link>
+          <LogoutButton />
         </div>
       </aside>
 
