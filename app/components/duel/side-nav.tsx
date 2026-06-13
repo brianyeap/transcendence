@@ -22,7 +22,7 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
           {navItems.map((item) => (
             <Link
               key={item.label}
-			  href={item.page}
+			        href={item.page}
               className={`relative flex w-full cursor-pointer items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm transition ${
                 item.active ? "bg-[#151b25] font-semibold text-[#eef2f8]" : "font-medium text-[#5d6877] hover:bg-[#151b25] hover:text-[#9aa6b6]"
               }`}
@@ -48,12 +48,13 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
 
       <section className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">{children}</section>
 
+      {/* for when the size of window changes - the side nav moves to the bottom */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex h-[62px] border-t border-white/[.07] bg-[#0f131b]/95 px-1.5 backdrop-blur lg:hidden">
         {navItems.map((item) => (
-          <button key={item.label} className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-[10.5px] font-semibold ${item.active ? "text-[#4d86ff]" : "text-[#5d6877]"}`}>
+          <Link href={item.page} key={item.label} className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-[10.5px] font-semibold ${item.active ? "text-[#4d86ff]" : "text-[#5d6877]"}`}>
             <Icon name={item.icon} className="size-5" />
             {item.label}
-          </button>
+          </Link>
         ))}
       </nav>
     </main>
