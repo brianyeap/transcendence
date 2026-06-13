@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { activeGames, openRooms } from "./data";
 import { Logo } from "./logo";
@@ -28,10 +29,10 @@ export function LobbyScreen() {
         <button onClick={refresh} className="grid size-10 cursor-pointer place-items-center rounded-[7px] border border-white/[.07] bg-[#0f131b] text-[#9aa6b6] transition hover:border-white/[.12]">
           <Icon name="refresh" className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
         </button>
-        <button className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 sm:inline-flex">
+        <Link href="/match-room" className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 sm:inline-flex">
           <Icon name="plus" className="size-4" />
           Create Room
-        </button>
+        </Link>
       </header>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">

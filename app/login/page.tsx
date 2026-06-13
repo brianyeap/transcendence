@@ -28,7 +28,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    window.setTimeout(() => router.push("/"), 550);
+    window.setTimeout(() => router.push("/lobby"), 550);
   }
 
   return (

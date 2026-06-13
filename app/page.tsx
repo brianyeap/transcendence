@@ -1,10 +1,5 @@
-import { SideNav } from "./components/duel/side-nav";
-import { LobbyScreen } from "./components/duel/lobby-screen";
+import LoginPage from "./login/page";
 
 export default function HomePage() {
-  return (
-    <SideNav>
-      <LobbyScreen />
-    </SideNav>
-  );
+	return <LoginPage />;
 }

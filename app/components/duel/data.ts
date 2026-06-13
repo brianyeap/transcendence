@@ -15,9 +15,9 @@ export const activeGames: ActiveGame[] = [
   { id: "M-3304", p1: "fade_the_news", p2: "gm_ser", status: "live", remaining: 58, symbol: "BTC/USDT" },
 ];
 
-export const navItems: { label: string; icon: IconName; active?: boolean }[] = [
-  { label: "Games", icon: "games", active: true },
-  { label: "History", icon: "history" },
-  { label: "Profile", icon: "profile" },
-  { label: "Settings", icon: "settings" },
+export const navItems: { label: string; icon: IconName; active?: boolean; page: string }[] = [
+  { label: "Games", icon: "games", active: true, page: "/games"},
+  { label: "History", icon: "history", page: "/history" },
+  { label: "Profile", icon: "profile", page: "/profile" },
+  { label: "Settings", icon: "settings", page: "/settings" },
 ];

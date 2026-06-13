@@ -12,15 +12,16 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
         <Link href="/" className="px-2 pb-5 pt-1 text-left">
           <Logo />
         </Link>
-        <button className="mb-5 flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110">
+        <Link href="/match-room" className="mb-5 flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110">
           <Icon name="plus" className="size-4" />
           New Match
-        </button>
+        </Link>
         <div className="px-2.5 pb-2 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">Menu</div>
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => (
-            <button
+            <Link
               key={item.label}
+			  href={item.page}
               className={`relative flex w-full cursor-pointer items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm transition ${
                 item.active ? "bg-[#151b25] font-semibold text-[#eef2f8]" : "font-medium text-[#5d6877] hover:bg-[#151b25] hover:text-[#9aa6b6]"
               }`}
@@ -28,7 +29,7 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
               {item.active && <span className="absolute -left-2.5 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-full bg-[#4d86ff]" />}
               <Icon name={item.icon} className={`size-5 ${item.active ? "text-[#4d86ff]" : ""}`} />
               {item.label}
-            </button>
+            </Link>
           ))}
         </nav>
         <div className="mt-auto">
