@@ -16,7 +16,7 @@ export const activeGames: ActiveGame[] = [
 ];
 
 export const navItems: { label: string; icon: IconName; active?: boolean; page: string }[] = [
-  { label: "Games", icon: "games", active: true, page: "/games"},
+  { label: "Games", icon: "games", active: true, page: "/"},
   { label: "History", icon: "history", page: "/history" },
   { label: "Profile", icon: "profile", page: "/profile" },
   { label: "Settings", icon: "settings", page: "/settings" },
