@@ -55,7 +55,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
             onClick={handleBackdropClick}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
         >
-            <div className="flex flex-col gap-4 bg-gray-900 border border-gray-800 rounded-x1 p-6 w-full max-w-sm shadow-2x1">
+            <div className="flex flex-col gap-4 bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2x1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-white">Create Match</h2>
                     <button onClick={onClose}
