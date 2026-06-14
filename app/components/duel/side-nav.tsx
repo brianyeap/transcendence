@@ -1,22 +1,31 @@
+"use client";
+
 import Link from "next/link";
 import { Avatar } from "./avatar";
 import { navItems } from "./data";
 import { Icon } from "./duel-icon";
 import { Logo } from "./logo";
 import { LogoutButton } from "../auth/logout-button";
+import { CreateMatchModal } from "./create-match-modal";
+import { useState } from "react";
 
 //  Children allows us to pass in data.
 export function SideNav({ children, user = "you_degen" }: { children: React.ReactNode; user?: string }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  
   return (
     <main className="flex min-h-screen bg-[#090b10] text-[#eef2f8]">
       <aside className="hidden w-[232px] shrink-0 flex-col border-r border-white/[.07] bg-[#0f131b] px-3.5 py-4 lg:flex">
         <Link href="/" className="px-2 pb-5 pt-1 text-left">
           <Logo />
         </Link>
-        <Link href="/match-room" className="mb-5 flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110">
+        <button onClick={() => setModalOpen(true)} className="mb-5 flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110">
           <Icon name="plus" className="size-4" />
           New Match
-        </Link>
+        </button>
+
+        <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)}/>
+
         <div className="px-2.5 pb-2 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">Menu</div>
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => (
