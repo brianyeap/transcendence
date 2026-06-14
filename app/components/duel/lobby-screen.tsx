@@ -8,11 +8,13 @@ import { ActiveGameRow } from "./active-game-row";
 import { RoomCard } from "./room-card";
 import { Icon } from "./duel-icon";
 import type { IconName } from "./types";
+import { CreateMatchModal } from "./create-match-modal";
 
 export function LobbyScreen() {
   // (open) make it start on open
   const [tab, setTab] = useState<"open" | "active">("open");
   const [refreshing, setRefreshing] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   function refresh() {
     setRefreshing(true);
@@ -29,11 +31,13 @@ export function LobbyScreen() {
         <button onClick={refresh} className="grid size-10 cursor-pointer place-items-center rounded-[7px] border border-white/[.07] bg-[#0f131b] text-[#9aa6b6] transition hover:border-white/[.12]">
           <Icon name="refresh" className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
         </button>
-        <Link href="/match-room" className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 sm:inline-flex">
+        <button onClick={() => setModalOpen(true)} className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 sm:inline-flex">
           <Icon name="plus" className="size-4" />
           Create Room
-        </Link>
+        </button>
       </header>
+
+      <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)}/>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
