@@ -55,12 +55,17 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
             onClick={handleBackdropClick}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
         >
-            <div className="flex flex-col gap-5 bg-gray-900 border border-gray-800 rounded-x1 p-6 w-full max-w-sm shadow-2x1">
-                <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-4 bg-gray-900 border border-gray-800 rounded-x1 p-6 w-full max-w-sm shadow-2x1">
+                <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-white">Create Match</h2>
                     <button onClick={onClose}
                         className="text-gray-500 hover:text-white transition-colors"
                     >✕</button>
+                </div>
+                <div className="flex flex-col">
+                    <label htmlFor="room-name">Room Name</label>
+                    <input type='text' id='room-name' name="room-name"
+                        className="border border-gray-600 py-2 px-2 rounded-lg" placeholder="eg: Chicken Rice"></input>
                 </div>
                 <div>
                     <h2>Match Duration</h2>
