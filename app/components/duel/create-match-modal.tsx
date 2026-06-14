@@ -93,11 +93,18 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                         ))}
                     </div>
                 </div>
-                <button onClick={handleCreate} disabled={isCreating}
-                    className="w-full py-2 bg-blue-600 font-semibold text-white hover:bg-blue-500 disabled:opacity-50 rounded-lg transition-colors"
-                >
-                    {isCreating ? 'Creating...' : 'Create'}
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={onClose}
+                        className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-500 rounded-lg transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button onClick={handleCreate} disabled={isCreating}
+                        className="flex-1 py-2 bg-blue-600 font-semibold text-white hover:bg-blue-500 disabled:opacity-50 rounded-lg transition-colors"
+                    >
+                        {isCreating ? 'Creating...' : 'Create'}
+                    </button>
+                </div>
             </div>
         </div>
     );
