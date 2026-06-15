@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const DURATION_OPTIONS = [
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function CreateMatchModal({ isOpen, onClose }: Props) {
+    const router = useRouter()
     const backdropRef = useRef<HTMLDivElement>(null)
     const [duration, setDuration] = useState(120)
     const [capital, setCapital] = useState(10000)
@@ -48,8 +50,12 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     }, [isOpen, onClose])
 
     // incomplete function to create the match room
-    function handleCreate() {
+    async function handleCreate() {
         setIsCreating(true)
+
+        await new Promise((r) => setTimeout(r, 600))
+        const mockRoomId = crypto.randomUUID()
+        router.push(`/rooms/${mockRoomId}`)
     }
 
     if (!isOpen) return null
