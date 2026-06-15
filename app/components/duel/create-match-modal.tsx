@@ -55,7 +55,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
             onClick={handleBackdropClick}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
         >
-            <div className="flex flex-col gap-4 bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2x1">
+            <div className="flex flex-col gap-4 bg-[#151b25] border border-white/[.07] rounded-xl p-6 w-full max-w-sm shadow-2x1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-white">Create Match</h2>
                     <button onClick={onClose}
@@ -63,29 +63,29 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     >✕</button>
                 </div>
                 <div className="flex flex-col">
-                    <label htmlFor="room-name">Room Name</label>
+                    <label htmlFor="room-name" className="text-[#9aa6b6]">Room Name</label>
                     <input type='text' id='room-name' name="room-name" disabled={isCreating}
-                        className="border border-gray-300 py-2 px-2 rounded-lg disabled:opacity-50" placeholder="eg: Chicken Rice"></input>
+                        className="border border-white/[.4] py-2 px-2 rounded-lg disabled:opacity-50" placeholder="eg: Chicken Rice"></input>
                 </div>
                 <div>
-                    <h2>Match Duration</h2>
+                    <h2 className="text-[#9aa6b6]">Match Duration</h2>
                     <div className="flex gap-2">
                         {DURATION_OPTIONS.map((opt) => (
                             <button key={opt.value} onClick={() => setDuration(opt.value)} disabled={isCreating}
-                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-gray-300 transition-colors disabled:opacity-50
+                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-white/[.4] transition-colors disabled:opacity-50
                                     ${duration === opt.value ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
                             >
-                                {opt.value}
+                                {opt.label}
                             </button>
                         ))}
                     </div>
                 </div>
                 <div>
-                    <h2>Starting Capital</h2>
+                    <h2 className="text-[#9aa6b6]">Starting Capital</h2>
                     <div className='flex gap-2'>
                         {CAPITAL_OPTIONS.map((opt) => (
                             <button key={opt.value} onClick={() => setCapital(opt.value)} disabled={isCreating}
-                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-gray-300 transition-colors disabled:opacity-50
+                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-white/[.4] transition-colors disabled:opacity-50
                                     ${capital === opt.value ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
                             >
                                 {opt.value}
@@ -95,7 +95,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={onClose}
-                        className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-500 rounded-lg transition-colors"
+                        className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-white/[.1] rounded-lg transition-colors"
                     >
                         Cancel
                     </button>
