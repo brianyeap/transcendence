@@ -25,17 +25,22 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
 
+    function handleClose() {
+        setIsCreating(false)
+        onClose()
+    }
+
     // button click outside the modal closes it
     function handleBackdropClick(e: React.MouseEvent) {
         if (e.target == backdropRef.current)
-            onClose()
+            handleClose()
     }
 
     // ESC button closes modal
     useEffect(() => {
         function handleEscButton(e: KeyboardEvent) {
             if (e.key === 'Escape')
-                onClose();
+                handleClose()
         }
         if (isOpen) 
             document.addEventListener('keydown', handleEscButton)
@@ -58,7 +63,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
             <div className="flex flex-col gap-4 bg-[#151b25] border border-white/[.07] rounded-xl p-6 w-full max-w-sm shadow-2x1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-white">Create Match</h2>
-                    <button onClick={onClose}
+                    <button onClick={handleClose}
                         className="text-gray-500 hover:text-white transition-colors"
                     >✕</button>
                 </div>
@@ -94,7 +99,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={onClose}
+                    <button onClick={handleClose}
                         className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-white/[.1] rounded-lg transition-colors"
                     >
                         Cancel
