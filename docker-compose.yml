@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run dev -- --hostname 0.0.0.0 # Listen on all interfaces
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1" # Disable Next.js collecting telemetry data
+      WATCHPACK_POLLING: "true" # Enable polling for file changes
+    ports:
+      - "${WEB_PORT:-3000}:3000" # use web port from .env or default to 3000
+    volumes:
+      - .:/app # Mount the entire project directory to /app in the container
+      - web_node_modules:/app/node_modules # Mount the node_modules directory to persist dependencies
+      - web_next_cache:/app/.next # Mount the .next directory to persist build cache
+    networks:
+      - transcendence
+
+volumes:
+  web_node_modules:
+  web_next_cache:
+
+networks:
+  transcendence:
+    name: transcendence_dev
