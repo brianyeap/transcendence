@@ -13,9 +13,21 @@ export default async function HomePage() {
   if (!user) {
     redirect("/login");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const displayName =
+    profile?.username ||
+    (typeof user.user_metadata.username === "string" ? user.user_metadata.username : null) ||
+    user.email?.split("@")[0] ||
+    "Trader";
     
   return (
-    <SideNav>
+    <SideNav user={displayName}>
       <LobbyScreen />
     </SideNav>
   );
