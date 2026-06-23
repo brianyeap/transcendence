@@ -167,6 +167,7 @@ export default function LoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
+              suppressHydrationWarning
               className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
             />
           </label>
