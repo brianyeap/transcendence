@@ -1,6 +1,6 @@
 export default function ProfilePage() {
 	const userStats = {
-		username: "Hello World",
+		username: "  Somebody, Maybe Nobody!  ",
 		gamesPlayed: 12,
 		wins: 7, 
 		losses: 4,
@@ -10,6 +10,11 @@ export default function ProfilePage() {
 	return (
 		<div>
 			<p> {userStats.username} </p>
+			<p> Games Played: {userStats.gamesPlayed}</p>
+			<p> Wins: {userStats.wins}</p>
+			<p> Losses: {userStats.losses}</p>
+			<p> Draws: {userStats.draws}</p>
+			<p> Win %: {userStats.winPercentage}</p>
 		</div>
 	);
 }
