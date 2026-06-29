@@ -38,6 +38,13 @@ export default function ProfilePage() {
 					<div className="text-xl font-semibold mt-1">{userStats.winPercentage}%</div>
 				</div>
 			</div>
+
+			<div className="mt-6">
+				<p>Win %: {(userStats.wins / userStats.gamesPlayed) * 100}</p>
+				<p>Loss %: {(userStats.losses / userStats.gamesPlayed) * 100}</p>
+				<p>Draw %: {(userStats.draws / userStats.gamesPlayed) * 100}</p>
+			</div>
 		</div>
 	);
 }
+
