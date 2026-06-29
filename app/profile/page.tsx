@@ -40,9 +40,29 @@ export default function ProfilePage() {
 			</div>
 
 			<div className="mt-6">
-				<p>Win %: {(userStats.wins / userStats.gamesPlayed) * 100}</p>
-				<p>Loss %: {(userStats.losses / userStats.gamesPlayed) * 100}</p>
-				<p>Draw %: {(userStats.draws / userStats.gamesPlayed) * 100}</p>
+				<div className="text uppercase tracking-wide text-[#5d6877] mb-2">Match Outcome Distribution</div>
+
+				<div className="h-7 w-full rounded-md overflow-hidden flex border border-black/40">
+					<div
+						style={{ width: `${(userStats.wins / userStats.gamesPlayed) * 100}%` }}
+						className="bg-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-950"
+					>
+						{userStats.wins} W
+					</div>
+					<div
+						style={{ width: `${(userStats.losses / userStats.gamesPlayed) * 100}%` }}
+						className="bg-rose-600 flex items-center justify-center text-xs font-bold text-rose-950"
+					>
+						{userStats.losses} L
+					</div>
+					<div
+						style={{ width: `${(userStats.draws / userStats.gamesPlayed) * 100}%` }}
+						className="bg-gray-500 flex items-center justify-center text-xs font-bold text-gray-100"
+					>
+						{userStats.draws} D
+					
+					</div>
+				</div>
 			</div>
 		</div>
 	);
