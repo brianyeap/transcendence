@@ -1,5 +1,14 @@
 import { Sword, TrendingUp } from "lucide-react";
 
+function getRiskRating(wins:number, losses:number): string
+{
+	if (wins > losses)
+		return "Pro";
+	if (wins === losses)
+		return "Ammature";
+	return "Beginner";
+}
+
 export default function ProfilePage() {
 	const userStats = {
 		username: "BMW i8 Vision",
@@ -9,10 +18,12 @@ export default function ProfilePage() {
 		draws: 1,
 		winPercentage: 58.3,
 	};
+	const riskRating = getRiskRating(userStats.wins, userStats.losses);
 
 	return (
 		<div className="p-8 text-[#eef2f8]">
 			<h1 className="text-2xl font-bold mb-6">{userStats.username}</h1>
+			<p> Risk Rating : {riskRating}</p>
 
 			<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
