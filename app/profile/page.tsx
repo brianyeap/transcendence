@@ -21,21 +21,6 @@ export default function ProfilePage() {
 				</div>
 
 				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-					<div className="text-s uppercase tracking-wide text-[#5d6877]">Wins</div>
-					<div className="text-xl font-semibold mt-1">{userStats.wins}</div>
-				</div>
-
-				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-					<div className="text-s uppercase tracking-wide text-[#5d6877]">Losses</div>
-					<div className="text-xl font-semibold mt-1">{userStats.losses}</div>
-				</div>
-
-				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-					<div className="text-s uppercase tracking-wide text-[#5d6877]">Draws</div>
-					<div className="text-xl font-semibold mt-1">{userStats.draws}</div>
-				</div>
-
-				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
 					<div className="text-s uppercase tracking-wide text-[#5d6877]">Win %</div>
 					<div className="text-xl font-semibold mt-1">{userStats.winPercentage}%</div>
 				</div>
