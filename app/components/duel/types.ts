@@ -9,6 +9,7 @@ export type IconName =
   | "profile"
   | "refresh"
   | "settings"
+  | "trash"
   | "users"
   | "x";
 
@@ -23,6 +24,7 @@ export type Room = {
   capital: number;
   symbol: string;
   hot?: boolean;
+  ownedByCurrentUser?: boolean;
 };
 
 export type ActiveGame = {

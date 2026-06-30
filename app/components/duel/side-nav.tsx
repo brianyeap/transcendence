@@ -19,10 +19,6 @@ export function SideNav({ children, user = "you_degen" }: { children: React.Reac
         <Link href="/" className="px-2 pb-5 pt-1 text-left">
           <Logo />
         </Link>
-        <button onClick={() => setModalOpen(true)} className="mb-5 flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110">
-          <Icon name="plus" className="size-4" />
-          New Match
-        </button>
 
         <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)}/>
 

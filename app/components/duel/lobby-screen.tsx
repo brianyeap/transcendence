@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { activeGames, openRooms } from "./data";
-import { Logo } from "./logo";
+import { useCallback, useEffect, useState } from "react";
 import { ActiveGameRow } from "./active-game-row";
 import { RoomCard } from "./room-card";
 import { Icon } from "./duel-icon";
-import type { IconName } from "./types";
+import type { ActiveGame, IconName, Room } from "./types";
 import { CreateMatchModal } from "./create-match-modal";
 
 export function LobbyScreen() {
@@ -15,11 +12,113 @@ export function LobbyScreen() {
   const [tab, setTab] = useState<"open" | "active">("open");
   const [refreshing, setRefreshing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [openRooms, setOpenRooms] = useState<Room[]>([]);
+  const [activeGames] = useState<ActiveGame[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingRoomIds, setDeletingRoomIds] = useState<string[]>([]);
+  const hasCurrentUserRoom = openRooms.some((room) => room.ownedByCurrentUser);
 
-  function refresh() {
+  const putCurrentUserRoomFirst = useCallback((rooms: Room[]) => {
+    return rooms.toSorted((roomA, roomB) => {
+      if (roomA.ownedByCurrentUser !== roomB.ownedByCurrentUser) {
+        return roomA.ownedByCurrentUser ? -1 : 1;
+      }
+
+      return roomA.ageMin - roomB.ageMin;
+    });
+  }, []);
+
+  const upsertRoom = useCallback((room: Room) => { // usecallback is used to prevent unnecessaey render of the component, only render if dependencies changed
+    setOpenRooms((rooms) =>
+      putCurrentUserRoomFirst([
+        room, // places the new room at the top of the list
+        ...rooms.filter((existingRoom) => existingRoom.id !== room.id), // filter out the room that is being updated, so we don't have duplicates
+      ])
+    );
+  }, [putCurrentUserRoomFirst]);
+
+  const deleteRoom = useCallback(async (room: Room) => {
+    if (!room.ownedByCurrentUser) {
+      return;
+    }
+
+    setDeletingRoomIds((roomIds) => [...roomIds, room.id]); // for keeping track whch room deleting
+    setError(null);
+
+    try {
+      const response = await fetch("/api/rooms", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ roomId: room.id }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error ?? "Could not delete room.");
+      }
+
+      setOpenRooms((rooms) =>
+        rooms.filter((existingRoom) => existingRoom.id !== result.roomId)
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete room.");
+    } finally { // rusn no matter wjat
+      setDeletingRoomIds((roomIds) =>
+        roomIds.filter((roomId) => roomId !== room.id)
+      );
+    }
+  }, []);
+
+  const refresh = useCallback(async () => {
     setRefreshing(true);
-    window.setTimeout(() => setRefreshing(false), 700);
-  }
+    setError(null);
+
+    try {
+      const response = await fetch("/api/rooms", {
+        cache: "no-store",
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error ?? "Could not load rooms.");
+      }
+
+      setOpenRooms(putCurrentUserRoomFirst(result.rooms));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load rooms.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [putCurrentUserRoomFirst]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    function handleRoomCreated(event: Event) {
+      const createdRoom = (event as CustomEvent<Room>).detail;
+
+      if (createdRoom) {
+        upsertRoom(createdRoom);
+      } else {
+        refresh();
+      }
+    }
+
+    window.addEventListener("room-created", handleRoomCreated);
+    return () => window.removeEventListener("room-created", handleRoomCreated); // cleanup
+  }, [refresh, upsertRoom]);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("current-user-room-state", {
+        detail: { hasCurrentUserRoom },
+      })
+    );
+  }, [hasCurrentUserRoom]);
 
   return (
     <>
@@ -31,13 +130,18 @@ export function LobbyScreen() {
         <button onClick={refresh} className="grid size-10 cursor-pointer place-items-center rounded-[7px] border border-white/[.07] bg-[#0f131b] text-[#9aa6b6] transition hover:border-white/[.12]">
           <Icon name="refresh" className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
         </button>
-        <button onClick={() => setModalOpen(true)} className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 sm:inline-flex">
+        <button
+          onClick={() => setModalOpen(true)}
+          disabled={hasCurrentUserRoom}
+          title={hasCurrentUserRoom ? "Delete or finish your current game before creating another." : undefined}
+          className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex"
+        >
           <Icon name="plus" className="size-4" />
           Create Room
         </button>
       </header>
 
-      <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)}/>
+      <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onCreated={upsertRoom}/>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
@@ -68,12 +172,32 @@ export function LobbyScreen() {
 
         {tab === "open" ? (
           <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+            {error ? (
+              <p className="rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]">
+                {error}
+              </p>
+            ) : null}
+            {!error && !refreshing && openRooms.length === 0 ? (
+              <p className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3 text-sm text-[#9aa6b6]">
+                No open rooms yet.
+              </p>
+            ) : null}
             {openRooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
+              <RoomCard
+                key={room.id}
+                room={room}
+                deleting={deletingRoomIds.includes(room.id)}
+                onDelete={deleteRoom}
+              />
             ))}
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
+            {activeGames.length === 0 ? (
+              <p className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3 text-sm text-[#9aa6b6]">
+                No active games yet.
+              </p>
+            ) : null}
             {activeGames.map((game) => (
               <ActiveGameRow key={game.id} game={game} />
             ))}
