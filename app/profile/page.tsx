@@ -1,4 +1,5 @@
 import { Sword, TrendingUp } from "lucide-react";
+import { Avatar } from "../components/duel/avatar";
 
 function getRiskRating(wins:number, losses:number): string
 {
@@ -9,9 +10,18 @@ function getRiskRating(wins:number, losses:number): string
 	return "Beginner";
 }
 
+function getRiskRatingColor(rating: string): string
+{
+	if (rating === "Pro")
+		return "text-emerald-400";
+	if (rating === "Amature")
+		return "text-amber-400";
+	return "text-rose-400";
+}
+
 export default function ProfilePage() {
 	const userStats = {
-		username: "BMW i8 Vision",
+		username: "Transcendance",
 		gamesPlayed: 12,
 		wins: 7,
 		losses: 4,
@@ -22,10 +32,15 @@ export default function ProfilePage() {
 
 	return (
 		<div className="p-8 text-[#eef2f8]">
-			<h1 className="text-2xl font-bold mb-6">{userStats.username}</h1>
-			<p> Risk Rating : {riskRating}</p>
+			<div className="flex items-center gap-4 mb-8">
+				<Avatar name={userStats.username} size="lg" />
+				<div>
+					<h1 className="text-2xl font-bold">{userStats.username}</h1>
+					<p className="text-sm text-[#5d6877] mt-1"> Risk Rating : <span className={`font-semibold ${getRiskRatingColor(riskRating)}`}>{riskRating}</span></p>
+				</div>
+			</div>
 
-			<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+			<div className="grid grid-cols-2 gap-4">
 				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
 					<div className="text-s uppercase tracking-wide text-[#5d6877]">Games played</div>
 					<div className="text-xl font-semibold mt-1">{userStats.gamesPlayed}</div>
