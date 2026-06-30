@@ -58,25 +58,22 @@ export default function ProfilePage() {
 				<div className="h-10 w-full rounded-md overflow-hidden flex border border-black/40">
 					<div
 						style={{ width: `${(userStats.wins / userStats.gamesPlayed) * 100}%` }}
-						className="bg-emerald-600 flex items-center justify-center text-s font-bold text-emerald-950"
+						className="bg-emerald-600"
 					>
-						{userStats.wins} Wins
 					</div>
 					<div
 						style={{ width: `${(userStats.losses / userStats.gamesPlayed) * 100}%` }}
-						className="bg-rose-800 flex items-center justify-center text-s font-bold text-rose-950"
+						className="bg-rose-800"
 					>
-						{userStats.losses} Loss
 					</div>
 					<div
 						style={{ width: `${(userStats.draws / userStats.gamesPlayed) * 100}%` }}
-						className="bg-gray-500 flex items-center justify-center text-s font-bold text-gray-100"
+						className="bg-gray-500"
 					>
-						{userStats.draws} Draws
 					</div>
 				</div>
 
-				{/* Legend */}
+				{/* Legend
 				<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
 					<div className="flex items-center gap-1.5">
 						<span className="h-3 w-3 rounded-full bg-emerald-500"  />
@@ -85,7 +82,7 @@ export default function ProfilePage() {
 							<div className="text-[10px] text-[#5d6877]/60 italic">Profitable Swaps</div>
 						</div>
 					</div>
-					<div className="flex items-center gap-1.5">
+					<div className="flex items-center gap-1.5">	
 						<span className="h-3 w-3 rounded-full bg-rose-600"  />
 						<div>
 							<div>Losses</div>
@@ -99,6 +96,36 @@ export default function ProfilePage() {
 							<div>Draws</div>
 							<div className="text-[10px] text-[#5d6877]/60 italic">Equilibrium Cores</div>
 						</div>
+					</div>
+				</div> */}
+				{/*legend V2*/}
+				<div className="mt-4 grid grid-cols-3 gap-3 w-full">
+					{/* Win Box */}
+					<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
+						<div className="flex items-center gap-1.5">
+							<span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+							<span className="text-sm font-semibold"> Wins</span>
+						</div>
+						<div className="text-[10px] text-[#5d6877] italic mt-0.5">Profitable Swaps</div>
+						<div className="text-xl font-semibold mt-1 text-emerald-400">{userStats.wins}</div>
+					</div>
+
+					<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
+						<div className="flex items-center gap-1.5">
+							<span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+							<span className="text-sm font-semibold">Losses</span>
+						</div>
+						<div className="text-[10px] text-[#5d6877] italic mt-0.5">Reversed Margins</div>
+						<div className="text-xl font-semibold mt-1 text-rose-400">{userStats.losses}</div>
+					</div>
+
+					<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
+						<div className="flex items-center gap-1.5">
+							<span className="h-2.5 w-2.5 rounded-full bg-gray-500" />
+							<span className="text-sm font-semibold">Draws</span>
+						</div>
+						<div className="text-[10px] text-[#5d6877] italic mt-0.5">Equilibrium Cores</div>
+						<div className="text-xl font-semibold mt-1 text-gray-500">{userStats.draws}</div>
 					</div>
 				</div>
 			</div>
