@@ -8,6 +8,7 @@ import {
   Plus,
   RefreshCw,
   Settings,
+  Trash2,
   User,
   Users,
   X,
@@ -27,6 +28,7 @@ const icons: Record<IconName, LucideIcon> = {
   profile: User,
   refresh: RefreshCw,
   settings: Settings,
+  trash: Trash2,
   users: Users,
   x: X,
 };
