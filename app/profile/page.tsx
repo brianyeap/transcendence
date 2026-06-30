@@ -58,19 +58,21 @@ export default function ProfilePage() {
 				<div className="h-10 w-full rounded-md overflow-hidden flex border border-black/40">
 					<div
 						style={{ width: `${(userStats.wins / userStats.gamesPlayed) * 100}%` }}
-						className="bg-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-950"
+						className="bg-emerald-600 flex items-center justify-center text-s font-bold text-emerald-950"
 					>
+						{userStats.wins} Wins
 					</div>
 					<div
 						style={{ width: `${(userStats.losses / userStats.gamesPlayed) * 100}%` }}
-						className="bg-rose-600 flex items-center justify-center text-xs font-bold text-rose-950"
+						className="bg-rose-800 flex items-center justify-center text-s font-bold text-rose-950"
 					>
+						{userStats.losses} Loss
 					</div>
 					<div
 						style={{ width: `${(userStats.draws / userStats.gamesPlayed) * 100}%` }}
-						className="bg-gray-500 flex items-center justify-center text-xs font-bold text-gray-100"
+						className="bg-gray-500 flex items-center justify-center text-s font-bold text-gray-100"
 					>
-					
+						{userStats.draws} Draws
 					</div>
 				</div>
 
@@ -78,15 +80,25 @@ export default function ProfilePage() {
 				<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
 					<div className="flex items-center gap-1.5">
 						<span className="h-3 w-3 rounded-full bg-emerald-500"  />
-						Wins
+						<div>
+							<div>Wins</div>
+							<div className="text-[10px] text-[#5d6877]/60 italic">Profitable Swaps</div>
+						</div>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<span className="h-3 w-3 rounded-full bg-rose-600"  />
-						Losses
+						<div>
+							<div>Losses</div>
+							<div className="text-[10px] text-[#5d6877]/60 italic">Reversed Margins</div>
+
+						</div>
 					</div>
 					<div className="flex items-center gap-1.5">
 						<span className="h-3 w-3 rounded-full bg-gray-400"  />
-						Draws
+						<div>
+							<div>Draws</div>
+							<div className="text-[10px] text-[#5d6877]/60 italic">Equilibrium Cores</div>
+						</div>
 					</div>
 				</div>
 			</div>
