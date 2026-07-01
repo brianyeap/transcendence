@@ -19,14 +19,6 @@ function getRiskRatingColor(rating: string): string
 	return "text-rose-400";
 }
 
-function getBalanceColor(current: number, starting: number): string
-{
-	if (current >= starting)
-		return "text-emerald-400";
-	else
-		return "text-rose-400";
-}
-
 export default function ProfilePage() {
 	const userStats = {
 		username: "Transcendance",
@@ -34,8 +26,6 @@ export default function ProfilePage() {
 		wins: 7,
 		losses: 4,
 		draws: 1,
-		currentBalance: 4250.75,
-		startingCapital: 1000,
 		winPercentage: 58.3,
 	};
 	const riskRating = getRiskRating(userStats.wins, userStats.losses);
@@ -50,7 +40,7 @@ export default function ProfilePage() {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-3 gap-4">
+			<div className="grid grid-cols-2 gap-4">
 				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
 					<div className="text-s uppercase tracking-wide text-[#5d6877]">Games played</div>
 					<div className="text-xl font-semibold mt-1">{userStats.gamesPlayed}</div>
@@ -59,13 +49,6 @@ export default function ProfilePage() {
 				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
 					<div className="text-s uppercase tracking-wide text-[#5d6877]">Win %</div>
 					<div className="text-xl font-semibold mt-1">{userStats.winPercentage}%</div>
-				</div>
-
-				<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-					<div className="text-s uppercase tracking-wide text-[#5d6877]">Current Balance</div>
-					<div className={`text-xl font-semibold mt-1 ${getBalanceColor(userStats.currentBalance, userStats.startingCapital)}`}>
-						${userStats.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2})}
-					</div>
 				</div>
 			</div>
 			{/* Distribution Bar */}
