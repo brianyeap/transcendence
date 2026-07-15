@@ -16,6 +16,15 @@ services:
     networks:
       - transcendence
 
+  socket:
+    build:
+      context: ./socket
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    networks:
+      - transcendence
+
 volumes:
   web_node_modules:
   web_next_cache:
