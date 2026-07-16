@@ -19,7 +19,7 @@ function formatDuration(starts_at: string, ends_at: string): string
 	const seconds = Math.round((new Date(ends_at).getTime() - new Date(starts_at).getTime()) / 1000);
 	const minutes = Math.floor(seconds / 60);
 	const remainingSeconds = seconds % 60;
-	return `${minutes}m ${remainingSeconds}$`;
+	return `${minutes}m ${remainingSeconds}s`;
 }
 
 function formatDateTime(dateString: string): string
@@ -57,7 +57,7 @@ const mockMatch =
 			user_id: "current-user-uuid",
 			username: "Trancendance",
 			final_capital: 11250.00,
-			realized_capital: 1250.00,
+			realized_pnl: 1250.00,
 			is_current_user: true, 
 		},
 		{
@@ -101,4 +101,102 @@ const mockMatch =
 		},
 	],
 };
+
+// --- Server Component ---
+export default async function MatchDetailPage({
+	params,
+}: {
+	params: { matchId: string };
+}) {
+	// Auth Guard
+	const supabase = await createSupabaseServerClient();
+	const { data: { user } } = await supabase.auth.getUser();
+
+	if (!user)
+	{
+		redirect("/login");
+	}
+
+	// In real version: fetch from Supabase using params.matchId
+	const match = mockMatch;
+
+	const currentPlayer = match.players.find((p) => p.is_current_user)!;
+	const opponent = match.players.find((p) => !p.is_current_user)!;
+	const userWon = currentPlayer.realized_pnl > opponent.realized_pnl;
+	const isDraw = currentPlayer.realized_pnl === opponent.realized_pnl;
+	const result = isDraw ? "DRAW" : userWon ? "WIN" : "LOSS";
+
+	return (
+		<SideNav user={user?.email ?? "Unknown"}>
+			<div className="p-6 md:p-8 text-[#eef2f8] max-w-5xl mx-auto">
+
+				{/* BACK BUTTON */}
+				<Link
+					href="/history"
+					className="inline-flex items-center gap-2 text-sm text-[#5d6877] hover:text-[#eef2f8] transition-colors mb-6"
+				>
+					<ArrowLeft className="w-4 h-4" />
+					Back to History
+				</Link>
+
+				{/* MATCH RESULT HERO BANNER */}
+				<div className={`rounded-[10px] border p-6 mb-6 ${
+					result === "WIN"
+						? "border-emerald-500/30 bg-emerald-500/5"
+						: result === "LOSS"
+						? "border-rose-500/30 bg-rose-500/5"
+						: "border-gray-500/30 bg-gray-500/5"
+				}`}>
+					<div className="flex items-center justify-between flex-wrap gap-4">
+
+						{/* Result label */}
+						<div>
+							<div className={`text-3xl font-bold mb-1 ${
+								result === "WIN" ? "text-emerald-400" :
+								result === "LOSS" ? "text-rose-400" : "text-gray-400"
+							}`}>
+								{result === "WIN" ? "Victory" : result === "LOSS" ? "Defeat" : "Draw"}
+							</div>
+							<div className="text-sm text-[#5d6877]">
+								{match.symbol} · {formatDuration(match.starts_at, match.ends_at)}
+							</div>
+						</div>
+
+						{/* Both players side by side */}
+						<div className="flex items-center gap-4">
+							{/* Current user */}
+							<div className="text-right">
+								<div className="text-sm font-semibold">{currentPlayer.username}</div>
+								<div className={`text-xl font-bold font-mono ${getPnLColor(currentPlayer.realized_pnl)}`}>
+									${currentPlayer.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+								</div>
+								<div className={`text-xs font-mono ${getPnLColor(currentPlayer.realized_pnl)}`}>
+									{formatMoney(currentPlayer.realized_pnl)}
+								</div>
+							</div>
+
+							{/* VS divider */}
+							<div className="flex flex-col items-center">
+								<Swords className="w-5 h-5 text-[#5d6877]" />
+								<span className="text-[10px] text-[#5d6877] mt-1">VS</span>
+							</div>
+
+							{/* Opponent */}
+							<div className="text-left">
+								<div className="text-sm font-semibold">{opponent.username}</div>
+								<div className={`text-xl font-bold font-mono ${getPnLColor(opponent.realized_pnl)}`}>
+									${opponent.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+								</div>
+								<div className={`text-xs font-mono ${getPnLColor(opponent.realized_pnl)}`}>
+									{formatMoney(opponent.realized_pnl)}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</SideNav>
+	);
+
+}
 
