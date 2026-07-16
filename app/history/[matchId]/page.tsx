@@ -192,6 +192,35 @@ export default async function MatchDetailPage({
 								</div>
 							</div>
 						</div>
+
+						{/* MATCH SUMMARY STATS ROW */}
+						<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex item-center gap-1 mb-1">
+								<Clock className="w-3 h-3" /> Start Time
+								</div>
+									<div className="text-sm font-semibold">{formatDateTime(match.starts_at)}</div>
+							</div>
+
+							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex items-center gap-1 mb-1">
+									<Clock className="w-3 h-3" /> End Time
+								</div>
+								<div className="text-sm font-semibold">{formatDateTime(match.ends_at)}</div>
+							</div>
+
+							  <div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">Duration</div>
+								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at)}</div>
+							</div>
+
+							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">Final Price</div>
+								<div className="text-sm font-semibold font-mono">
+									${match.final_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
