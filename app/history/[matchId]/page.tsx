@@ -242,6 +242,58 @@ export default async function MatchDetailPage({
 								</div>
 							</div>
 						</div>
+
+						{/* TRADE TABLE */}
+						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] overflow-hidden">
+							<div className="px-4 py-3 border-b border-white/[.05] flex item-center gap-2">
+								<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
+								<span className="text-sm font-semibold"> Trade Log</span>
+								<span className="text-[10px] text-[#5d6877]  ml-auto">{match.trades.length} trades</span>
+							</div>
+							<div className="grid grid-cols-5 px-4 py-2 border-b border-white/[.04]">
+								{["Player", "Side", "Amount", "Price", "Time"].map((col) => (
+									<div key={col} className="text-[10px] uppercase tracking-wide text-[#5d6877]">
+										{col}
+									</div>
+								))}
+							</div>
+							<div className="divide-y divide-white/[.03]">
+								{match.trades.map((trade) => (
+									<div key={trade.id} className="grid grid-cols-5 px-4 py-3 hover:bg-white/[.02] transition-colors">
+										<div className="text-sm font-semibold truncate">
+											{trade.username}
+											{trade.user_id === user?.id && (
+												<span className="ml-1.5 text-[9px] text-[#4d86ff] border border-[#4d86ff]/30 rounded px-1 py-0.5">
+													you
+												</span>
+											)}
+										</div>
+										<div className="flex items-center gap-1">
+											{trade.side === "long" ? (
+												<TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+											) : (
+												<TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+											)}
+											<span className={`text-sm font-semibold capitalize ${
+												trade.side === "long" ? "text-emerald-400" : "text-rose-400"
+											}`}>
+												{trade.side}
+											</span>
+										</div>
+										<div className="text-sm font-mono">
+											${trade.amount_usdt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+										</div>
+										<div className="text-[11px] text-[#5d6877]">
+											{new Date(trade.executed_at).toLocaleTimeString("en-GB", {
+												hour: "2-digit",
+												minute: "2-digit",
+												second: "2-digit",
+											})}
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
 				</div>
 			</div>
 		</SideNav>
