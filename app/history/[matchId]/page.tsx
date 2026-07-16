@@ -221,7 +221,27 @@ export default async function MatchDetailPage({
 								</div>
 							</div>
 						</div>
-					</div>
+
+						{/* CHART PLACEHOLDER */}
+						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6">
+								<div className="flex items-center gap-2 mb-4">
+									<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
+									<span className="text-sm font-semibold">Match Chart</span>
+									<span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0..5 ml-auto">
+										Coming soon - requires match_candles data from backend
+									</span>
+								</div>
+								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex items-center justify-center">
+									<div className="text-center">
+										<TrendingUp className="w-8 h-8 text-[#5d6877] mx-auto mb-2 opacity-40" />
+										<p className="text-sm text-[#5d6877]">Chart will render here</p>
+										<p className="text-[10px] text-[#5d6877] mt-1 opacity-60">
+											match_candles table · match_id: {match.id.slice(0, 8)}...
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
 				</div>
 			</div>
 		</SideNav>
