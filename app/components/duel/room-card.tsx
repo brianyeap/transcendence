@@ -3,7 +3,15 @@ import { Avatar } from "./avatar";
 import { Icon } from "./duel-icon";
 import { fmtClock, fmtUSD, timeAgo } from "./format";
 
-export function RoomCard({ room }: { room: Room }) {
+export function RoomCard({
+  room,
+  deleting = false,
+  onDelete,
+}: {
+  room: Room;
+  deleting?: boolean;
+  onDelete?: (room: Room) => void;
+}) {
   return (
     <article className="flex flex-col gap-4 overflow-hidden rounded-2xl border border-white/[.07] bg-[#0f131b] p-5 transition hover:-translate-y-0.5 hover:border-white/[.12] hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,.55)]">
       <div className="flex items-center gap-3.5">
@@ -11,7 +19,16 @@ export function RoomCard({ room }: { room: Room }) {
         <div className="min-w-0">
           <h3 className="truncate text-[15.5px] font-semibold tracking-[-.01em]">{room.name}</h3>
           <p className="flex items-center gap-1.5 text-xs text-[#9aa6b6]">
-            <span>by {room.creator}</span>
+            <span>
+              by{" "}
+              {room.ownedByCurrentUser ? (
+                <span className="rounded-full border border-[#1fcb83]/25 bg-[#1fcb83]/10 px-2 py-0.5 font-semibold text-[#1fcb83]">
+                  you
+                </span>
+              ) : (
+                room.creator
+              )}
+            </span>
             <span className="text-[#3a434f]">·</span>
             <span>{timeAgo(room.ageMin)}</span>
           </p>
@@ -36,10 +53,21 @@ export function RoomCard({ room }: { room: Room }) {
             {room.players}/{room.capacity}
           </span>
         </div>
-        <button className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110">
-          Join
-          <Icon name="chevR" className="size-4" />
-        </button>
+        {room.ownedByCurrentUser ? (
+          <button
+            onClick={() => onDelete?.(room)}
+            disabled={deleting}
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 text-xs font-semibold text-[#ff8c99] transition hover:bg-[#f6485d]/15 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Icon name="trash" className="size-3.5" />
+            {deleting ? "Deleting" : "Delete"}
+          </button>
+        ) : (
+          <button className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110">
+            Join
+            <Icon name="chevR" className="size-4" />
+          </button>
+        )}
       </div>
     </article>
   );
