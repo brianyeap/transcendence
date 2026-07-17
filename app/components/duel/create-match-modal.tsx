@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Room } from "./types";
 
 const DURATION_OPTIONS = [
     { label: '1 min', value: 60 },
@@ -18,19 +18,21 @@ const CAPITAL_OPTIONS = [
 interface Props {
     isOpen: boolean
     onClose: () => void
+    onCreated?: (room: Room) => void
 }
 
-export function CreateMatchModal({ isOpen, onClose }: Props) {
-    const router = useRouter()
+export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
     const backdropRef = useRef<HTMLDivElement>(null)
     const [duration, setDuration] = useState(120)
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    function handleClose() {
+    const handleClose = useCallback(() => {
         setIsCreating(false)
+        setError(null)
         onClose()
-    }
+    }, [onClose])
 
     // button click outside the modal closes it
     function handleBackdropClick(e: React.MouseEvent) {
@@ -46,19 +48,44 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         }
         if (isOpen) 
             document.addEventListener('keydown', handleEscButton)
-        return () => document.addEventListener('keydown', handleEscButton)
-    }, [isOpen, onClose])
+        return () => document.removeEventListener('keydown', handleEscButton)
+    }, [isOpen, handleClose]) //dependencies: isOpen, handleClose
 
-    // incomplete function to create the match room
     async function handleCreate() {
         setIsCreating(true)
+        setError(null)
 
-        await new Promise((r) => setTimeout(r, 600))
-        const mockRoomId = crypto.randomUUID()
-        router.push(`/rooms/${mockRoomId}`)
+        try {
+            const response = await fetch("/api/rooms", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    startingCapital: capital,
+                    durationSeconds: duration,
+                }),
+            })
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error ?? "Could not create room.")
+            }
+
+            if (onCreated) { // upsertRoom func
+                onCreated(result.room)
+            } else {
+                window.dispatchEvent(new CustomEvent("room-created", { detail: result.room })) // broadcast the event to all listeners
+            }
+
+            handleClose()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not create room.")
+            setIsCreating(false)
+        }
     }
 
-    if (!isOpen) return null
+    if (!isOpen) return null // if modal is not open, return null to not render anything
 
     return (
         <div 
@@ -104,6 +131,11 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                         ))}
                     </div>
                 </div>
+                {error ? (
+                    <p className="rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]">
+                        {error}
+                    </p>
+                ) : null}
                 <div className="flex gap-2">
                     <button onClick={handleClose}
                         className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-white/[.1] rounded-lg transition-colors"
