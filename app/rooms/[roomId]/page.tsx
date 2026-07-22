@@ -1,9 +1,6 @@
-export default function MatchRoomPage() {
-	return (
-		<>
-			<h1>Match Room</h1>
+import { RoomView } from "./room-view";
 
-			<p>Just an empty page for now.</p>
-		</>
-	);
+export default async function Page({ params }: { params: Promise<{ roomId: string }> }) {
+  const { roomId } = await params;
+  return <RoomView roomId={roomId} />;
 }
