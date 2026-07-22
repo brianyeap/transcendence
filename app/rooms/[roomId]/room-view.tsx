@@ -1,11 +1,15 @@
 "use client"
 
 import { LiveMatchScreen } from "@/app/components/match/live-match-screen";
+import { PreMatchScreen } from "@/app/components/match/pre-match-screen";
 import { ResultScreen } from "@/app/components/match/result-screen";
-import { subscribeRoom } from "@/lib/api/mock"
+import { subscribeRoom } from "@/lib/api/matches";
 import { RoomState } from "@/lib/api/types";
 import { useState, useEffect } from "react";
 
+// A Match is one thing with a changing status, so it is one route. The server
+// drives the status; this just renders whichever face of the Match is current,
+// which is why the transitions need no navigation.
 export function RoomView({ roomId }: { roomId: string }) {
 	const [room, setRoom] = useState<RoomState | null>(null);
 	useEffect(() => subscribeRoom(roomId, setRoom), [roomId]);
@@ -14,9 +18,8 @@ export function RoomView({ roomId }: { roomId: string }) {
 
 	switch (room.status) {
 		case "waiting":
-			return <WaitingView room={room} />;
 		case "countdown":
-			return <CountdownView room={room} />;
+			return <PreMatchScreen room={room} />;
 		case "active":
 			return <LiveMatchScreen room={room} />;
 		case "completed":
@@ -27,9 +30,3 @@ export function RoomView({ roomId }: { roomId: string }) {
 		}
 	}
 }
-
-// Tickets 06 and 07 replace these two. They are not blockers of ticket 14, so
-// they stay as stubs for now — the live Match and its result are what ticket 14
-// composes.
-function WaitingView({ room }: { room: RoomState })   { return <p className="p-6">Waiting… {room.playerOne.username}</p>; }
-function CountdownView({ room }: { room: RoomState }) { return <p className="p-6">Countdown… starts {room.startsAt}</p>; }
