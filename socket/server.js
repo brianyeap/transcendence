@@ -26,13 +26,23 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const { createClient } = require("@supabase/supabase-js");
 // The pure trading maths lives in its own file so it can be tested on its own.
-const { round2, applyTrade, settlePlayer } = require("./engine-math");
+const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
 
 // ----------------------------------------------------------------------------
 // Settings
 // ----------------------------------------------------------------------------
 const PORT = 4000;
 const TICK_MS = 500; // how often we update the price and check the clock (0.5s)
+// Which web addresses may talk to the engine. The Next.js app normally runs on
+// port 3000, but `next dev` picks a different port when that one is taken, so we
+// allow a couple by default. Set SOCKET_ALLOWED_ORIGINS (comma separated) to
+// override the list, e.g. for a deployed site.
+const ALLOWED_ORIGINS = (
+  process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000,http://localhost:3300"
+)
+  .split(",")
+  .map((origin) => origin.trim());
+
 const TICKER_URL = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
 const CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles";
 
@@ -237,6 +247,9 @@ async function ensureMatchRunning(matchRow) {
     latestPrice: null, // most recent BTC price
     sequence: 0, // how many price ticks we have sent
     candles: [], // the pre-fetched candles we replay during the match
+    // Used only by the no-candles fallback below: the chart needs every candle
+    // to have a later timestamp than the one before it, so we count up from here.
+    fallbackBaseTime: Math.floor(Date.now() / 1000),
     players: players,
     timer: null,
   };
@@ -311,7 +324,20 @@ async function onTick(match) {
         price: candle.close,
         sequence: match.sequence,
         at: Date.now(),
+        // The whole candle, so the chart can draw real open/high/low/close bars
+        // instead of just a line of closing prices. Candles we replayed from
+        // Coinbase carry their own timestamp; the live-price fallback has none,
+        // so we count up from fallbackBaseTime to keep the chart moving forward.
+        candle: {
+          time: candle.time ?? match.fallbackBaseTime + match.sequence,
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close,
+        },
       });
+      // Both players' capital moves with every price change, so resend it.
+      broadcastCapitals(match);
     }
   } finally {
     ticking.delete(match.matchId);
@@ -381,11 +407,27 @@ async function endMatch(match) {
   io.to(roomName(match.matchId)).emit("match:ended", {
     finalCapitals: finalCapitals,
     winnerUserId: winnerUserId,
+    finalPrice: finalPrice, // the result screen shows the price we settled at
   });
 
   // Keep the finished match in memory briefly so a reconnecting player can still
   // read the result, then clean it up.
   setTimeout(() => liveMatches.delete(match.matchId), 60000);
+}
+
+// Send BOTH players' current capital to everyone in the match room.
+// The match header shows your capital next to your opponent's, and a player
+// cannot work out the opponent's number on their own (they never see the
+// opponent's position), so the engine has to tell them.
+function broadcastCapitals(match) {
+  if (match.latestPrice === null) return;
+
+  const capitals = {};
+  for (const userId of Object.keys(match.players)) {
+    capitals[userId] = equity(match.players[userId], match.latestPrice);
+  }
+
+  io.to(roomName(match.matchId)).emit("match:capitals", { capitals, at: Date.now() });
 }
 
 // Send a single player the current picture of their own money/position.
@@ -405,11 +447,11 @@ function sendPlayerState(socket, match, userId) {
 // HTTP + Socket.IO setup
 // ============================================================================
 const app = express();
-app.use(cors({ origin: "http://localhost:3000" })); // only allow our frontend
+app.use(cors({ origin: ALLOWED_ORIGINS })); // only allow our frontend
 app.use(express.json());
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "http://localhost:3000" } });
+const io = new Server(server, { cors: { origin: ALLOWED_ORIGINS } });
 
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
@@ -427,7 +469,7 @@ io.on("connection", (socket) => {
     // Load the match and make sure this user is really one of its two players.
     const { data: matchRow } = await supabase
       .from("matches")
-      .select("id, player_one_user_id, player_two_user_id, status, starting_capital, starts_at, ends_at, winner_user_id")
+      .select("id, player_one_user_id, player_two_user_id, status, starting_capital, starts_at, ends_at, winner_user_id, final_price")
       .eq("id", matchId)
       .maybeSingle();
 
@@ -471,6 +513,7 @@ io.on("connection", (socket) => {
       socket.emit("match:ended", {
         finalCapitals,
         winnerUserId: matchRow.winner_user_id ?? null,
+        finalPrice: matchRow.final_price === null ? null : Number(matchRow.final_price),
       });
       return;
     }
@@ -497,6 +540,8 @@ io.on("connection", (socket) => {
     }
 
     sendPlayerState(socket, match, userId);
+    // Give the newcomer both capitals straight away so the header isn't blank.
+    broadcastCapitals(match);
   });
 
   // ------------------------------------------------------------------------
@@ -550,7 +595,17 @@ io.on("connection", (socket) => {
     await saveTrade(matchId, userId, side, orderAmount, price, result, match.sequence);
 
     // Tell just this player what happened (opponents don't see live trades).
-    socket.emit("trade:accepted", { side, amount: orderAmount, price });
+    // We include the resulting position so the chart can mark the fill and the
+    // trades list can show what the order left them holding.
+    socket.emit("trade:accepted", {
+      side,
+      amount: orderAmount,
+      price,
+      at: Date.now(),
+      realizedPnl: result.tradePnl,
+      resultingSide: result.next.side,
+      resultingNotional: result.next.notional,
+    });
     socket.emit("player:state", {
       availableBalance: result.next.availableBalance,
       realizedPnl: result.next.realizedPnl,
@@ -558,6 +613,8 @@ io.on("connection", (socket) => {
       notional: result.next.notional,
       avgEntry: result.next.avgEntry,
     });
+    // The trade changed this player's capital — refresh it for both of them.
+    broadcastCapitals(match);
   });
 
   socket.on("disconnect", () => console.log("client disconnected:", socket.id));

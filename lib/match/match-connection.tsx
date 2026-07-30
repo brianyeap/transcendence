@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { createScriptedTransport } from "./scripted-transport";
+import { createSocketTransport } from "./socket-transport";
 import type { MatchSubscription, MatchTransport, SubmitTradeInput } from "./transport";
 import type {
   Candle,
@@ -30,7 +30,9 @@ export function MatchTransportProvider({
   transport?: MatchTransport;
   children: React.ReactNode;
 }) {
-  const value = useMemo(() => transport ?? createScriptedTransport(), [transport]);
+  // No transport passed in means the real one: Supabase + the match engine.
+  // Tests can still hand in a fake.
+  const value = useMemo(() => transport ?? createSocketTransport(), [transport]);
   return <TransportContext.Provider value={value}>{children}</TransportContext.Provider>;
 }
 
