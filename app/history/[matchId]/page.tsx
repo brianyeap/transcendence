@@ -42,71 +42,11 @@ function getPnLColor(value: number): string
 	return "text-gray-400";
 }
 
-const mockMatch = 
-{
-	id: "550e8400-e29b-41d4-a716-446655440001",
-	symbol: "BTCUSDT",
-	starting_capital: 10000,
-	starts_at: "2026-07-06T14:00:00Z",
-	ends_at: "2026-07-06T14:02:00Z",
-	final_price: 107250.50,
-	status: "completed",
-	winner_username: "Trancendance",
-	players: [
-		{
-			user_id: "current-user-uuid",
-			username: "Trancendance",
-			final_capital: 11250.00,
-			realized_pnl: 1250.00,
-			is_current_user: true, 
-		},
-		{
-			user_id: "opponent-uuid",
-			username: "satoshi_jr",
-			final_capital: 8750.00,
-			realized_pnl: -1250.00,
-			is_current_user: false,
-		}
-	],
-	trades: [
-		{
-			id: "trade-001",
-			user_id: "current-user-uuid",
-			username: "Tigger",
-			side: "long",
-			amount_usdt: 5000,
-			execution_price: 106000.00,
-			executed_at: "2026-07-06T14:00:30Z",
-			candle_sequence: 1,
-		},
-		{
-			id: "trade-002",
-			user_id: "opponent-uuid",
-			username: "satoshi_jr",
-			side: "short",
-			amount_usdt: 8000,
-			execution_price: 106500.00,
-			executed_at: "2026-07-06T14:01:00Z",
-			candle_sequence: 2,
-		},
-		{
-			id: "trade-003",
-			user_id: "current-user-uuid",
-			username: "Tigger",
-			side: "short",
-			amount_usdt: 5000,
-			execution_price: 107250.50,
-			executed_at: "2026-07-06T14:01:45Z",
-			candle_sequence: 4,
-		},
-	],
-};
-
 // --- Server Component ---
 export default async function MatchDetailPage({
 	params,
 }: {
-	params: { matchId: string };
+	params: Promise<{ matchId: string }>;
 }) {
 	// Auth Guard
 	const supabase = await createSupabaseServerClient();
@@ -117,11 +57,96 @@ export default async function MatchDetailPage({
 		redirect("/login");
 	}
 
-	// In real version: fetch from Supabase using params.matchId
-	const match = mockMatch;
+	const { matchId } = await params;
 
-	const currentPlayer = match.players.find((p) => p.is_current_user)!;
-	const opponent = match.players.find((p) => !p.is_current_user)!;
+	// Fetch match from Supabase
+	const { data: matchData, error: matchError } = await supabase
+		.from("matches")
+		.select("*")
+		.eq("id", matchId)
+		.single();
+
+	if (matchError || !matchData) {
+		redirect("/history");
+	}
+
+	// Fetch players from match_players
+	const { data: playersData } = await supabase
+		.from("match_players")
+		.select("*")
+		.eq("match_id", matchId);
+
+	// Fetch trades from trades
+	const { data: tradesData } = await supabase
+		.from("trades")
+		.select("*")
+		.eq("match_id", matchId)
+		.order("executed_at", { ascending: true });
+
+	// Fetch profiles for the player usernames
+	const userIds = [
+		matchData.player_one_user_id,
+		matchData.player_two_user_id,
+	].filter(Boolean) as string[];
+
+	const { data: profilesData } = await supabase
+		.from("profiles")
+		.select("id, username")
+		.in("id", userIds);
+
+	const usernameMap = new Map(
+		profilesData?.map((p) => [p.id, p.username]) ?? []
+	);
+
+	// Construct the players list
+	const players = (playersData ?? []).map((p) => ({
+		user_id: p.user_id,
+		username: usernameMap.get(p.user_id) ?? "Unknown",
+		final_capital: Number(p.final_capital ?? 0),
+		realized_pnl: Number(p.realized_pnl ?? 0),
+		is_current_user: p.user_id === user.id,
+	}));
+
+	// Construct the trades list
+	const trades = (tradesData ?? []).map((t) => ({
+		id: t.id,
+		user_id: t.user_id,
+		username: usernameMap.get(t.user_id) ?? "Unknown",
+		side: t.side as "long" | "short",
+		amount_usdt: Number(t.amount_usdt),
+		execution_price: Number(t.execution_price),
+		executed_at: t.executed_at,
+		candle_sequence: t.candle_sequence ?? 0,
+	}));
+
+	const match = {
+		id: matchData.id,
+		symbol: matchData.symbol,
+		starting_capital: Number(matchData.starting_capital),
+		starts_at: matchData.starts_at,
+		ends_at: matchData.ends_at,
+		final_price: Number(matchData.final_price ?? 0),
+		status: matchData.status,
+		players,
+		trades,
+	};
+
+	const currentPlayer = match.players.find((p) => p.is_current_user) ?? {
+		user_id: user.id,
+		username: usernameMap.get(user.id) ?? "You",
+		final_capital: Number(match.starting_capital),
+		realized_pnl: 0,
+		is_current_user: true,
+	};
+
+	const opponent = match.players.find((p) => !p.is_current_user) ?? {
+		user_id: "none",
+		username: "No Opponent",
+		final_capital: Number(match.starting_capital),
+		realized_pnl: 0,
+		is_current_user: false,
+	};
+
 	const userWon = currentPlayer.realized_pnl > opponent.realized_pnl;
 	const isDraw = currentPlayer.realized_pnl === opponent.realized_pnl;
 	const result = isDraw ? "DRAW" : userWon ? "WIN" : "LOSS";
