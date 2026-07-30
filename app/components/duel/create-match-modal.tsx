@@ -1,12 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 
+// All matches are 1 minute for now, so this is the only option.
 const DURATION_OPTIONS = [
-    { label: '1 min', value: 60 },
-    { label: '2 min', value: 120 },
-    { label: '3 min', value: 180 }
+    { label: '1 min', value: 60 }
 ]
 
 const CAPITAL_OPTIONS = [
@@ -22,8 +22,10 @@ interface Props {
 }
 
 export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
+    const router = useRouter() // used to send the creator into their new room
     const backdropRef = useRef<HTMLDivElement>(null)
-    const [duration, setDuration] = useState(120)
+    const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
+    const [duration, setDuration] = useState(60)
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -31,6 +33,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
     const handleClose = useCallback(() => {
         setIsCreating(false)
         setError(null)
+        setName('') // start fresh next time the modal opens
         onClose()
     }, [onClose])
 
@@ -62,6 +65,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    name,
                     startingCapital: capital,
                     durationSeconds: duration,
                 }),
@@ -79,6 +83,9 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
             }
 
             handleClose()
+            // The creator is player one — send them straight into their room to
+            // wait for an opponent (this is where the match screen lives).
+            router.push(`/rooms/${result.room.id}`)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Could not create room.")
             setIsCreating(false)
@@ -103,6 +110,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                 <div className="flex flex-col">
                     <label htmlFor="room-name" className="text-[#9aa6b6]">Room Name</label>
                     <input type='text' id='room-name' name="room-name" disabled={isCreating}
+                        value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
                         className="border border-white/[.4] py-2 px-2 rounded-lg disabled:opacity-50" placeholder="eg: Chicken Rice"></input>
                 </div>
                 <div>

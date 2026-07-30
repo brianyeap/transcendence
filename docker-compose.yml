@@ -20,6 +20,11 @@ services:
     build:
       context: ./socket
       dockerfile: Dockerfile
+    # Give the socket container the Supabase URL + secret key it needs to write
+    # match data. env_file loads them straight from .env.local into the container
+    # (the server's dotenv line only works when running outside Docker).
+    env_file:
+      - .env.local
     ports:
       - "4000:4000"
     networks:
