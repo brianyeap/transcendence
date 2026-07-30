@@ -1,12 +1,18 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
+// All matches are 1 minute (60 seconds) for now.
+const ALLOWED_DURATION = new Set([60]);
+const DEFAULT_DURATION = 60;
 const DEFAULT_SYMBOL = "BTCUSDT";
+// Longest room name we accept, so one player can't stretch the lobby card.
+const MAX_NAME_LENGTH = 40;
 
 type CreateRoomRequest = {
   symbol?: unknown;
   startingCapital?: unknown;
   durationSeconds?: unknown;
+  name?: unknown;
 };
 
 type DeleteRoomRequest = {
@@ -15,11 +21,13 @@ type DeleteRoomRequest = {
 
 type MatchRoom = {
   id: string;
+  name: string | null; // what the creator typed; null on older rooms
   player_one_user_id: string;
   player_two_user_id: string | null;
   status: string;
   symbol: string;
   starting_capital: number | string;
+  duration_seconds: number | null;
   starts_at: string | null;
   ends_at: string | null;
   created_at: string;
@@ -49,17 +57,29 @@ function getRoomAgeMinutes(createdAt: string) {
   return Math.max(0, Math.round(ageMs / 60000));
 }
 
-function formatRoom(room: MatchRoom, currentUserId: string) {
+// `creatorNames` maps a user id -> that user's username (looked up from the
+// `profiles` table). If a name is missing we fall back to a slice of the id.
+function formatRoom(
+  room: MatchRoom,
+  currentUserId: string,
+  creatorNames: Map<string, string>
+) {
   const isOwner = room.player_one_user_id === currentUserId;
+  const creatorName =
+    creatorNames.get(room.player_one_user_id) ?? room.player_one_user_id.slice(0, 8);
 
   return {
     id: room.id,
-    name: isOwner ? "Your Room" : `Room ${room.id.slice(0, 8)}`,  // first 8 char
-    creator: isOwner ? "you" : room.player_one_user_id.slice(0, 8),
+    // The card shows this as the title and "by <creator>" underneath, so we use
+    // the name the creator typed. Rooms made before names existed (and anyone
+    // who left the field blank) fall back to the old creator-based title.
+    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`),
+    creator: isOwner ? "you" : creatorName,
     players: room.player_two_user_id ? 2 : 1,
     capacity: 2,
     ageMin: getRoomAgeMinutes(room.created_at),
-    duration: getRoomDuration(room),
+    // Prefer the saved duration; fall back to deriving it from the timestamps.
+    duration: room.duration_seconds ?? getRoomDuration(room),
     capital: Number(room.starting_capital),
     symbol: "BTC/USDT",
     ownedByCurrentUser: isOwner,
@@ -76,6 +96,31 @@ function getStartingCapital(value: unknown) {
   return capital;
 }
 
+// Clean up the room name the creator typed. We return null (not an error) when
+// it is missing or blank, because the name is optional — formatRoom falls back
+// to "<creator>'s Room" in that case.
+function getRoomName(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const name = value.trim();
+
+  return name.length === 0 ? null : name.slice(0, MAX_NAME_LENGTH);
+}
+
+// Turn the durationSeconds from the request into a valid number of seconds.
+// If it's missing or not one of the allowed choices, fall back to the default.
+function getDurationSeconds(value: unknown) {
+  const duration = Number(value);
+
+  if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
+    return DEFAULT_DURATION;
+  }
+
+  return duration;
+}
+
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   const {
@@ -90,7 +135,7 @@ export async function GET() {
   const { data: rooms, error } = await supabase // basically result.data is rooms and result.error is error
     .from("matches")
     .select(
-      "id, player_one_user_id, player_two_user_id, status, symbol, starting_capital, starts_at, ends_at, created_at"
+      "id, name, player_one_user_id, player_two_user_id, status, symbol, starting_capital, duration_seconds, starts_at, ends_at, created_at"
     )
     .eq("status", "waiting") // only get waiting
     .order("created_at", { ascending: false });
@@ -99,7 +144,25 @@ export async function GET() {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  const sortedRooms = (rooms as MatchRoom[])
+  const matchRooms = rooms as MatchRoom[];
+
+  // Look up the username for every room creator in one query, then build a
+  // { userId -> username } map that formatRoom can read from.
+  //
+  // This needs the "read all profiles" policy from migration 0003. Without it
+  // RLS only lets you read your OWN profile row, so every other player's room
+  // would fall back to showing a chunk of their user id.
+  const creatorIds = [...new Set(matchRooms.map((room) => room.player_one_user_id))];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("id", creatorIds);
+
+  const creatorNames = new Map<string, string>(
+    (profiles ?? []).map((profile) => [profile.id, profile.username])
+  );
+
+  const sortedRooms = matchRooms
     .toSorted((roomA, roomB) => { // sorted func will handlw which to compare i jst have to return - or +
       const roomAIsMine = roomA.player_one_user_id === user.id;
       const roomBIsMine = roomB.player_one_user_id === user.id;
@@ -113,7 +176,7 @@ export async function GET() {
         new Date(roomA.created_at).getTime()
       );
     })
-    .map((room) => formatRoom(room, user.id));
+    .map((room) => formatRoom(room, user.id, creatorNames));
 
   return Response.json({ rooms: sortedRooms });
 }
@@ -128,6 +191,8 @@ export async function POST(request: Request) {
   }
 
   const startingCapital = getStartingCapital(body.startingCapital);
+  const durationSeconds = getDurationSeconds(body.durationSeconds);
+  const name = getRoomName(body.name);
   const symbol = "BTC/USDT";
 
   if (startingCapital === null) {
@@ -173,10 +238,12 @@ export async function POST(request: Request) {
 
   const insertPayload = {
     id: crypto.randomUUID(),
+    name, // null when the creator left the field blank
     player_one_user_id: user.id,
     status: "waiting",
     symbol,
     starting_capital: startingCapital,
+    duration_seconds: durationSeconds, // remember how long the match should last
   };
 
   const { error: insertError } = await supabase.from("matches").insert(insertPayload);
@@ -213,7 +280,8 @@ export async function POST(request: Request) {
           ends_at: null,
           created_at: createdAt,
         },
-        user.id
+        user.id,
+        new Map() // creator is always the current user here, so no lookup needed
       ),
     },
     { status: 201 } // created status

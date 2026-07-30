@@ -6,11 +6,15 @@ import { fmtClock, fmtUSD, timeAgo } from "./format";
 export function RoomCard({
   room,
   deleting = false,
+  joining = false,
   onDelete,
+  onJoin,
 }: {
   room: Room;
   deleting?: boolean;
+  joining?: boolean;
   onDelete?: (room: Room) => void;
+  onJoin?: (room: Room) => void;
 }) {
   return (
     <article className="flex flex-col gap-4 overflow-hidden rounded-2xl border border-white/[.07] bg-[#0f131b] p-5 transition hover:-translate-y-0.5 hover:border-white/[.12] hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,.55)]">
@@ -63,8 +67,12 @@ export function RoomCard({
             {deleting ? "Deleting" : "Delete"}
           </button>
         ) : (
-          <button className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110">
-            Join
+          <button
+            onClick={() => onJoin?.(room)}
+            disabled={joining}
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {joining ? "Joining" : "Join"}
             <Icon name="chevR" className="size-4" />
           </button>
         )}

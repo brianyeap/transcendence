@@ -7,7 +7,9 @@ COPY package.json ./
 RUN npm install
 
 # copy from host to container workdir, putting it after install so build is faster.
-COPY server.js ./
+# COPY . picks up server.js AND its local modules (engine-math.js); node_modules
+# is excluded via .dockerignore so the image uses the freshly installed deps.
+COPY . ./
 
 EXPOSE 4000
 

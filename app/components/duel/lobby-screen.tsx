@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { ActiveGameRow } from "./active-game-row";
 import { RoomCard } from "./room-card";
 import { Icon } from "./duel-icon";
@@ -8,14 +10,15 @@ import type { ActiveGame, IconName, Room } from "./types";
 import { CreateMatchModal } from "./create-match-modal";
 
 export function LobbyScreen() {
+  const router = useRouter(); // lets us send the user to the match page after joining
   // (open) make it start on open
   const [tab, setTab] = useState<"open" | "active">("open");
   const [refreshing, setRefreshing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [openRooms, setOpenRooms] = useState<Room[]>([]);
   const [activeGames] = useState<ActiveGame[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [deletingRoomIds, setDeletingRoomIds] = useState<string[]>([]);
+  const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null); // which room is being joined
   const hasCurrentUserRoom = openRooms.some((room) => room.ownedByCurrentUser);
 
   const putCurrentUserRoomFirst = useCallback((rooms: Room[]) => {
@@ -43,7 +46,6 @@ export function LobbyScreen() {
     }
 
     setDeletingRoomIds((roomIds) => [...roomIds, room.id]); // for keeping track whch room deleting
-    setError(null);
 
     try {
       const response = await fetch("/api/rooms", {
@@ -63,7 +65,7 @@ export function LobbyScreen() {
         rooms.filter((existingRoom) => existingRoom.id !== result.roomId)
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete room.");
+      toast.error(err instanceof Error ? err.message : "Could not delete room.");
     } finally { // rusn no matter wjat
       setDeletingRoomIds((roomIds) =>
         roomIds.filter((roomId) => roomId !== room.id)
@@ -71,9 +73,34 @@ export function LobbyScreen() {
     }
   }, []);
 
+  // Join someone else's room: tell the server, then go to the match page.
+  const joinRoom = useCallback(async (room: Room) => {
+    setJoiningRoomId(room.id); // show "Joining" on this room's button
+
+    try {
+      const response = await fetch("/api/rooms/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ roomId: room.id }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error ?? "Could not join room.");
+      }
+
+      // The room id is also the match id — open the match page.
+      router.push(`/rooms/${result.roomId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not join room.");
+      setJoiningRoomId(null); // let them try again
+    }
+  }, [router]);
+
   const refresh = useCallback(async () => {
     setRefreshing(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/rooms", {
@@ -87,7 +114,7 @@ export function LobbyScreen() {
 
       setOpenRooms(putCurrentUserRoomFirst(result.rooms));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load rooms.");
+      toast.error(err instanceof Error ? err.message : "Could not load rooms.");
     } finally {
       setRefreshing(false);
     }
@@ -172,12 +199,7 @@ export function LobbyScreen() {
 
         {tab === "open" ? (
           <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-            {error ? (
-              <p className="rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]">
-                {error}
-              </p>
-            ) : null}
-            {!error && !refreshing && openRooms.length === 0 ? (
+            {!refreshing && openRooms.length === 0 ? (
               <p className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3 text-sm text-[#9aa6b6]">
                 No open rooms yet.
               </p>
@@ -187,7 +209,9 @@ export function LobbyScreen() {
                 key={room.id}
                 room={room}
                 deleting={deletingRoomIds.includes(room.id)}
+                joining={joiningRoomId === room.id}
                 onDelete={deleteRoom}
+                onJoin={joinRoom}
               />
             ))}
           </div>
