@@ -99,6 +99,12 @@ export function LobbyScreen() {
     }
   }, [router]);
 
+  // Go back into a room you created and left. No API call needed — you are
+  // already player one, so we just open the match page again.
+  const enterOwnRoom = useCallback((room: Room) => {
+    router.push(`/rooms/${room.id}`);
+  }, [router]);
+
   const refresh = useCallback(async () => {
     setRefreshing(true);
 
@@ -212,6 +218,7 @@ export function LobbyScreen() {
                 joining={joiningRoomId === room.id}
                 onDelete={deleteRoom}
                 onJoin={joinRoom}
+                onEnter={enterOwnRoom}
               />
             ))}
           </div>
