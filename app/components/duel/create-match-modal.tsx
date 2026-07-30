@@ -54,8 +54,8 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         setIsCreating(true)
 
         await new Promise((r) => setTimeout(r, 600))
-        const mockRoomId = crypto.randomUUID()
-        router.push(`/rooms/${mockRoomId}`)
+        const mockMatchId = crypto.randomUUID()
+        router.push(`/matches/${mockMatchId}`)
     }
 
     if (!isOpen) return null
