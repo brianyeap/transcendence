@@ -85,7 +85,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
             handleClose()
             // The creator is player one — send them straight into their room to
             // wait for an opponent (this is where the match screen lives).
-            router.push(`/rooms/${result.room.id}`)
+            router.push(`/matches/${result.room.id}`)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Could not create room.")
             setIsCreating(false)

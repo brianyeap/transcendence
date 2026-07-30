@@ -142,4 +142,28 @@ function settlePlayer(player, finalPrice) {
   return player.availableBalance;
 }
 
-module.exports = { round2, applyTrade, settlePlayer };
+// Profit/loss the player WOULD lock in if they closed their position right now
+// at `price`. Nothing is saved — this is just "what is my open bet worth?".
+// Returns 0 when the player has no position.
+function unrealisedPnl(player, price) {
+  if (player.side === "flat" || player.notional <= 0 || player.avgEntry === null) {
+    return 0;
+  }
+
+  // How far the price moved in the player's favour, as a fraction.
+  const move =
+    player.side === "long"
+      ? (price - player.avgEntry) / player.avgEntry
+      : (player.avgEntry - price) / player.avgEntry;
+
+  return round2(player.notional * move);
+}
+
+// Everything the player is worth right now:
+//   free money + money tied up in the position + what that position is up/down.
+// This is the number the match header calls "capital".
+function equity(player, price) {
+  return round2(player.availableBalance + player.notional + unrealisedPnl(player, price));
+}
+
+module.exports = { round2, applyTrade, settlePlayer, unrealisedPnl, equity };

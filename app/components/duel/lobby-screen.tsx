@@ -92,7 +92,7 @@ export function LobbyScreen() {
       }
 
       // The room id is also the match id — open the match page.
-      router.push(`/rooms/${result.roomId}`);
+      router.push(`/matches/${result.roomId}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not join room.");
       setJoiningRoomId(null); // let them try again
@@ -102,7 +102,7 @@ export function LobbyScreen() {
   // Go back into a room you created and left. No API call needed — you are
   // already player one, so we just open the match page again.
   const enterOwnRoom = useCallback((room: Room) => {
-    router.push(`/rooms/${room.id}`);
+    router.push(`/matches/${room.id}`);
   }, [router]);
 
   const refresh = useCallback(async () => {
