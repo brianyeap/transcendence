@@ -32,13 +32,9 @@ const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
 // Settings
 // ----------------------------------------------------------------------------
 const PORT = 4000;
-const TICK_MS = 500; // how often we update the price and check the clock (0.5s)
-// Which web addresses may talk to the engine. The Next.js app normally runs on
-// port 3000, but `next dev` picks a different port when that one is taken, so we
-// allow a couple by default. Set SOCKET_ALLOWED_ORIGINS (comma separated) to
-// override the list, e.g. for a deployed site.
+const TICK_MS = 500;
 const ALLOWED_ORIGINS = (
-  process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000,http://localhost:3300"
+  process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000"
 )
   .split(",")
   .map((origin) => origin.trim());
@@ -46,31 +42,19 @@ const ALLOWED_ORIGINS = (
 const TICKER_URL = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
 const CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles";
 
-// ----------------------------------------------------------------------------
-// Supabase client using the SERVICE ROLE key.
-// This key bypasses Row Level Security, so the engine can write match data.
-// It must NEVER be sent to the browser.
-// ----------------------------------------------------------------------------
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ----------------------------------------------------------------------------
-// In-memory store of every match that is currently running.
-// Key = matchId, value = a "live match" object (built in ensureMatchRunning).
-// ----------------------------------------------------------------------------
+// All the live matches 
 const liveMatches = new Map();
 
-// ============================================================================
-// Small helper functions
-// ============================================================================
+// Helpers
 
-// Fetch the current BTC/USD price from Coinbase. Returns a number, or null if
-// the request failed (a failed tick is simply skipped).
 async function fetchBtcPrice() {
   try {
-    const res = await fetch(TICKER_URL, { headers: { "User-Agent": "transcendence" } });
+    const res = await fetch(TICKER_URL);
     if (!res.ok) return null;
     const ticker = await res.json();
     return Number(ticker.price);
@@ -79,40 +63,30 @@ async function fetchBtcPrice() {
   }
 }
 
-// Fetch `count` one-minute BTC/USD candles from Coinbase, oldest first.
-// We "replay" these during a match: one candle per tick. Because each candle is
-// one whole minute of real market history, the price moves far more than the
-// live spot price would in a short match, and both players see the exact same
-// sequence. Returns [] on failure (the match then falls back to the live price).
 async function fetchCandles(count) {
   try {
-    // granularity=60 means 1-minute candles.
-    const res = await fetch(`${CANDLES_URL}?granularity=60`, {
+    const res = await fetch(`${CANDLES_URL}?granularity=60`, { // 1 min candle
       headers: { "User-Agent": "transcendence" },
     });
     if (!res.ok) return [];
-    // Coinbase returns rows as [time, low, high, open, close, volume], newest first.
     const rows = await res.json();
     return rows
       .sort((a, b) => a[0] - b[0]) // put oldest first
-      .slice(-count) // keep the most recent `count` candles
+      .slice(-count) // CB always give 350 data so we only want our amount
       .map(([time, low, high, open, close]) => ({ time, open, high, low, close }));
   } catch {
     return [];
   }
 }
 
-// The name of the Socket.IO "room" for a match. Both players join this room so
-// we can send messages to both of them at once.
+
 function roomName(matchId) {
   return "match:" + matchId;
 }
 
-// ============================================================================
-// Saving to the database (all writes use the service-role client)
-// ============================================================================
+// DB stuff
 
-// Save a player's current money + position back to match_players.
+// Save a player's position and etc
 async function savePlayer(matchId, userId, player) {
   await supabase
     .from("match_players")
@@ -127,7 +101,7 @@ async function savePlayer(matchId, userId, player) {
     .eq("user_id", userId);
 }
 
-// Add one row to the trades log.
+// Add the trades
 async function saveTrade(matchId, userId, side, amount, price, result, candleSequence) {
   await supabase.from("trades").insert({
     match_id: matchId,
@@ -142,13 +116,12 @@ async function saveTrade(matchId, userId, side, amount, price, result, candleSeq
   });
 }
 
-// Add one row to match_candles for a candle we replayed (saved for history).
+// ADd cancle to db
 async function saveCandle(matchId, sequence, candle) {
   await supabase.from("match_candles").insert({
     match_id: matchId,
-    sequence: sequence,
-    // Use the candle's real time if we have it, otherwise "now".
-    open_time: candle.time ? new Date(candle.time * 1000).toISOString() : new Date().toISOString(),
+    sequence: sequence, // count of the candle
+    open_time: candle.time ? new Date(candle.time * 1000).toISOString() : new Date().toISOString(), // use time if not now
     open: candle.open,
     high: candle.high,
     low: candle.low,
@@ -156,17 +129,12 @@ async function saveCandle(matchId, sequence, candle) {
   });
 }
 
-// ============================================================================
-// Building and running a live match
-// ============================================================================
 
-// Load (or create) the two match_players rows and return them as a simple map:
-//   { [userId]: { availableBalance, realizedPnl, side, notional, avgEntry } }
+ // Maych stuff
 async function loadPlayers(matchRow) {
   const participants = [matchRow.player_one_user_id, matchRow.player_two_user_id];
   const startingCapital = Number(matchRow.starting_capital);
 
-  // What a brand-new player looks like: all their money is free, no position.
   function freshPlayer() {
     return {
       availableBalance: round2(startingCapital),
@@ -177,8 +145,8 @@ async function loadPlayers(matchRow) {
     };
   }
 
-  // Read any rows that already exist (in case the server restarted mid-match).
-  const { data: existingRows } = await supabase
+  // getting the existing players from the db if they exist
+  const { data: existingRows } = await supabase // supabase returns data so we rename it to existingRows
     .from("match_players")
     .select("user_id, available_balance, realized_pnl, current_side, position_notional_usdt, average_entry_price")
     .eq("match_id", matchRow.id);
@@ -193,8 +161,7 @@ async function loadPlayers(matchRow) {
   for (const userId of participants) {
     const existing = existingByUser[userId];
 
-    if (existing) {
-      // Use the saved numbers.
+    if (existing) { // existing player load from db
       players[userId] = {
         availableBalance: Number(existing.available_balance),
         realizedPnl: Number(existing.realized_pnl),
@@ -202,8 +169,7 @@ async function loadPlayers(matchRow) {
         notional: Number(existing.position_notional_usdt),
         avgEntry: existing.average_entry_price === null ? null : Number(existing.average_entry_price),
       };
-    } else {
-      // First time: create a fresh player and save it.
+    } else { // new player create fresh
       const player = freshPlayer();
       players[userId] = player;
       await supabase.from("match_players").insert({
