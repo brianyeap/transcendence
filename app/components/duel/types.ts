@@ -1,7 +1,6 @@
 export type IconName =
   | "bolt"
   | "chevR"
-  | "flame"
   | "games"
   | "history"
   | "logout"
@@ -11,7 +10,6 @@ export type IconName =
   | "settings"
   | "trash"
   | "users"
-  | "x"
   | "trophy";
 
 export type Room = {
@@ -24,7 +22,6 @@ export type Room = {
   duration: number;
   capital: number;
   symbol: string;
-  hot?: boolean;
   ownedByCurrentUser?: boolean;
 };
 
