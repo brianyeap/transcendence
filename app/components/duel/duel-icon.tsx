@@ -1,7 +1,6 @@
 import {
   Bolt,
   ChevronRight,
-  Flame,
   Gamepad2,
   History,
   LogOut,
@@ -12,7 +11,6 @@ import {
   Trophy,
   User,
   Users,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import type { IconName } from "./types";
@@ -21,7 +19,6 @@ import type { IconName } from "./types";
 const icons: Record<IconName, LucideIcon> = {
   bolt: Bolt,
   chevR: ChevronRight,
-  flame: Flame,
   games: Gamepad2,
   history: History,
   logout: LogOut,
@@ -31,7 +28,6 @@ const icons: Record<IconName, LucideIcon> = {
   settings: Settings,
   trash: Trash2,
   users: Users,
-  x: X,
   trophy: Trophy,
 };
 
