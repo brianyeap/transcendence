@@ -4,7 +4,6 @@ const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
 // All matches are 1 minute (60 seconds) for now.
 const ALLOWED_DURATION = new Set([60]);
 const DEFAULT_DURATION = 60;
-const DEFAULT_SYMBOL = "BTCUSDT";
 // Longest room name we accept, so one player can't stretch the lobby card.
 const MAX_NAME_LENGTH = 40;
 
