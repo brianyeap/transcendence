@@ -3,10 +3,10 @@ import { Avatar } from "../components/duel/avatar";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Sword, TrendingUp, Layers } from "lucide-react";
+import { profile } from "console";
 
 
-function getRiskRating(wins:number, losses:number): string
-{
+function getRiskRating(wins: number, losses: number): string {
 	if (wins > losses)
 		return "Pro";
 	if (wins === losses)
@@ -14,8 +14,7 @@ function getRiskRating(wins:number, losses:number): string
 	return "Beginner";
 }
 
-function getRiskRatingColor(rating: string): string
-{
+function getRiskRatingColor(rating: string): string {
 	if (rating === "Pro")
 		return "text-emerald-400";
 	if (rating === "Amateur")
@@ -23,8 +22,7 @@ function getRiskRatingColor(rating: string): string
 	return "text-rose-400";
 }
 
-export default async function ProfilePage()
-{
+export default async function ProfilePage() {
 	const supabase = await createSupabaseServerClient();
 	// Create Connection to SubaBase. 
 	// Benefits- Code is running on Next.js server, not Browser.
@@ -33,18 +31,58 @@ export default async function ProfilePage()
 	const { data: { user } } = await supabase.auth.getUser();
 	// Checks cookies for user logged in.
 
-	if (!user)
-	{
+	if (!user) {
 		redirect("/login");
 	}
 
+	const { data: matches, error } = await supabase
+		.from("matches")
+		.select(`
+		winner_user_id,
+		player_one_user_id,
+		player_two_user_id,
+		status
+	`)
+		.or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
+		.eq("status", "completed");
+
+	console.log("Matches:", matches);
+	console.log("Error:", error);
+
+	let wins = 0;
+	let losses = 0;
+	let draws = 0;
+
+	for (const match of matches ?? []) {
+		if (!match.winner_user_id) {
+			draws++;
+		} else if (match.winner_user_id === user.id) {
+			wins++;
+		} else {
+			losses++;
+		}
+	}
+
+	const gamesPlayed = wins + losses + draws;
+
+	const winPercentage =
+		gamesPlayed === 0
+			? 0
+			: Number(((wins / gamesPlayed) * 100).toFixed(1));
+
+	const { data: profile } = await supabase
+		.from("profiles")
+		.select("username")
+		.eq("id", user.id)
+		.single();
+
 	const userStats = {
-		username: "Transcendance",
-		gamesPlayed: 12,
-		wins: 7,
-		losses: 4,
-		draws: 1,
-		winPercentage: 58.3,
+		username: profile?.username ?? "Unknown",
+		gamesPlayed,
+		wins,
+		losses,
+		draws,
+		winPercentage,
 	};
 
 	const riskRating = getRiskRating(userStats.wins, userStats.losses);
