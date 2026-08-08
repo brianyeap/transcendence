@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+._*
+.DS_Store
+
+# socket dependansies
+/socket/node_modules

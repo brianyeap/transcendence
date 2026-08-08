@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 
 // Every Match is one minute for now. Kept as a named constant so the fixed rule
@@ -20,7 +21,9 @@ interface Props {
 }
 
 export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
+    const router = useRouter() // used to send the creator into their new room
     const backdropRef = useRef<HTMLDivElement>(null)
+    const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -28,6 +31,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
     const handleClose = useCallback(() => {
         setIsCreating(false)
         setError(null)
+        setName('') // start fresh next time the modal opens
         onClose()
     }, [onClose])
 
@@ -59,6 +63,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    name,
                     startingCapital: capital,
                     durationSeconds: MATCH_DURATION_SECONDS,
                 }),
@@ -76,6 +81,9 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
             }
 
             handleClose()
+            // The creator is player one — send them straight into their room to
+            // wait for an opponent (this is where the match screen lives).
+            router.push(`/matches/${result.room.id}`)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Could not create room.")
             setIsCreating(false)
@@ -104,6 +112,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                     <label htmlFor="room-name" className="text-[13px] font-semibold text-[#9aa6b6]">Room Name</label>
                     <input
                         type="text" id="room-name" name="room-name" disabled={isCreating}
+                        value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
                         placeholder="eg: Chicken Rice"
                         className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/50 disabled:opacity-50"
                     />
