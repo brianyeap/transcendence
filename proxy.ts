@@ -22,16 +22,16 @@ export async function proxy(request: NextRequest) {
           });
 
           cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
+            response.cookies.set(name, value, options);               //copy refreshed cookies onto `response`
           });
         },
       },
     }
   );
 
-  await supabase.auth.getUser();
+  await supabase.auth.getUser(); // result thrown away, but this will refresh the cookie
 
-  return response;
+  return response; // ← always NextResponse.next()
 }
 
 export const config = {
