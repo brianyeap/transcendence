@@ -5,25 +5,22 @@ import { TrendingUp, TrendingDown, Clock, ArrowLeft, Swords } from "lucide-react
 import Link from "next/link";
 
 // --- Helper Functions ---
-function formatMoney(value: number): string
-{
+function formatMoney(value: number): string {
 	const sign = value > 0 ? "+" : "";
 	return `${sign}$${Math.abs(value).toLocaleString(undefined, {
-	minimumFractionDigits: 2,
-	maximumFractionDigits: 2,
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
 	})}`;
 }
 
-function formatDuration(starts_at: string, ends_at: string): string
-{
+function formatDuration(starts_at: string, ends_at: string): string {
 	const seconds = Math.round((new Date(ends_at).getTime() - new Date(starts_at).getTime()) / 1000);
 	const minutes = Math.floor(seconds / 60);
 	const remainingSeconds = seconds % 60;
 	return `${minutes}m ${remainingSeconds}s`;
 }
 
-function formatDateTime(dateString: string): string
-{
+function formatDateTime(dateString: string): string {
 	return new Date(dateString).toLocaleDateString("en-GB", {
 		day: "numeric",
 		month: "short",
@@ -33,8 +30,7 @@ function formatDateTime(dateString: string): string
 	});
 }
 
-function getPnLColor(value: number): string
-{
+function getPnLColor(value: number): string {
 	if (value > 0)
 		return "text-emerald-400";
 	if (value < 0)
@@ -52,8 +48,7 @@ export default async function MatchDetailPage({
 	const supabase = await createSupabaseServerClient();
 	const { data: { user } } = await supabase.auth.getUser();
 
-	if (!user)
-	{
+	if (!user) {
 		redirect("/login");
 	}
 
@@ -137,23 +132,23 @@ export default async function MatchDetailPage({
 		? playersList.find((p) => p.user_id === playerTwoId)
 		: playersList.find((p) => p.user_id === playerOneId))
 		?? {
-			user_id: playerOneId || user.id,
-			username: playerOneId ? (usernameMap.get(playerOneId) ?? "Unknown") : (usernameMap.get(user.id) ?? "You"),
-			final_capital: Number(matchData.starting_capital),
-			realized_pnl: 0,
-			is_current_user: playerOneId === user.id,
-		};
+		user_id: playerOneId || user.id,
+		username: playerOneId ? (usernameMap.get(playerOneId) ?? "Unknown") : (usernameMap.get(user.id) ?? "You"),
+		final_capital: Number(matchData.starting_capital),
+		realized_pnl: 0,
+		is_current_user: playerOneId === user.id,
+	};
 
 	const opponent = (isUserPlayerTwo
 		? playersList.find((p) => p.user_id === playerOneId)
 		: playersList.find((p) => p.user_id === playerTwoId))
 		?? {
-			user_id: playerTwoId || "none",
-			username: playerTwoId ? (usernameMap.get(playerTwoId) ?? "Unknown") : "No Opponent",
-			final_capital: Number(matchData.starting_capital),
-			realized_pnl: 0,
-			is_current_user: playerTwoId === user.id,
-		};
+		user_id: playerTwoId || "none",
+		username: playerTwoId ? (usernameMap.get(playerTwoId) ?? "Unknown") : "No Opponent",
+		final_capital: Number(matchData.starting_capital),
+		realized_pnl: 0,
+		is_current_user: playerTwoId === user.id,
+	};
 
 	// Construct the trades list
 	const trades = (tradesData ?? []).map((t) => ({
@@ -393,21 +388,19 @@ export default async function MatchDetailPage({
 				</Link>
 
 				{/* MATCH RESULT HERO BANNER */}
-				<div className={`rounded-[10px] border p-6 mb-6 ${
-					result === "WIN"
-						? "border-emerald-500/30 bg-emerald-500/5"
-						: result === "LOSS"
+				<div className={`rounded-[10px] border p-6 mb-6 ${result === "WIN"
+					? "border-emerald-500/30 bg-emerald-500/5"
+					: result === "LOSS"
 						? "border-rose-500/30 bg-rose-500/5"
 						: "border-gray-500/30 bg-gray-500/5"
-				}`}>
+					}`}>
 					<div className="flex items-center justify-between flex-wrap gap-4">
 
 						{/* Result label */}
 						<div>
-							<div className={`text-3xl font-bold mb-1 ${
-								result === "WIN" ? "text-emerald-400" :
+							<div className={`text-3xl font-bold mb-1 ${result === "WIN" ? "text-emerald-400" :
 								result === "LOSS" ? "text-rose-400" : "text-gray-400"
-							}`}>
+								}`}>
 								{result === "WIN" ? "Victory" : result === "LOSS" ? "Defeat" : "Draw"}
 							</div>
 							<div className="text-sm text-[#5d6877]">
@@ -450,9 +443,9 @@ export default async function MatchDetailPage({
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex item-center gap-1 mb-1">
-								<Clock className="w-3 h-3" /> Start Time
+									<Clock className="w-3 h-3" /> Start Time
 								</div>
-									<div className="text-sm font-semibold">{formatDateTime(match.starts_at)}</div>
+								<div className="text-sm font-semibold">{formatDateTime(match.starts_at)}</div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
@@ -462,7 +455,7 @@ export default async function MatchDetailPage({
 								<div className="text-sm font-semibold">{formatDateTime(match.ends_at)}</div>
 							</div>
 
-							  <div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
+							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">Duration</div>
 								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at)}</div>
 							</div>
@@ -494,7 +487,7 @@ export default async function MatchDetailPage({
 										<TrendingUp className="w-8 h-8 text-[#5d6877] mx-auto mb-2 opacity-40" />
 										<p className="text-sm text-[#5d6877]">No candle data available for this match</p>
 										<p className="text-[10px] text-[#5d6877] mt-1 opacity-60">
-											match_id: {match.id.slice(0, 8)}...
+											match_id: {match.id}...
 										</p>
 									</div>
 								</div>
@@ -502,57 +495,56 @@ export default async function MatchDetailPage({
 						</div>
 					</div>
 
-						{/* TRADE TABLE */}
-						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] overflow-hidden">
-							<div className="px-4 py-3 border-b border-white/[.05] flex item-center gap-2">
-								<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
-								<span className="text-sm font-semibold"> Trade Log</span>
-								<span className="text-[10px] text-[#5d6877]  ml-auto">{match.trades.length} trades</span>
-							</div>
-							<div className="grid grid-cols-5 px-4 py-2 border-b border-white/[.04]">
-								{["Player", "Side", "Amount", "Price", "Time"].map((col) => (
-									<div key={col} className="text-[10px] uppercase tracking-wide text-[#5d6877]">
-										{col}
-									</div>
-								))}
-							</div>
-							<div className="divide-y divide-white/[.03]">
-								{match.trades.map((trade) => (
-									<div key={trade.id} className="grid grid-cols-5 px-4 py-3 hover:bg-white/[.02] transition-colors">
-										<div className="text-sm font-semibold truncate">
-											{trade.username}
-											{trade.user_id === user?.id && (
-												<span className="ml-1.5 text-[9px] text-[#4d86ff] border border-[#4d86ff]/30 rounded px-1 py-0.5">
-													you
-												</span>
-											)}
-										</div>
-										<div className="flex items-center gap-1">
-											{trade.side === "long" ? (
-												<TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-											) : (
-												<TrendingDown className="w-3.5 h-3.5 text-rose-400" />
-											)}
-											<span className={`text-sm font-semibold capitalize ${
-												trade.side === "long" ? "text-emerald-400" : "text-rose-400"
-											}`}>
-												{trade.side}
-											</span>
-										</div>
-										<div className="text-sm font-mono">
-											${trade.amount_usdt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-										</div>
-										<div className="text-[11px] text-[#5d6877]">
-											{new Date(trade.executed_at).toLocaleTimeString("en-GB", {
-												hour: "2-digit",
-												minute: "2-digit",
-												second: "2-digit",
-											})}
-										</div>
-									</div>
-								))}
-							</div>
+					{/* TRADE TABLE */}
+					<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] overflow-hidden">
+						<div className="px-4 py-3 border-b border-white/[.05] flex item-center gap-2">
+							<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
+							<span className="text-sm font-semibold"> Trade Log</span>
+							<span className="text-[10px] text-[#5d6877]  ml-auto">{match.trades.length} trades</span>
 						</div>
+						<div className="grid grid-cols-5 px-4 py-2 border-b border-white/[.04]">
+							{["Player", "Side", "Amount", "Price", "Time"].map((col) => (
+								<div key={col} className="text-[10px] uppercase tracking-wide text-[#5d6877]">
+									{col}
+								</div>
+							))}
+						</div>
+						<div className="divide-y divide-white/[.03]">
+							{match.trades.map((trade) => (
+								<div key={trade.id} className="grid grid-cols-5 px-4 py-3 hover:bg-white/[.02] transition-colors">
+									<div className="text-sm font-semibold truncate">
+										{trade.username}
+										{trade.user_id === user?.id && (
+											<span className="ml-1.5 text-[9px] text-[#4d86ff] border border-[#4d86ff]/30 rounded px-1 py-0.5">
+												you
+											</span>
+										)}
+									</div>
+									<div className="flex items-center gap-1">
+										{trade.side === "long" ? (
+											<TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+										) : (
+											<TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+										)}
+										<span className={`text-sm font-semibold capitalize ${trade.side === "long" ? "text-emerald-400" : "text-rose-400"
+											}`}>
+											{trade.side}
+										</span>
+									</div>
+									<div className="text-sm font-mono">
+										${trade.amount_usdt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+									</div>
+									<div className="text-[11px] text-[#5d6877]">
+										{new Date(trade.executed_at).toLocaleTimeString("en-GB", {
+											hour: "2-digit",
+											minute: "2-digit",
+											second: "2-digit",
+										})}
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
 				</div>
 			</div>
 		</SideNav>
