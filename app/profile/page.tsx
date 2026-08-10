@@ -25,11 +25,52 @@ function getRiskRatingColor(rating: string): string {
 function getAchievements(wins: number) {
 	return [
 		{
+			id: "create_an_account",
+			name: "Funded & Ready",
+			description: "Make an account",
+			requirement: 0,
+			unlocked: wins >= 0,
+			icon: "🌱",
+		},
+		{
 			id: "first_5_wins",
-			name: "First Dominance",
+			name: "Greenhorn Trader",
 			description: "Win 5 matches",
+			requirement: 5,
 			unlocked: wins >= 5,
+			icon: "📈",
+		},
+		{
+			id: "first_10_wins",
+			name: "Market Competitor",
+			description: "Win 10 matches",
+			requirement: 10,
+			unlocked: wins >= 10,
+			icon: "🐋",
+		},
+		{
+			id: "first_50_wins",
+			name: "Whale Dominator",
+			description: "Win 50 matches",
+			requirement: 50,
+			unlocked: wins >= 50,
 			icon: "🏆",
+		},
+		{
+			id: "first_500_wins",
+			name: "Market Veteran",
+			description: "Win 500 matches",
+			requirement: 500,
+			unlocked: wins >= 500,
+			icon: "🏛️",
+		},
+		{
+			id: "first_1000_wins",
+			name: "Trading Champion",
+			description: "Win 1,000 matches",
+			requirement: 1000,
+			unlocked: wins >= 1000,
+			icon: "👑",
 		},
 	];
 }
@@ -238,7 +279,7 @@ export default async function ProfilePage() {
 										</span>
 									) : (
 										<span className="text-[#5d6877]">
-											{wins}/5 wins
+											{wins}/{achievement.requirement} wins
 										</span>
 									)}
 								</div>
