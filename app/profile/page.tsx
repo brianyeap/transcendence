@@ -49,12 +49,12 @@ function getAchievements(wins: number) {
 			icon: "🐋",
 		},
 		{
-			id: "first_50_wins",
-			name: "Whale Dominator",
-			description: "Win 50 matches",
-			requirement: 50,
-			unlocked: wins >= 50,
-			icon: "🏆",
+			id: "first_42_wins",
+			name: "42",
+			description: "The answer to everything",
+			requirement: 42,
+			unlocked: wins >= 42,
+			icon: "💻",
 		},
 		{
 			id: "first_500_wins",
