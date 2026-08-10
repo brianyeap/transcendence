@@ -83,6 +83,13 @@ export default async function MatchDetailPage({
 		.eq("match_id", matchId)
 		.order("executed_at", { ascending: true });
 
+	// Fetch match_candles from Supabase
+	const { data: candlesData } = await supabase
+		.from("match_candles")
+		.select("*")
+		.eq("match_id", matchId)
+		.order("sequence", { ascending: true });
+
 	// Fetch profiles for the player usernames
 	const userIds = [
 		matchData.player_one_user_id,
@@ -98,14 +105,55 @@ export default async function MatchDetailPage({
 		profilesData?.map((p) => [p.id, p.username]) ?? []
 	);
 
-	// Construct the players list
-	const players = (playersData ?? []).map((p) => ({
-		user_id: p.user_id,
-		username: usernameMap.get(p.user_id) ?? "Unknown",
-		final_capital: Number(p.final_capital ?? 0),
-		realized_pnl: Number(p.realized_pnl ?? 0),
-		is_current_user: p.user_id === user.id,
-	}));
+	// Construct the players list using matchData to ensure opponent is not lost due to RLS
+	const playerOneId = matchData.player_one_user_id;
+	const playerTwoId = matchData.player_two_user_id;
+
+	const playersList = [];
+	if (playerOneId) {
+		const pData = playersData?.find((p) => p.user_id === playerOneId);
+		playersList.push({
+			user_id: playerOneId,
+			username: usernameMap.get(playerOneId) ?? "Unknown",
+			final_capital: pData && pData.final_capital !== null ? Number(pData.final_capital) : Number(matchData.starting_capital),
+			realized_pnl: pData ? Number(pData.realized_pnl ?? 0) : 0,
+			is_current_user: playerOneId === user.id,
+		});
+	}
+	if (playerTwoId) {
+		const pData = playersData?.find((p) => p.user_id === playerTwoId);
+		playersList.push({
+			user_id: playerTwoId,
+			username: usernameMap.get(playerTwoId) ?? "Unknown",
+			final_capital: pData && pData.final_capital !== null ? Number(pData.final_capital) : Number(matchData.starting_capital),
+			realized_pnl: pData ? Number(pData.realized_pnl ?? 0) : 0,
+			is_current_user: playerTwoId === user.id,
+		});
+	}
+
+	const isUserPlayerTwo = playerTwoId === user.id;
+
+	const currentPlayer = (isUserPlayerTwo
+		? playersList.find((p) => p.user_id === playerTwoId)
+		: playersList.find((p) => p.user_id === playerOneId))
+		?? {
+			user_id: playerOneId || user.id,
+			username: playerOneId ? (usernameMap.get(playerOneId) ?? "Unknown") : (usernameMap.get(user.id) ?? "You"),
+			final_capital: Number(matchData.starting_capital),
+			realized_pnl: 0,
+			is_current_user: playerOneId === user.id,
+		};
+
+	const opponent = (isUserPlayerTwo
+		? playersList.find((p) => p.user_id === playerOneId)
+		: playersList.find((p) => p.user_id === playerTwoId))
+		?? {
+			user_id: playerTwoId || "none",
+			username: playerTwoId ? (usernameMap.get(playerTwoId) ?? "Unknown") : "No Opponent",
+			final_capital: Number(matchData.starting_capital),
+			realized_pnl: 0,
+			is_current_user: playerTwoId === user.id,
+		};
 
 	// Construct the trades list
 	const trades = (tradesData ?? []).map((t) => ({
@@ -119,6 +167,16 @@ export default async function MatchDetailPage({
 		candle_sequence: t.candle_sequence ?? 0,
 	}));
 
+	// Construct the candles list
+	const candles = (candlesData ?? []).map((c) => ({
+		sequence: Number(c.sequence),
+		open: Number(c.open),
+		high: Number(c.high),
+		low: Number(c.low),
+		close: Number(c.close),
+		open_time: c.open_time,
+	}));
+
 	const match = {
 		id: matchData.id,
 		symbol: matchData.symbol,
@@ -127,29 +185,199 @@ export default async function MatchDetailPage({
 		ends_at: matchData.ends_at,
 		final_price: Number(matchData.final_price ?? 0),
 		status: matchData.status,
-		players,
+		players: playersList,
 		trades,
-	};
-
-	const currentPlayer = match.players.find((p) => p.is_current_user) ?? {
-		user_id: user.id,
-		username: usernameMap.get(user.id) ?? "You",
-		final_capital: Number(match.starting_capital),
-		realized_pnl: 0,
-		is_current_user: true,
-	};
-
-	const opponent = match.players.find((p) => !p.is_current_user) ?? {
-		user_id: "none",
-		username: "No Opponent",
-		final_capital: Number(match.starting_capital),
-		realized_pnl: 0,
-		is_current_user: false,
+		candles,
 	};
 
 	const userWon = currentPlayer.realized_pnl > opponent.realized_pnl;
 	const isDraw = currentPlayer.realized_pnl === opponent.realized_pnl;
 	const result = isDraw ? "DRAW" : userWon ? "WIN" : "LOSS";
+
+	const hasCandles = candles.length > 0;
+	let chartSvg = null;
+
+	if (hasCandles) {
+		const sequences = candles.map((c) => c.sequence);
+		const minSequence = Math.min(...sequences, 0);
+		const maxSequence = Math.max(...sequences, 1);
+
+		const tradePrices = trades.map((t) => t.execution_price);
+		const allPrices = [
+			...candles.map((c) => c.low),
+			...candles.map((c) => c.high),
+			...tradePrices,
+		];
+		const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+		const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
+
+		const priceRange = maxPrice - minPrice || 1;
+		const padPriceMin = minPrice - priceRange * 0.1;
+		const padPriceMax = maxPrice + priceRange * 0.1;
+		const paddedRange = padPriceMax - padPriceMin;
+
+		const svgWidth = 1000;
+		const svgHeight = 320;
+		const padLeft = 70;
+		const padRight = 30;
+		const padTop = 30;
+		const padBottom = 30;
+
+		const chartWidth = svgWidth - padLeft - padRight;
+		const chartHeight = svgHeight - padTop - padBottom;
+
+		const getX = (seq: number) => {
+			const totalSteps = maxSequence - minSequence || 1;
+			return padLeft + ((seq - minSequence) / totalSteps) * chartWidth;
+		};
+
+		const getY = (price: number) => {
+			return padTop + (1 - (price - padPriceMin) / paddedRange) * chartHeight;
+		};
+
+		const gridCount = 5;
+		const gridLines = Array.from({ length: gridCount }).map((_, i) => {
+			const price = padPriceMin + (i / (gridCount - 1)) * paddedRange;
+			const y = getY(price);
+			return { price, y };
+		});
+
+		const candleWidth = Math.max(1.5, (chartWidth / (candles.length || 1)) * 0.6);
+
+		chartSvg = (
+			<div className="relative w-full overflow-x-auto">
+				<svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full min-w-[700px] h-80" preserveAspectRatio="none">
+					{/* Legend */}
+					<g transform="translate(80, 15)">
+						{/* Legend item 1: You Long */}
+						<path d="M 0 -4 L -4 2 L 4 2 Z" fill="#10b981" stroke="#ffffff" strokeWidth="1" />
+						<text x="8" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">You Long</text>
+
+						{/* Legend item 2: You Short */}
+						<path transform="translate(75, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="#ef4444" stroke="#ffffff" strokeWidth="1" />
+						<text x="83" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">You Short</text>
+
+						{/* Legend item 3: Opponent Long */}
+						<path transform="translate(155, 0)" d="M 0 -4 L -4 2 L 4 2 Z" fill="none" stroke="#34d399" strokeWidth="1.5" />
+						<text x="163" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">Opponent Long</text>
+
+						{/* Legend item 4: Opponent Short */}
+						<path transform="translate(255, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="none" stroke="#f87171" strokeWidth="1.5" />
+						<text x="263" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">Opponent Short</text>
+					</g>
+
+					{/* Grid lines */}
+					{gridLines.map((line, i) => (
+						<g key={i}>
+							<line
+								x1={padLeft}
+								y1={line.y}
+								x2={svgWidth - padRight}
+								y2={line.y}
+								stroke="#ffffff"
+								strokeOpacity="0.08"
+								strokeDasharray="3 3"
+							/>
+							<text
+								x={padLeft - 8}
+								y={line.y + 4}
+								fill="#5d6877"
+								fontSize="10"
+								fontFamily="monospace"
+								textAnchor="end"
+							>
+								${line.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+							</text>
+						</g>
+					))}
+
+					{/* Candlesticks */}
+					{candles.map((c) => {
+						const cx = getX(c.sequence);
+						const cyOpen = getY(c.open);
+						const cyClose = getY(c.close);
+						const cyHigh = getY(c.high);
+						const cyLow = getY(c.low);
+						const isGreen = c.close >= c.open;
+						const color = isGreen ? "#10b981" : "#ef4444";
+
+						return (
+							<g key={c.sequence}>
+								{/* Wick */}
+								<line
+									x1={cx}
+									y1={cyHigh}
+									x2={cx}
+									y2={cyLow}
+									stroke={color}
+									strokeWidth="1.5"
+								/>
+								{/* Body */}
+								<rect
+									x={cx - candleWidth / 2}
+									y={Math.min(cyOpen, cyClose)}
+									width={candleWidth}
+									height={Math.max(1.2, Math.abs(cyOpen - cyClose))}
+									fill={color}
+								/>
+							</g>
+						);
+					})}
+
+					{/* Trade markers */}
+					{trades.map((trade) => {
+						const tx = getX(trade.candle_sequence);
+						const ty = getY(trade.execution_price);
+						const isCurrentUser = trade.user_id === user.id;
+						const isLong = trade.side === "long";
+
+						// Draw path
+						let markerPath = "";
+						let markerFill = "";
+						let markerStroke = "";
+						let markerStrokeWidth = "1.5";
+
+						if (isCurrentUser) {
+							markerFill = isLong ? "#10b981" : "#ef4444";
+							markerStroke = "#ffffff";
+							// Triangle pointing up for Long, down for Short
+							markerPath = isLong
+								? `M ${tx} ${ty - 7} L ${tx - 6} ${ty + 3} L ${tx + 6} ${ty + 3} Z`
+								: `M ${tx} ${ty + 7} L ${tx - 6} ${ty - 3} L ${tx + 6} ${ty - 3} Z`;
+						} else {
+							markerFill = "none";
+							markerStroke = isLong ? "#34d399" : "#f87171";
+							markerStrokeWidth = "2";
+							markerPath = isLong
+								? `M ${tx} ${ty - 7} L ${tx - 6} ${ty + 3} L ${tx + 6} ${ty + 3} Z`
+								: `M ${tx} ${ty + 7} L ${tx - 6} ${ty - 3} L ${tx + 6} ${ty - 3} Z`;
+						}
+
+						return (
+							<g key={trade.id}>
+								{/* Pulse/Glow behind the trade */}
+								<circle
+									cx={tx}
+									cy={ty}
+									r="9"
+									fill={isLong ? "#10b981" : "#ef4444"}
+									fillOpacity="0.1"
+								/>
+								<path
+									d={markerPath}
+									fill={markerFill}
+									stroke={markerStroke}
+									strokeWidth={markerStrokeWidth}
+								>
+									<title>{`${trade.username}: ${trade.side.toUpperCase()} ${trade.amount_usdt.toLocaleString(undefined, { maximumFractionDigits: 0 })} USDT @ $${trade.execution_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}</title>
+								</path>
+							</g>
+						);
+					})}
+				</svg>
+			</div>
+		);
+	}
 
 	return (
 		<SideNav user={user?.email ?? "Unknown"}>
@@ -247,26 +475,32 @@ export default async function MatchDetailPage({
 							</div>
 						</div>
 
-						{/* CHART PLACEHOLDER */}
-						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6">
-								<div className="flex items-center gap-2 mb-4">
-									<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
-									<span className="text-sm font-semibold">Match Chart</span>
-									<span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0..5 ml-auto">
-										Coming soon - requires match_candles data from backend
+						{/* CHART */}
+						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6 w-full">
+							<div className="flex items-center gap-2 mb-4">
+								<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
+								<span className="text-sm font-semibold">Match Chart</span>
+								{hasCandles && (
+									<span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0.5 ml-auto">
+										{candles.length} intervals · {match.symbol}
 									</span>
-								</div>
+								)}
+							</div>
+							{hasCandles ? (
+								chartSvg
+							) : (
 								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex items-center justify-center">
 									<div className="text-center">
 										<TrendingUp className="w-8 h-8 text-[#5d6877] mx-auto mb-2 opacity-40" />
-										<p className="text-sm text-[#5d6877]">Chart will render here</p>
+										<p className="text-sm text-[#5d6877]">No candle data available for this match</p>
 										<p className="text-[10px] text-[#5d6877] mt-1 opacity-60">
-											match_candles table · match_id: {match.id.slice(0, 8)}...
+											match_id: {match.id.slice(0, 8)}...
 										</p>
 									</div>
 								</div>
-							</div>
+							)}
 						</div>
+					</div>
 
 						{/* TRADE TABLE */}
 						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] overflow-hidden">
