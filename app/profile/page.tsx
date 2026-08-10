@@ -22,6 +22,18 @@ function getRiskRatingColor(rating: string): string {
 	return "text-rose-400";
 }
 
+function getAchievements(wins: number) {
+	return [
+		{
+			id: "first_5_wins",
+			name: "First Dominance",
+			description: "Win 5 matches",
+			unlocked: wins >= 5,
+			icon: "🏆",
+		},
+	];
+}
+
 export default async function ProfilePage() {
 	const supabase = await createSupabaseServerClient();
 	// Create Connection to SubaBase. 
@@ -69,6 +81,8 @@ export default async function ProfilePage() {
 		gamesPlayed === 0
 			? 0
 			: Number(((wins / gamesPlayed) * 100).toFixed(1));
+
+	const achievements = getAchievements(wins);
 
 	const { data: profile } = await supabase
 		.from("profiles")
@@ -130,7 +144,52 @@ export default async function ProfilePage() {
 						>
 						</div>
 					</div>
+					{/* Achievements */}
+					<div className="mt-8 rounded-[10px] border border-white/[.10] bg-[#0f131b] p-5">
+						<div className="text uppercase tracking-wide text-[#5d6877] mb-4">
+							Achievements
+						</div>
 
+						<div className="grid grid-cols-2 gap-4">
+							{achievements.map((achievement) => (
+								<div
+									key={achievement.id}
+									className={`rounded-[7px] border p-4 ${achievement.unlocked
+										? "border-emerald-500/30 bg-emerald-500/[.05]"
+										: "border-white/[.07] bg-white/[.02] opacity-40"
+										}`}
+								>
+									<div className="flex items-center gap-3">
+										<div className="text-2xl">
+											{achievement.icon}
+										</div>
+
+										<div>
+											<div className="font-semibold">
+												{achievement.name}
+											</div>
+
+											<div className="text-sm text-[#5d6877]">
+												{achievement.description}
+											</div>
+										</div>
+									</div>
+
+									<div className="mt-3 text-xs">
+										{achievement.unlocked ? (
+											<span className="text-emerald-400">
+												Unlocked
+											</span>
+										) : (
+											<span className="text-[#5d6877]">
+												{wins}/5 wins
+											</span>
+										)}
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
 					{/* Legend
 					<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
 						<div className="flex items-center gap-1.5">
