@@ -27,7 +27,7 @@ function getAchievements(wins: number) {
 		{
 			id: "create_an_account",
 			name: "Funded & Ready",
-			description: "Make an account",
+			description: "Register an account",
 			requirement: 0,
 			unlocked: wins >= 0,
 			icon: "🌱",
