@@ -144,52 +144,6 @@ export default async function ProfilePage() {
 						>
 						</div>
 					</div>
-					{/* Achievements */}
-					<div className="mt-8 rounded-[10px] border border-white/[.10] bg-[#0f131b] p-5">
-						<div className="text uppercase tracking-wide text-[#5d6877] mb-4">
-							Achievements
-						</div>
-
-						<div className="grid grid-cols-2 gap-4">
-							{achievements.map((achievement) => (
-								<div
-									key={achievement.id}
-									className={`rounded-[7px] border p-4 ${achievement.unlocked
-										? "border-emerald-500/30 bg-emerald-500/[.05]"
-										: "border-white/[.07] bg-white/[.02] opacity-40"
-										}`}
-								>
-									<div className="flex items-center gap-3">
-										<div className="text-2xl">
-											{achievement.icon}
-										</div>
-
-										<div>
-											<div className="font-semibold">
-												{achievement.name}
-											</div>
-
-											<div className="text-sm text-[#5d6877]">
-												{achievement.description}
-											</div>
-										</div>
-									</div>
-
-									<div className="mt-3 text-xs">
-										{achievement.unlocked ? (
-											<span className="text-emerald-400">
-												Unlocked
-											</span>
-										) : (
-											<span className="text-[#5d6877]">
-												{wins}/5 wins
-											</span>
-										)}
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
 					{/* Legend
 					<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
 						<div className="flex items-center gap-1.5">
@@ -244,6 +198,52 @@ export default async function ProfilePage() {
 							<div className="text-[14px] text-[#5d6877] italic mt-0.5">Equilibrium Cores</div>
 							<div className="text-xl font-semibold mt-1 text-gray-500">{userStats.draws}</div>
 						</div>
+					</div>
+				</div>
+				{/* Achievements */}
+				<div className="mt-8 rounded-[10px] border border-white/[.10] bg-[#0f131b] p-5">
+					<div className="text uppercase tracking-wide text-[#5d6877] mb-4">
+						Achievements
+					</div>
+
+					<div className="grid grid-cols-2 gap-4">
+						{achievements.map((achievement) => (
+							<div
+								key={achievement.id}
+								className={`rounded-[7px] border p-4 ${achievement.unlocked
+									? "border-emerald-500/30 bg-emerald-500/[.05]"
+									: "border-white/[.07] bg-white/[.02] opacity-40"
+									}`}
+							>
+								<div className="flex items-center gap-3">
+									<div className="text-2xl">
+										{achievement.icon}
+									</div>
+
+									<div>
+										<div className="font-semibold">
+											{achievement.name}
+										</div>
+
+										<div className="text-sm text-[#5d6877]">
+											{achievement.description}
+										</div>
+									</div>
+								</div>
+
+								<div className="mt-3 text-xs">
+									{achievement.unlocked ? (
+										<span className="text-emerald-400">
+											Unlocked
+										</span>
+									) : (
+										<span className="text-[#5d6877]">
+											{wins}/5 wins
+										</span>
+									)}
+								</div>
+							</div>
+						))}
 					</div>
 				</div>
 			</div>
