@@ -10,7 +10,8 @@ export type IconName =
   | "refresh"
   | "settings"
   | "users"
-  | "x";
+  | "x"
+  | "trophy";
 
 export type Room = {
   id: string;
