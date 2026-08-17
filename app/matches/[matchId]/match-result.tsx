@@ -28,8 +28,31 @@ export function MatchResult({
 	return (
 		<div>
 			<p>Final Result</p>
+			<MatchResultCard
+				result={result}
+				match={match}
+				viewerUserId={viewerUserId}
+				headingLevel={1}
+			/>
 		</div>
 	);
+}
+
+function deriveResult(
+	match: Match,
+	player: PlayerState | null,
+	price: number | null,
+	viewerUserId: string | null
+): MatchResultData | null {
+	if (player === null || viewerUserId === null)
+		return null;
+
+	return {
+		finalPrice: price,
+		winnerUserId: deriveWinner(match, player, viewerUserId),
+		yourFinalCapital: player.capital,
+		opponentFinalCapital: player.opponentCapital
+	};
 }
 
 const UNKNOWN_OPPONENT_ID = "unknown-opponent";
