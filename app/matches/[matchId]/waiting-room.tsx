@@ -36,7 +36,7 @@ export function WaitingRoom({
 
 			<div>
 				<Link href="/">
-					<ArrowLeft className="size-4" aria-hidden />
+					<ArrowLeft className="size-4" />
 					Return to Lobby
 				</Link>
 				<p>
