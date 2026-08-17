@@ -14,6 +14,25 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function loginWithGoogle() {
+    setError("");
+    setLoading(true);
+
+    const supabase = createSupabaseBrowserClient();
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -157,7 +176,43 @@ export default function LoginPage() {
           <button type="submit" disabled={loading} className="flex h-[50px] w-full items-center justify-center rounded-[7px] bg-[#4d86ff] text-[15px] font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 active:translate-y-px disabled:opacity-60">
             {loading ? "Loading..." : mode === "login" ? "Log in" : "Create account"}
           </button>
+          {/* google login */}
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/[.07]" />
+            <span className="text-xs text-[#5d6877]">OR</span>
+            <div className="h-px flex-1 bg-white/[.07]" />
+          </div>
 
+          <button
+            type="button"
+            onClick={loginWithGoogle}
+            disabled={loading}
+            className="flex h-[50px] w-full items-center justify-center gap-3 rounded-[7px] border border-white/[.07] bg-[#151b25] text-[15px] font-semibold text-[#eef2f8] transition hover:bg-[#1b222e] disabled:opacity-60"
+          >
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M21.35 12.23c0-.79-.07-1.55-.2-2.28H12v4.31h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.42Z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 21.6c2.63 0 4.84-.87 6.45-2.35l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.7-1.72-5.47-4.03H3.29v2.53A9.74 9.74 0 0 0 12 21.6Z"
+              />
+              <path
+                fill="currentColor"
+                d="M6.53 13.7a5.85 5.85 0 0 1 0-3.4V7.77H3.29a9.75 9.75 0 0 0 0 8.46l3.24-2.53Z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 6.27c1.43 0 2.72.49 3.74 1.46l2.8-2.8C16.83 3.39 14.62 2.4 12 2.4a9.74 9.74 0 0 0-8.71 5.37l3.24 2.53C7.3 7.99 9.46 6.27 12 6.27Z"
+              />
+            </svg>
+
+            Continue with Google
+          </button>
           <p className="mt-5 text-center text-[13.5px] text-[#9aa6b6]">
             {mode === "login" ? "New here? " : "Already have an account? "}
             <button type="button" onClick={() => setMode(mode === "login" ? "register" : "login")} className="font-semibold text-[#4d86ff]">
