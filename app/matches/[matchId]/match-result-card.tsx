@@ -2,10 +2,9 @@
 
 import type React from 'react';
 import type { Match, PlayerRef } from '@/lib/match/types';
-import { ArrowLeft, Trophy, CircleX, Equal, ScrollText } from 'lucide-react';
+import { ArrowLeft, Trophy, CircleX, Equal } from 'lucide-react';
 import Link from 'next/link';
 import { fmtUSD } from '@/app/components/duel/format';
-import { copyFile } from 'fs';
 
 type Outcome = 'win' | 'loss' | 'draw';
 
@@ -82,7 +81,7 @@ export function MatchResultCard({
       <div>
         <Link href={`/history/${match.id}`}>View match summary</Link>
         <Link href="/">
-          <ArrowLeft />
+          <ArrowLeft aria-hidden />
           Back to games
         </Link>
       </div>
@@ -142,8 +141,8 @@ function OutcomeHeader({
 
   return (
     <div>
-      <span>
-        <Icon />
+      <span className={`${tone.chip} ${tone.text}`}>
+        <Icon aria-hidden />
         {copy.badge}
       </span>
       <Heading id={headingId} className={`${tone.text}`}>
@@ -180,7 +179,7 @@ function PlayerResult({
           {isViewer ? <span>You</span> : null}
           {isWinner ? (
             <span>
-              <Trophy />
+              <Trophy aria-hidden />
               Winner
             </span>
           ) : null}
@@ -192,13 +191,13 @@ function PlayerResult({
       <div>
         <p>Final Capital</p>
         <p>
-          <span>
+          <span aria-hidden>
             Net <span className={`${pnlTone(net)}`}>{signedUSD(net)}</span>
             {percent === null ? null : (
               <span className={`${pnlTone(net)}`}> ({signedPercent(percent)})</span>
             )}
           </span>
-          <span>{netSpeech(net, percent)}</span>
+          <span className="sr-only">{netSpeech(net, percent)}</span>
         </p>
       </div>
     </div>
@@ -220,8 +219,10 @@ function Settlement({
         <div>
           <p>Settlement price</p>
           <p>
-            <span>{finalPrice === null ? '-' : finalPrice.toFixed(2)}</span>
-            <span>{finalPrice === null ? 'Not available' : spokenPrice(finalPrice)}</span>
+            <span aria-hidden>{finalPrice === null ? '-' : finalPrice.toFixed(2)}</span>
+            <span className="sr-only">
+              {finalPrice === null ? 'Not available' : spokenPrice(finalPrice)}
+            </span>
           </p>
           <p>{symbol}</p>
         </div>
@@ -239,8 +240,8 @@ function Settlement({
           <>
             Any exposure still held when time ran out was offset automatically at{' '}
             <span>
-              <span>{finalPrice.toFixed(2)}</span>
-              <span>{spokenPrice(finalPrice)}</span>
+              <span aria-hidden>{finalPrice.toFixed(2)}</span>
+              <span className="sr-only">{spokenPrice(finalPrice)}</span>
             </span>
             , so every figure is banked. Nothing is still riding on the market.
           </>
@@ -273,7 +274,7 @@ function signedPercent(value: number) {
 
 function netSpeech(net: number, percent: number | null) {
   const share =
-    percent === null ? '' : `${Math.abs(percent).toFixed(2)} percent of the starting capital.`;
+    percent === null ? '' : `, ${Math.abs(percent).toFixed(2)} percent of the starting capital`;
   if (net === 0) return 'Net: level with the starting capital.';
   return net > 0
     ? `Net: up ${fmtUSD(net)}${share}.`
