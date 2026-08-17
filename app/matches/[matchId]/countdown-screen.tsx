@@ -23,7 +23,7 @@ export function CountdownScreen({match, viewerUserId, serverNow}: {
 				<h1>{match.symbol} opens in</h1>
 				<p>{starting ? "-" : remaining < BARE_SECONDS_UNDER ? remaining : fmtClock(remaining)}</p>
 				<p>{starting ? "The match is starting." : `The match starts in ${remaining} second${remaining === 1 ? "" : "s"}.`}</p>
-				<p>{starting ? "Starting" : "Get ready. The chart and your controls appear the moment it starts/"}</p>
+				<p>{starting ? "Starting" : "Get ready. The chart and your controls appear the moment it starts."}</p>
 			</div>
 			<div>
 				<PlayerSlot player={match.playerOne} viewerUserId={viewerUserId} />
