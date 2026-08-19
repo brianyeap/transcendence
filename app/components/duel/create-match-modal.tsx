@@ -1,12 +1,12 @@
 'use client'
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import type { Room } from "./types";
 
+// All matches are 1 minute for now, so this is the only option.
 const DURATION_OPTIONS = [
-    { label: '1 min', value: 60 },
-    { label: '2 min', value: 120 },
-    { label: '3 min', value: 180 }
+    { label: '1 min', value: 60 }
 ]
 
 const CAPITAL_OPTIONS = [
@@ -18,19 +18,24 @@ const CAPITAL_OPTIONS = [
 interface Props {
     isOpen: boolean
     onClose: () => void
+    onCreated?: (room: Room) => void
 }
 
-export function CreateMatchModal({ isOpen, onClose }: Props) {
-    const router = useRouter()
+export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
+    const router = useRouter() // used to send the creator into their new room
     const backdropRef = useRef<HTMLDivElement>(null)
-    const [duration, setDuration] = useState(120)
+    const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
+    const [duration, setDuration] = useState(60)
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    function handleClose() {
+    const handleClose = useCallback(() => {
         setIsCreating(false)
+        setError(null)
+        setName('') // start fresh next time the modal opens
         onClose()
-    }
+    }, [onClose])
 
     // button click outside the modal closes it
     function handleBackdropClick(e: React.MouseEvent) {
@@ -46,19 +51,48 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         }
         if (isOpen) 
             document.addEventListener('keydown', handleEscButton)
-        return () => document.addEventListener('keydown', handleEscButton)
-    }, [isOpen, onClose])
+        return () => document.removeEventListener('keydown', handleEscButton)
+    }, [isOpen, handleClose]) //dependencies: isOpen, handleClose
 
-    // incomplete function to create the match room
     async function handleCreate() {
         setIsCreating(true)
+        setError(null)
 
-        await new Promise((r) => setTimeout(r, 600))
-        const mockRoomId = crypto.randomUUID()
-        router.push(`/rooms/${mockRoomId}`)
+        try {
+            const response = await fetch("/api/rooms", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name,
+                    startingCapital: capital,
+                    durationSeconds: duration,
+                }),
+            })
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error ?? "Could not create room.")
+            }
+
+            if (onCreated) { // upsertRoom func
+                onCreated(result.room)
+            } else {
+                window.dispatchEvent(new CustomEvent("room-created", { detail: result.room })) // broadcast the event to all listeners
+            }
+
+            handleClose()
+            // The creator is player one — send them straight into their room to
+            // wait for an opponent (this is where the match screen lives).
+            router.push(`/matches/${result.room.id}`)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not create room.")
+            setIsCreating(false)
+        }
     }
 
-    if (!isOpen) return null
+    if (!isOpen) return null // if modal is not open, return null to not render anything
 
     return (
         <div 
@@ -76,6 +110,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                 <div className="flex flex-col">
                     <label htmlFor="room-name" className="text-[#9aa6b6]">Room Name</label>
                     <input type='text' id='room-name' name="room-name" disabled={isCreating}
+                        value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
                         className="border border-white/[.4] py-2 px-2 rounded-lg disabled:opacity-50" placeholder="eg: Chicken Rice"></input>
                 </div>
                 <div>
@@ -104,6 +139,11 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                         ))}
                     </div>
                 </div>
+                {error ? (
+                    <p className="rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]">
+                        {error}
+                    </p>
+                ) : null}
                 <div className="flex gap-2">
                     <button onClick={handleClose}
                         className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-white/[.1] rounded-lg transition-colors"
