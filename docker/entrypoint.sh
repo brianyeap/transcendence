@@ -17,11 +17,7 @@ fi
 
 if [ "$needs_install" -eq 1 ]; then
   echo "Installing npm dependencies..."
-  if [ -f package-lock.json ]; then
-    npm ci
-  else
-    npm install
-  fi
+  npm install
 fi
 
 exec "$@"

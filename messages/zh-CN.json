@@ -1,0 +1,139 @@
+{
+  "SideNav": {
+    "newMatch": "新建对决",
+    "menu": "菜单",
+    "games": "游戏",
+    "history": "历史记录",
+    "leaderboard": "排行榜",
+    "profile": "个人资料",
+    "settings": "设置",
+    "logout": "退出登录"
+  },
+  "Lobby": {
+    "title": "游戏",
+    "subtitle": "寻找未开始的对决或直接加入行动",
+    "createRoom": "创建房间",
+    "openGames": "待加入对决",
+    "activeGames": "进行中对决",
+    "liveUpdatedNow": "实时 · 刚刚更新",
+    "noOpenRooms": "暂无等待中房间。",
+    "noActiveGames": "暂无进行中的对决。",
+    "tooltipLimit": "在创建新对决之前，请删除或完成当前的对决。"
+  },
+  "RoomCard": {
+    "by": "由",
+    "you": "你",
+    "symbol": "交易对",
+    "duration": "时长",
+    "capital": "资金",
+    "delete": "删除",
+    "deleting": "正在删除",
+    "reEnter": "重新进入",
+    "join": "加入",
+    "joining": "正在加入"
+  },
+  "CreateMatch": {
+    "title": "创建对决",
+    "roomName": "房间名称",
+    "roomNamePlaceholder": "例如：黄金右脚",
+    "matchLength": "对决时长",
+    "fixed": "固定",
+    "startingCapital": "初始资金",
+    "cancel": "取消",
+    "create": "创建",
+    "creating": "正在创建..."
+  },
+  "Leaderboard": {
+    "competition": "竞技排行",
+    "title": "排行榜",
+    "subtitle": "根据获胜次数排名的顶级交易员。展现你的操作，攀登排行。",
+    "secondPlace": "第二名",
+    "champion": "冠军",
+    "thirdPlace": "第三名",
+    "noWins": "暂无获胜记录",
+    "rank": "排名",
+    "player": "玩家",
+    "gamesPlayed": "对决场次",
+    "wins": "胜场",
+    "losses": "败场",
+    "winRate": "胜率",
+    "noMatches": "暂无进行过的对决。快来开启第一场对决吧！",
+    "you": "你"
+  },
+  "Settings": {
+    "title": "设置",
+    "subtitle": "管理您的账户详情。",
+    "account": "账户",
+    "profilePhoto": "个人头像",
+    "previewConfirm": "预览 — 确认以保存",
+    "customPhoto": "自定义头像",
+    "usingInitials": "使用首字母头像",
+    "cancel": "取消",
+    "confirm": "确认",
+    "saving": "保存中...",
+    "changePhoto": "更换头像",
+    "email": "邮箱",
+    "readOnly": "只读",
+    "username": "用户名",
+    "editComingSoon": "编辑功能即将推出",
+    "security": "安全"
+  },
+  "Match": {
+    "vs": "对阵",
+    "waiting": "等待中",
+    "timeLeft": "剩余时间",
+    "closing": "即将结束",
+    "yourCapital": "您的资金",
+    "available": "可用资金",
+    "reserved": "冻结资金",
+    "opponent": "对手",
+    "connecting": "连接中...",
+    "level": "平手",
+    "aheadBy": "领先 ",
+    "behindBy": "落后 "
+  },
+  "profile": {
+    "riskRating": "风险评级",
+    "pro": "专业级",
+    "amateur": "业余级",
+    "beginner": "新手级",
+    "gamesPlayed": "对决场次",
+    "winPercentage": "胜率",
+    "matchOutcomeDistribution": "对决结果分布",
+    "wins": "胜场",
+    "losses": "败场",
+    "draws": "平局",
+    "profitableSwaps": "盈利交易",
+    "reversedMargins": "逆差边缘",
+    "equilibriumCores": "平衡核心",
+    "achievementsLabel": "成就",
+    "unlocked": "已解锁",
+    "winsProgress": "{wins}/{requirement} 场胜场",
+    "achievements": {
+      "create_an_account": {
+        "name": "准备就绪",
+        "description": "注册账户"
+      },
+      "first_5_wins": {
+        "name": "交易新手",
+        "description": "赢得 5 场对决"
+      },
+      "first_10_wins": {
+        "name": "市场竞争者",
+        "description": "赢得 10 场对决"
+      },
+      "first_42_wins": {
+        "name": "42",
+        "description": "终极答案"
+      },
+      "first_500_wins": {
+        "name": "市场老将",
+        "description": "赢得 500 场对决"
+      },
+      "first_1000_wins": {
+        "name": "交易冠军",
+        "description": "赢得 1,000 场对决"
+      }
+    }
+  }
+}
