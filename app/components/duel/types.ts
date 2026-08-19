@@ -11,7 +11,8 @@ export type IconName =
   | "settings"
   | "trash"
   | "users"
-  | "x";
+  | "x"
+  | "trophy";
 
 export type Room = {
   id: string;
