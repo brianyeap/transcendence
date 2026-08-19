@@ -1,0 +1,139 @@
+{
+  "SideNav": {
+    "newMatch": "New Match",
+    "menu": "Menu",
+    "games": "Games",
+    "history": "History",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "Lobby": {
+    "title": "Games",
+    "subtitle": "Find an open match or jump into the action",
+    "createRoom": "Create Room",
+    "openGames": "Open Games",
+    "activeGames": "Active Games",
+    "liveUpdatedNow": "Live · updated now",
+    "noOpenRooms": "No open rooms yet.",
+    "noActiveGames": "No active games yet.",
+    "tooltipLimit": "Delete or finish your current game before creating another."
+  },
+  "RoomCard": {
+    "by": "by",
+    "you": "you",
+    "symbol": "Symbol",
+    "duration": "Duration",
+    "capital": "Capital",
+    "delete": "Delete",
+    "deleting": "Deleting",
+    "reEnter": "Re-enter",
+    "join": "Join",
+    "joining": "Joining"
+  },
+  "CreateMatch": {
+    "title": "Create Match",
+    "roomName": "Room Name",
+    "roomNamePlaceholder": "eg: Chicken Rice",
+    "matchLength": "Match Length",
+    "fixed": "Fixed",
+    "startingCapital": "Starting Capital",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating..."
+  },
+  "Leaderboard": {
+    "competition": "Competition",
+    "title": "Leaderboard",
+    "subtitle": "Top traders ranked by wins. Make your moves, climb the ranks.",
+    "secondPlace": "2nd Place",
+    "champion": "Champion",
+    "thirdPlace": "3rd Place",
+    "noWins": "No wins registered yet",
+    "rank": "Rank",
+    "player": "Player",
+    "gamesPlayed": "Games Played",
+    "wins": "Wins",
+    "losses": "Losses",
+    "winRate": "Win Rate",
+    "noMatches": "No matches have been played yet. Be the first to start a duel!",
+    "you": "You"
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account details.",
+    "account": "Account",
+    "profilePhoto": "Profile Photo",
+    "previewConfirm": "Preview — confirm to save",
+    "customPhoto": "Custom photo",
+    "usingInitials": "Using initials",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "saving": "Saving...",
+    "changePhoto": "Change Photo",
+    "email": "Email",
+    "readOnly": "Read only",
+    "username": "Username",
+    "editComingSoon": "Edit coming soon",
+    "security": "Security"
+  },
+  "Match": {
+    "vs": "vs",
+    "waiting": "waiting",
+    "timeLeft": "Time left",
+    "closing": "Closing",
+    "yourCapital": "Your capital",
+    "available": "Available",
+    "reserved": "Reserved",
+    "opponent": "Opponent",
+    "connecting": "Connecting...",
+    "level": "Level",
+    "aheadBy": "Ahead by ",
+    "behindBy": "Behind by "
+  },
+  "profile": {
+    "riskRating": "Risk Rating",
+    "pro": "Pro",
+    "amateur": "Amateur",
+    "beginner": "Beginner",
+    "gamesPlayed": "Games played",
+    "winPercentage": "Win %",
+    "matchOutcomeDistribution": "Match Outcome Distribution",
+    "wins": "Wins",
+    "losses": "Losses",
+    "draws": "Draws",
+    "profitableSwaps": "Profitable Swaps",
+    "reversedMargins": "Reversed Margins",
+    "equilibriumCores": "Equilibrium Cores",
+    "achievementsLabel": "Achievements",
+    "unlocked": "Unlocked",
+    "winsProgress": "{wins}/{requirement} wins",
+    "achievements": {
+      "create_an_account": {
+        "name": "Funded & Ready",
+        "description": "Register an account"
+      },
+      "first_5_wins": {
+        "name": "Greenhorn Trader",
+        "description": "Win 5 matches"
+      },
+      "first_10_wins": {
+        "name": "Market Competitor",
+        "description": "Win 10 matches"
+      },
+      "first_42_wins": {
+        "name": "42",
+        "description": "The answer to everything"
+      },
+      "first_500_wins": {
+        "name": "Market Veteran",
+        "description": "Win 500 matches"
+      },
+      "first_1000_wins": {
+        "name": "Trading Champion",
+        "description": "Win 1,000 matches"
+      }
+    }
+  }
+}
