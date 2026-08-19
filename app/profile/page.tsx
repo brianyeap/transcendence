@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Sword, TrendingUp, Layers } from "lucide-react";
 import { profile } from "console";
+import { getTranslations } from "next-intl/server";
 
 
 function getRiskRating(wins: number, losses: number): string {
@@ -142,6 +143,8 @@ export default async function ProfilePage() {
 
 	const riskRating = getRiskRating(userStats.wins, userStats.losses);
 
+	const t = await getTranslations("profile");
+
 	return (
 		<SideNav user={userStats.username}>
 			<div className="p-8 text-[#eef2f8]">
@@ -149,24 +152,24 @@ export default async function ProfilePage() {
 					<Avatar name={userStats.username} size="lg" />
 					<div>
 						<h1 className="text-2xl font-bold">{userStats.username}</h1>
-						<p className="text-sm text-[#5d6877] mt-1"> Risk Rating : <span className={`font-semibold ${getRiskRatingColor(riskRating)}`}>{riskRating}</span></p>
+						<p className="text-sm text-[#5d6877] mt-1"> {t("riskRating")} : <span className={`font-semibold ${getRiskRatingColor(riskRating)}`}>{t(riskRating.toLowerCase())}</span></p>
 					</div>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
 					<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-						<div className="text-s uppercase tracking-wide text-[#5d6877]">Games played</div>
+						<div className="text-s uppercase tracking-wide text-[#5d6877]">{t("gamesPlayed")}</div>
 						<div className="text-xl font-semibold mt-1">{userStats.gamesPlayed}</div>
 					</div>
 
 					<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-6">
-						<div className="text-s uppercase tracking-wide text-[#5d6877]">Win %</div>
+						<div className="text-s uppercase tracking-wide text-[#5d6877]">{t("winPercentage")}</div>
 						<div className="text-xl font-semibold mt-1">{userStats.winPercentage}%</div>
 					</div>
 				</div>
 				{/* Distribution Bar */}
 				<div className="mt-8 rounded-[10px] border border-white/[.10] bg-[#0f131b] p-5">
-					<div className="text uppercase tracking-wide text-[#5d6877] mb-2">Match Outcome Distribution</div>
+					<div className="text uppercase tracking-wide text-[#5d6877] mb-2">{t("matchOutcomeDistribution")}</div>
 
 					<div className="h-10 w-full rounded-md overflow-hidden flex border border-black/40">
 						<div
@@ -185,58 +188,33 @@ export default async function ProfilePage() {
 						>
 						</div>
 					</div>
-					{/* Legend
-					<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
-						<div className="flex items-center gap-1.5">
-							<span className="h-3 w-3 rounded-full bg-emerald-500"  />
-							<div>
-								<div>Wins</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Profitable Swaps</div>
-							</div>
-						</div>
-						<div className="flex items-center gap-1.5">	
-							<span className="h-3 w-3 rounded-full bg-rose-600"  />
-							<div>
-								<div>Losses</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Reversed Margins</div>
-
-							</div>
-						</div>
-						<div className="flex items-center gap-1.5">
-							<span className="h-3 w-3 rounded-full bg-gray-400"  />
-							<div>
-								<div>Draws</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Equilibrium Cores</div>
-							</div>
-						</div>
-					</div> */}
 					{/*legend V2*/}
 					<div className="mt-4 grid grid-cols-3 gap-3 w-full">
 						{/* Win Box */}
 						<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
 							<div className="flex items-center gap-1.5">
 								<span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-								<span className="text-s font-semibold"> Wins</span>
+								<span className="text-s font-semibold"> {t("wins")}</span>
 							</div>
-							<div className="text-[14px] text-[#5d6877] italic mt-0.5">Profitable Swaps</div>
+							<div className="text-[14px] text-[#5d6877] italic mt-0.5">{t("profitableSwaps")}</div>
 							<div className="text-xl font-semibold mt-1 text-emerald-400">{userStats.wins}</div>
 						</div>
 
 						<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
 							<div className="flex items-center gap-1.5">
 								<span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-								<span className="text-s font-semibold">Losses</span>
+								<span className="text-s font-semibold">{t("losses")}</span>
 							</div>
-							<div className="text-[14px] text-[#5d6877] italic mt-0.5">Reversed Margins</div>
+							<div className="text-[14px] text-[#5d6877] italic mt-0.5">{t("reversedMargins")}</div>
 							<div className="text-xl font-semibold mt-1 text-rose-400">{userStats.losses}</div>
 						</div>
 
 						<div className="rounded-[7px] border border-white/[.07] bg-white/[.02] p-3">
 							<div className="flex items-center gap-1.5">
 								<span className="h-2.5 w-2.5 rounded-full bg-gray-500" />
-								<span className="text-s font-semibold">Draws</span>
+								<span className="text-s font-semibold">{t("draws")}</span>
 							</div>
-							<div className="text-[14px] text-[#5d6877] italic mt-0.5">Equilibrium Cores</div>
+							<div className="text-[14px] text-[#5d6877] italic mt-0.5">{t("equilibriumCores")}</div>
 							<div className="text-xl font-semibold mt-1 text-gray-500">{userStats.draws}</div>
 						</div>
 					</div>
@@ -244,7 +222,7 @@ export default async function ProfilePage() {
 				{/* Achievements */}
 				<div className="mt-8 rounded-[10px] border border-white/[.10] bg-[#0f131b] p-5">
 					<div className="text uppercase tracking-wide text-[#5d6877] mb-4">
-						Achievements
+						{t("achievementsLabel")}
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
@@ -263,11 +241,11 @@ export default async function ProfilePage() {
 
 									<div>
 										<div className="font-semibold">
-											{achievement.name}
+											{t(`achievements.${achievement.id}.name`)}
 										</div>
 
 										<div className="text-sm text-[#5d6877]">
-											{achievement.description}
+											{t(`achievements.${achievement.id}.description`)}
 										</div>
 									</div>
 								</div>
@@ -275,11 +253,11 @@ export default async function ProfilePage() {
 								<div className="mt-3 text-xs">
 									{achievement.unlocked ? (
 										<span className="text-emerald-400">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-[#5d6877]">
-											{wins}/{achievement.requirement} wins
+											{t("winsProgress", { wins, requirement: achievement.requirement })}
 										</span>
 									)}
 								</div>
@@ -291,4 +269,3 @@ export default async function ProfilePage() {
 		</SideNav>
 	);
 }
-
