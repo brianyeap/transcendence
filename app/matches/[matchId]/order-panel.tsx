@@ -27,7 +27,6 @@ export function OrderPanel({
   onDismissFeedback: () => void;
 }): React.ReactElement {
   const [raw, setRaw] = useState("");
-
   const [pendingSide, setPendingSide] = useState<Side | null>(null);
 
   const [seen, setSeen] = useState({ pendingTrade, fill: lastFill, rejection: lastRejection });
@@ -61,7 +60,6 @@ export function OrderPanel({
   const amount = parseAmount(raw);
   const error = validate(raw, amount, player);
   const canSubmit = !locked && amount !== null && error === null;
-
   const canSubmitSide = (side: Side) =>
     canSubmit && amount !== null && amount <= maxForSide(player, side);
 
@@ -94,7 +92,6 @@ export function OrderPanel({
 
   function applyPreset(fraction: number) {
     if (player === null) return;
-
     setRaw(String(Math.floor(available * fraction * 100) / 100));
   }
 
@@ -161,7 +158,6 @@ export function OrderPanel({
           className="h-10 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-[14px] text-[#eef2f8] transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
         />
       </div>
-
       <div className="mt-2 grid grid-cols-4 gap-2">
         {PRESETS.map((fraction) => (
           <button
@@ -169,7 +165,6 @@ export function OrderPanel({
             type="button"
             disabled={locked}
             onClick={() => applyPreset(fraction)}
-
             aria-label={presetLabel(fraction)}
             aria-describedby={lockedReason === null ? undefined : "order-controls-reason"}
             className="h-8 rounded-[7px] border border-white/[.07] bg-[#151b25] font-mono text-[11.5px] font-semibold text-[#9aa6b6] transition hover:border-white/[.12] hover:text-[#eef2f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
@@ -178,19 +173,16 @@ export function OrderPanel({
           </button>
         ))}
       </div>
-
       {error !== null && (
         <p id="order-amount-error" className="mt-2 text-[11.5px] text-[#ff8c99]">
           {error}
         </p>
       )}
-
       {unspokenReason !== null && (
         <p id="order-controls-reason" className="sr-only">
           {unspokenReason}
         </p>
       )}
-
       <div className="mt-3 flex items-stretch gap-3">
         <BetButton
           side="long"
@@ -208,7 +200,6 @@ export function OrderPanel({
           onClick={() => submit("short")}
         />
       </div>
-
       <Feedback
         fill={lastFill}
         rejection={lastRejection}
@@ -232,7 +223,6 @@ function OrderAnnouncements({
   busy: boolean;
 }) {
   const polite = busy ? "Placing your trade. Waiting for the server to fill it." : fillSpeech(fill);
-
   return (
     <>
       <p role="status" aria-live="polite" className="sr-only">
@@ -246,10 +236,8 @@ function OrderAnnouncements({
     </>
   );
 }
-
 function fillSpeech(fill: TradeFill | null): string {
   if (fill === null) return "";
-
   const side = fill.side === "long" ? "Long" : "Short";
   const exposure =
     fill.resultingNetSide === "flat"
@@ -266,12 +254,10 @@ function fillSpeech(fill: TradeFill | null): string {
         : Math.round(fill.realisedPnl) > 0
           ? ` The offset realised a profit of ${fmtUSD(Math.round(fill.realisedPnl))}.`
           : ` The offset realised a loss of ${fmtUSD(Math.abs(Math.round(fill.realisedPnl)))}.`;
-
   return `Trade accepted. ${side} ${fmtUSD(Math.round(fill.amount))} filled at ${fmtPrice(
     fill.fillPrice
   )}. ${exposure}${realised}`;
 }
-
 function presetLabel(fraction: number): string {
   return fraction === 1
     ? "Set the amount to your full available balance"
@@ -280,11 +266,9 @@ function presetLabel(fraction: number): string {
 
 function ExposureHint({ player }: { player: PlayerState | null }) {
   if (player === null || player.netSide === "flat") return null;
-
   const held = player.netSide === "long" ? "Long" : "Short";
   const opposite = player.netSide === "long" ? "Short" : "Long";
   const tone = player.netSide === "long" ? "text-[#1fcb83]" : "text-[#f6485d]";
-
   return (
     <div className="mt-3 rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2">
       <p className="text-[11px] text-[#9aa6b6]">
@@ -324,7 +308,6 @@ function BetButton({
 }) {
   const isLong = side === "long";
   const Arrow = isLong ? ArrowUp : ArrowDown;
-
   return (
     <button
       type="button"
@@ -375,7 +358,6 @@ function Feedback({
       </p>
     );
   }
-
   if (rejection !== null) {
     return (
       <p
@@ -386,7 +368,6 @@ function Feedback({
       </p>
     );
   }
-
   if (fill !== null) {
     const isLong = fill.side === "long";
     return (
@@ -432,7 +413,6 @@ function Feedback({
       </div>
     );
   }
-
   if (connecting) {
     return (
       <p aria-hidden="true" className="mt-3 text-[11.5px] text-[#5d6877]">
@@ -461,7 +441,6 @@ function sanitise(value: string) {
   const [whole, ...rest] = cleaned.split(".");
   return rest.length === 0 ? whole : `${whole}.${rest.join("")}`;
 }
-
 function parseAmount(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === "" || trimmed === ".") return null;
@@ -488,7 +467,6 @@ function validate(raw: string, amount: number | null, player: PlayerState | null
   }
   return null;
 }
-
 function fmtPrice(value: number) {
   return value.toLocaleString("en-US", {
     minimumFractionDigits: 2,
