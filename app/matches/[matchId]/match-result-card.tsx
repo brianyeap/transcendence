@@ -245,17 +245,7 @@ function Settlement({
         </div>
       </div>
       <p className="mt-3 text-[12px] leading-relaxed text-[#9aa6b6]">
-        {finalPrice === null ? (
-          "Any exposure still held when time ran out was offset automatically, so every figure above is banked — nothing is still riding on the market."
-        ) : (
-          <>
-            Any exposure still held when time ran out was offset automatically at{" "}
-            <span className="font-mono tabular-nums text-[#eef2f8]">
-              {finalPrice.toFixed(2)}
-            </span>
-            , so every figure above is banked — nothing is still riding on the market.
-          </>
-        )}
+        Any exposure still held when time ran out was offset automatically.
       </p>
     </div>
   );

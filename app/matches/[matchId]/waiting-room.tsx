@@ -27,7 +27,7 @@ export function WaitingRoom({
           </h1>
           <p className="mt-1.5 text-[13px] text-[#9aa6b6]">
             The match starts the moment someone takes the open seat. You do not need to
-            refresh — this screen moves on by itself.
+            refresh.
           </p>
         </div>
         <PlayerPair match={match} viewerUserId={viewerUserId} />
