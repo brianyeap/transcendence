@@ -8,6 +8,8 @@ import {
   Plus,
   RefreshCw,
   Settings,
+  Trash2,
+  Trophy,
   User,
   Users,
   X,
@@ -27,8 +29,10 @@ const icons: Record<IconName, LucideIcon> = {
   profile: User,
   refresh: RefreshCw,
   settings: Settings,
+  trash: Trash2,
   users: Users,
   x: X,
+  trophy: Trophy,
 };
 
 // aria-hidden="true" is technically not needed but for people that use screen reader it will ignore
