@@ -91,7 +91,6 @@ export function ConnectionBanner({
       <p role="status" aria-live="polite" className="sr-only">
         {statusSpeech(connection)}
       </p>
-
       {connection === "connected" ? null : (
         <div
           className={`flex w-full shrink-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border px-4 py-2.5 ${
@@ -108,7 +107,6 @@ export function ConnectionBanner({
           ) : (
             <WifiOff aria-hidden="true" className="size-4 shrink-0 text-[#f5a524]" />
           )}
-
           <p aria-hidden="true" className="min-w-0 flex-1 text-[13px] text-[#eef2f8]">
             <span className="font-semibold">
               {connecting ? "Reconnecting…" : "Connection lost"}
@@ -119,7 +117,6 @@ export function ConnectionBanner({
                 : "Order controls are paused until the stream resumes."}
             </span>
           </p>
-
           {!connecting && (
             <>
               <span
@@ -130,7 +127,6 @@ export function ConnectionBanner({
                   ? "retrying…"
                   : `retry in ${secondsLeft}s`}
               </span>
-
               <button
                 type="button"
                 onClick={retryNow}
