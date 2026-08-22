@@ -30,8 +30,6 @@ export function MatchTransportProvider({
   transport?: MatchTransport;
   children: React.ReactNode;
 }) {
-  // No transport passed in means the real one: Supabase + the match engine.
-  // Tests can still hand in a fake.
   const value = useMemo(() => transport ?? createSocketTransport(), [transport]);
   return <TransportContext.Provider value={value}>{children}</TransportContext.Provider>;
 }
@@ -42,22 +40,17 @@ export type PriceDirection = "up" | "down" | "flat";
 export type MatchConnection = {
   connection: ConnectionStatus;
   match: Match | null;
-
   viewer: Viewer | null;
-
   candles: Candle[];
-
   lastCandle: Candle | null;
   price: number | null;
   priceDirection: PriceDirection;
   player: PlayerState | null;
   trades: TradeFill[];
-
   pendingTrade: boolean;
   lastFill: TradeFill | null;
   lastRejection: TradeRejection | null;
   ended: MatchEnded | null;
-
   serverNow: () => number;
   submitTrade: (input: SubmitTradeInput) => void;
   reconnect: () => void;
@@ -85,17 +78,24 @@ export function useMatchConnection(matchId: string): MatchConnection {
   const [ended, setEnded] = useState<MatchEnded | null>(null);
 
   const subscriptionRef = useRef<MatchSubscription | null>(null);
-
   const clockOffsetRef = useRef(0);
+
+  const matchRef = useRef<Match | null>(null);
+
+  const [generation, setGeneration] = useState(0);
+
+  const refreshedForRef = useRef<string | null>(null);
 
   useEffect(() => {
     const subscription = transport.connect(matchId, {
       onConnectionChange(connected) {
         setConnection(connected ? "connected" : "disconnected");
+        if (!connected) setPendingTrade(false);
       },
       onSnapshot(snapshot) {
         clockOffsetRef.current = snapshot.serverTime - Date.now();
         const latest = snapshot.candles[snapshot.candles.length - 1] ?? null;
+        matchRef.current = snapshot.match;
         setConnection("connected");
         setMatch(snapshot.match);
         setViewer(snapshot.viewer);
@@ -104,7 +104,6 @@ export function useMatchConnection(matchId: string): MatchConnection {
         setPrice(latest?.close ?? null);
         setPlayer(snapshot.player);
         setTrades(snapshot.trades);
-
         setPendingTrade(false);
       },
       onTick(tick) {
@@ -131,6 +130,21 @@ export function useMatchConnection(matchId: string): MatchConnection {
       },
       onStatusChange(status) {
         setMatch((previous) => (previous ? { ...previous, status } : previous));
+
+        const known = matchRef.current;
+        if (known !== null) {
+          matchRef.current = { ...known, status };
+        }
+
+        if (
+          status === "active" &&
+          known !== null &&
+          known.endsAt === null &&
+          refreshedForRef.current !== matchId
+        ) {
+          refreshedForRef.current = matchId;
+          setGeneration((count) => count + 1);
+        }
       },
       onTradeAccepted(fill) {
         setPendingTrade(false);
@@ -154,7 +168,7 @@ export function useMatchConnection(matchId: string): MatchConnection {
       subscription.close();
       subscriptionRef.current = null;
     };
-  }, [transport, matchId]);
+  }, [transport, matchId, generation]);
 
   const submitTrade = useCallback((input: SubmitTradeInput) => {
     setPendingTrade(true);
