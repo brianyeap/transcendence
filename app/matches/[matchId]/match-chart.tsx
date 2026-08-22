@@ -330,6 +330,7 @@ export function MatchChart({
 
     if (!continuation && !(drawn === 0 && candles.length === 0)) {
       series.setData(candles.map(toPoint));
+      lastTimeRef.current = candles.length > 0 ? candles[candles.length - 1].time : null;
 
       if (candles.length > 0) {
         chart.timeScale().fitContent();
@@ -338,8 +339,6 @@ export function MatchChart({
 
     drawnCountRef.current = candles.length;
     firstTimeRef.current = first;
-    lastTimeRef.current =
-      candles.length > 0 ? candles[candles.length - 1].time : null;
   }, [candles]);
 
   useEffect(() => {
