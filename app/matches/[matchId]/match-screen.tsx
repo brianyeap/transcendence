@@ -7,7 +7,6 @@ import {
   type ConnectionStatus,
   type MatchConnection,
 } from "@/lib/match/match-connection";
-import type { MatchStatus } from "@/lib/match/types";
 import { ConnectionBanner } from "./connection-banner";
 import { CountdownScreen } from "./countdown-screen";
 import { MatchCancelled } from "./match-cancelled";
@@ -37,47 +36,12 @@ export function MatchScreen({ matchId }: { matchId: string }) {
 function MatchScreenInner({ matchId }: { matchId: string }) {
   const connection = useMatchConnection(matchId);
 
-  return (
-    <>
-      <p role="status" aria-live="polite" className="sr-only">
-        {statusSpeech(
-          connection.match?.status ?? null,
-          connection.ended !== null,
-          connection.connection
-        )}
-      </p>
+  return <MatchPhase connection={connection} />;
+}
 
-      <MatchPhase connection={connection} />
-    </>
-  );
-}
-function statusSpeech(
-  status: MatchStatus | null,
-  ended: boolean,
-  connection: ConnectionStatus
-): string {
-  if (ended) {
-    return "The match has ended. The result is shown in a dialog.";
-  }
-  switch (status) {
-    case null:
-      return connection === "disconnected"
-        ? "The match could not be loaded. A retry control is available."
-        : "Loading the match.";
-    case "waiting":
-      return "Waiting for an opponent to join.";
-    case "countdown":
-      return "Both players are in. The match starts shortly.";
-    case "active":
-      return "The match is live. Trading is open.";
-    case "completed":
-      return "This match has finished.";
-    case "cancelled":
-      return "This match was cancelled before it started.";
-  }
-}
 function MatchPhase({ connection }: { connection: MatchConnection }) {
   const { match } = connection;
+
   if (match === null) {
     return (
       <MatchUnavailable
@@ -86,13 +50,17 @@ function MatchPhase({ connection }: { connection: MatchConnection }) {
       />
     );
   }
+
   const viewerUserId = connection.viewer?.userId ?? null;
+
   if (connection.ended !== null) {
     return <ActiveMatch connection={connection} match={match} />;
   }
+
   switch (match.status) {
     case "waiting":
       return <WaitingRoom match={match} viewerUserId={viewerUserId} />;
+
     case "countdown":
       return (
         <CountdownScreen
@@ -101,13 +69,15 @@ function MatchPhase({ connection }: { connection: MatchConnection }) {
           serverNow={connection.serverNow}
         />
       );
-    case "completed":
 
+    case "completed":
       return (
         <MatchResult match={match} ended={connection.ended} viewerUserId={viewerUserId} />
       );
+
     case "cancelled":
       return <MatchCancelled match={match} />;
+
     case "active":
       return <ActiveMatch connection={connection} match={match} />;
   }
@@ -123,17 +93,18 @@ function MatchUnavailable({
   if (connection !== "disconnected") {
     return <LoadingLine>Loading match…</LoadingLine>;
   }
+
   return (
     <MessageScreen
       heading="This match could not be loaded"
       actions={
         <>
           <ActionButton onClick={onRetry} tone="primary">
-            <RefreshCw className="size-4" aria-hidden />
+            <RefreshCw className="size-4" />
             Try again
           </ActionButton>
           <ActionLink href="/" tone="secondary">
-            <ArrowLeft className="size-4" aria-hidden />
+            <ArrowLeft className="size-4" />
             Back to games
           </ActionLink>
         </>
@@ -144,6 +115,7 @@ function MatchUnavailable({
     </MessageScreen>
   );
 }
+
 function ActiveMatch({
   connection,
   match,
@@ -170,9 +142,11 @@ function ActiveMatch({
     dismissFeedback,
   } = connection;
   const ordersDisabled = match.status !== "active" || status !== "connected";
+
   return (
     <div className="flex flex-1 flex-col gap-4 px-5 py-5 sm:px-7">
       <ConnectionBanner connection={status} onReconnect={reconnect} />
+
       <MatchHeader
         match={match}
         price={price}
@@ -182,9 +156,7 @@ function ActiveMatch({
         matchOver={ended !== null}
       />
       <div className="flex flex-1 flex-col gap-4 xl:flex-row">
-
         <section
-          aria-label={`${match.symbol} price chart`}
           className="min-h-[360px] flex-1 xl:min-h-0"
         >
           <MatchChart
@@ -195,7 +167,6 @@ function ActiveMatch({
             netSide={player?.netSide ?? "flat"}
           />
         </section>
-
         <div className="flex w-full shrink-0 flex-col gap-4 xl:w-[350px]">
           <PositionPanel player={player} price={price} />
           <OrderPanel

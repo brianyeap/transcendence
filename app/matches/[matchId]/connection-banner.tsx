@@ -12,17 +12,6 @@ function delayForAttempt(attempt: number): number {
 
 const TICK_MS = 250;
 
-function statusSpeech(connection: "connecting" | "connected" | "disconnected"): string {
-  switch (connection) {
-    case "connected":
-      return "Connected to the match. Order controls are available.";
-    case "connecting":
-      return "Reconnecting. Your chart, balances and exposure will be restored.";
-    case "disconnected":
-      return "Connection lost. Order controls are paused and reconnection is automatic.";
-  }
-}
-
 export function ConnectionBanner({
   connection,
   onReconnect,
@@ -88,9 +77,7 @@ export function ConnectionBanner({
 
   return (
     <>
-      <p role="status" aria-live="polite" className="sr-only">
-        {statusSpeech(connection)}
-      </p>
+
       {connection === "connected" ? null : (
         <div
           className={`flex w-full shrink-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border px-4 py-2.5 ${
@@ -101,13 +88,13 @@ export function ConnectionBanner({
         >
           {connecting ? (
             <LoaderCircle
-              aria-hidden="true"
               className="size-4 shrink-0 animate-spin text-[#4d86ff]"
             />
           ) : (
-            <WifiOff aria-hidden="true" className="size-4 shrink-0 text-[#f5a524]" />
+            <WifiOff className="size-4 shrink-0 text-[#f5a524]" />
           )}
-          <p aria-hidden="true" className="min-w-0 flex-1 text-[13px] text-[#eef2f8]">
+
+          <p className="min-w-0 flex-1 text-[13px] text-[#eef2f8]">
             <span className="font-semibold">
               {connecting ? "Reconnecting…" : "Connection lost"}
             </span>{" "}
@@ -117,23 +104,23 @@ export function ConnectionBanner({
                 : "Order controls are paused until the stream resumes."}
             </span>
           </p>
+
           {!connecting && (
             <>
               <span
-                aria-hidden="true"
                 className="font-mono text-[12px] tabular-nums text-[#5d6877]"
               >
                 {secondsLeft === null || secondsLeft <= 0
                   ? "retrying…"
                   : `retry in ${secondsLeft}s`}
               </span>
+
               <button
                 type="button"
                 onClick={retryNow}
-                aria-label="Retry connecting to the match now"
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-2.5 py-1.5 text-[12.5px] font-semibold text-[#eef2f8] transition hover:border-white/[.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
               >
-                <RefreshCw aria-hidden="true" className="size-3.5 text-[#9aa6b6]" />
+                <RefreshCw className="size-3.5 text-[#9aa6b6]" />
                 Retry now
               </button>
             </>

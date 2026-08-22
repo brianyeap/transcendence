@@ -19,7 +19,6 @@ import {
 } from "lightweight-charts";
 
 import { fmtUSD } from "../../components/duel/format";
-import { fmtPrice } from "./format";
 import type { Candle, NetSide, Side, TradeFill } from "@/lib/match/types";
 
 const UP = "#1fcb83";
@@ -116,48 +115,6 @@ function mergeMarkers(
       : [dividerMarker(dividerTime), ...tradeMarkers];
 
   return merged.sort((a, b) => (a.time as number) - (b.time as number));
-}
-
-function chartSummary(
-  candles: Candle[],
-  lastCandle: Candle | null,
-  trades: TradeFill[]
-): string {
-  if (candles.length === 0) {
-    return "Price chart. Waiting for market data.";
-  }
-
-  const latest = lastCandle ?? candles[candles.length - 1];
-  const matchCandles = candles.reduce((count, candle) => (candle.preMatch ? count : count + 1), 0);
-  const preMatch = candles.length - matchCandles;
-
-  const move =
-    latest.close > latest.open
-      ? "rising"
-      : latest.close < latest.open
-        ? "falling"
-        : "unchanged";
-
-  const elapsed =
-    matchCandles === 0
-      ? "The match has not produced a candle yet."
-      : `${matchCandles} minute${matchCandles === 1 ? "" : "s"} of the match drawn so far.`;
-
-  const marked =
-    trades.length === 0
-      ? "None of your trades are marked on it yet."
-      : `${trades.length} of your trade${trades.length === 1 ? " is" : "s are"} marked on it.`;
-
-  const history =
-    preMatch === 0
-      ? ""
-      : ` ${preMatch} earlier candle${preMatch === 1 ? "" : "s"} of pre-match history ${
-          preMatch === 1 ? "is" : "are"
-        } shown for context.`;
-
-  return `Candlestick price chart. Latest price ${fmtPrice(latest.close)}, ${move} within the current candle, between a low of ${fmtPrice(
-    latest.low
-  )} and a high of ${fmtPrice(latest.high)}. ${elapsed}${history} ${marked}`;
 }
 
 export function MatchChart({
@@ -390,15 +347,8 @@ export function MatchChart({
 
   const isEmpty = candles.length === 0;
 
-  const summary = useMemo(
-    () => chartSummary(candles, lastCandle, trades),
-    [candles, lastCandle, trades]
-  );
-
   return (
     <div
-      role="img"
-      aria-label={summary}
       className="relative h-full min-h-[260px] w-full overflow-hidden rounded-xl border border-white/[.07] bg-[#0f131b]"
     >
       <div ref={hostRef} className="absolute inset-0 font-mono" />
