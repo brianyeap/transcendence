@@ -58,20 +58,10 @@ export function MatchEndedPanel({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div
         ref={cardRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="match-ended-heading"
-        aria-describedby="match-ended-detail"
         tabIndex={-1}
         className="max-h-full w-full max-w-lg overflow-y-auto rounded-xl border border-white/[.07] bg-[#0f131b] p-6 shadow-2xl outline-none sm:p-7"
       >
-        <MatchResultCard
-          result={ended}
-          match={match}
-          viewerUserId={viewerUserId}
-          headingId="match-ended-heading"
-          detailId="match-ended-detail"
-        />
+        <MatchResultCard result={ended} match={match} viewerUserId={viewerUserId} />
       </div>
     </div>
   );

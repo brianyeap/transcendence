@@ -46,21 +46,11 @@ export function CentredScreen({
   );
 }
 
-export function LoadingLine({
-  children,
-  announce = false,
-}: {
-  children: React.ReactNode;
-  announce?: boolean;
-}): React.ReactElement {
+export function LoadingLine({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <CentredScreen>
-      <p
-        role={announce ? "status" : undefined}
-        aria-live={announce ? "polite" : undefined}
-        className="flex items-center gap-2.5 text-sm text-[#5d6877]"
-      >
-        <span aria-hidden="true" className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
+      <p className="flex items-center gap-2.5 text-sm text-[#5d6877]">
+        <span className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
         {children}
       </p>
     </CentredScreen>
