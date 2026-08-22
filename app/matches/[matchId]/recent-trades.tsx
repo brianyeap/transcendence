@@ -38,7 +38,6 @@ export function RecentTrades({ trades }: { trades: TradeFill[] }): React.ReactEl
       ) : (
         <ul
           className="mt-3.5 flex flex-col gap-1.5 overflow-y-auto pr-1"
-
           style={{ maxHeight: `${VISIBLE_ROWS * 53}px` }}
         >
           {newestFirst.map((trade) => (
@@ -96,7 +95,6 @@ function TradeRow({ trade }: { trade: TradeFill }) {
         </span>
 
         {trade.realisedPnl === null ? null : (
-
           <span
             className={`shrink-0 font-mono text-[12.5px] font-semibold tabular-nums ${pnlTone(
               trade.realisedPnl
