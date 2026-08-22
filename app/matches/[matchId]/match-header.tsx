@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
+import { LeaveMatch } from "./leave-match";
 import { useRemainingSeconds } from "./use-remaining-seconds";
 import type { Match, PlayerState } from "@/lib/match/types";
 
@@ -36,6 +37,7 @@ export function MatchHeader({
         <ClockBlock remaining={remaining} />
         <div aria-hidden="true" className="grow" />
         <CapitalBlock player={player} />
+        <LeaveMatch needsConfirm className="self-start" />
       </header>
     </>
   );
@@ -54,7 +56,6 @@ function useMoneyAnnouncement(
   }
   return announced.text;
 }
-
 function announcementKey(
   player: PlayerState | null,
   startingCapital: number,
@@ -71,7 +72,6 @@ function direction(value: number, against: number): "up" | "down" | "level" {
   const gap = Math.round(value) - Math.round(against);
   return gap > 0 ? "up" : gap < 0 ? "down" : "level";
 }
-
 function clockBucket(remaining: number | null): string {
   if (remaining === null) return "no-clock";
   if (remaining <= 10) return "final-10";
@@ -114,7 +114,6 @@ function spokenClock(seconds: number): string {
 function spokenPrice(value: number): string {
   return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
 function MatchupBlock({ match }: { match: Match }) {
   return (
     <div className="min-w-[170px]">
@@ -198,13 +197,13 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
         >
           {remaining === null ? "—:——" : fmtClock(remaining)}
         </p>
-
         {urgent && (
           <p className="mt-1.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#f6485d]">
             Closing
           </p>
         )}
       </div>
+
       <p className="sr-only">
         {remaining === null
           ? "Time left is not known yet."
@@ -213,7 +212,6 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
     </div>
   );
 }
-
 function CapitalBlock({ player }: { player: PlayerState | null }) {
   return (
     <div className="flex flex-wrap items-start gap-x-7 gap-y-4">
@@ -229,18 +227,6 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
             ? "Your capital is not known yet."
             : `Your capital ${fmtUSD(Math.round(player.capital))}.`}
         </p>
-        <div className="mt-2.5 flex items-center gap-2 text-[11.5px]">
-          <BalanceChip
-            label="Available"
-            value={player === null ? null : player.availableBalance}
-            accent="text-[#eef2f8]"
-          />
-          <BalanceChip
-            label="Reserved"
-            value={player === null ? null : player.reservedBalance}
-            accent="text-[#4d86ff]"
-          />
-        </div>
       </div>
       <div>
         <div aria-hidden="true">
@@ -265,44 +251,16 @@ function StandingLine({ player }: { player: PlayerState | null }) {
   if (player === null) {
     return <p className="text-[11.5px] text-[#5d6877]">Connecting…</p>;
   }
-
   const gap = player.capital - player.opponentCapital;
   const rounded = Math.round(gap);
   if (rounded === 0) {
     return <p className="text-[11.5px] text-[#9aa6b6]">Level</p>;
   }
-
   return (
     <p className={`text-[11.5px] font-semibold ${rounded > 0 ? "text-[#1fcb83]" : "text-[#f6485d]"}`}>
       {rounded > 0 ? "Ahead by " : "Behind by "}
       <span className="font-mono tabular-nums">{fmtUSD(Math.abs(rounded))}</span>
     </p>
-  );
-}
-
-function BalanceChip({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number | null;
-  accent: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-2 py-1">
-      <span aria-hidden="true" className="text-[#5d6877]">
-        {label}
-      </span>
-      <span aria-hidden="true" className={`font-mono font-semibold tabular-nums ${accent}`}>
-        {value === null ? "—" : fmtUSD(Math.round(value))}
-      </span>
-      <span className="sr-only">
-        {value === null
-          ? `${label} balance is not known yet.`
-          : `${label} balance ${fmtUSD(Math.round(value))}.`}
-      </span>
-    </span>
   );
 }
 function SectionLabel({ children }: { children: React.ReactNode }) {
