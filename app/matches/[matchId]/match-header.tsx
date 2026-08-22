@@ -5,7 +5,7 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
 import { LeaveMatch } from "./leave-match";
-import { useRemainingSeconds } from "./use-remaining-seconds";
+import { useRemainingSeconds } from "@/lib/match/use-remaining-seconds";
 import type { Match, PlayerState } from "@/lib/match/types";
 
 const URGENT_SECONDS = 30;
