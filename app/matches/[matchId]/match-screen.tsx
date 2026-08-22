@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft, RefreshCw } from "lucide-react";
-import Link from "next/link";
 import {
   MatchTransportProvider,
   useMatchConnection,
@@ -13,6 +12,12 @@ import { ConnectionBanner } from "./connection-banner";
 import { CountdownScreen } from "./countdown-screen";
 import { MatchCancelled } from "./match-cancelled";
 import { MatchChart } from "./match-chart";
+import {
+  ActionButton,
+  ActionLink,
+  LoadingLine,
+  MessageScreen,
+} from "./message-screen";
 import { MatchEndedPanel } from "./match-ended-panel";
 import { MatchHeader } from "./match-header";
 import { MatchResult } from "./match-result";
@@ -116,42 +121,27 @@ function MatchUnavailable({
   onRetry: () => void;
 }) {
   if (connection !== "disconnected") {
-    return (
-      <div className="flex flex-1 items-center justify-center px-5 py-5">
-        <p className="flex items-center gap-2.5 text-sm text-[#5d6877]">
-          <span className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
-          Loading match…
-        </p>
-      </div>
-    );
+    return <LoadingLine>Loading match…</LoadingLine>;
   }
   return (
-    <div className="flex flex-1 items-center justify-center px-5 py-5">
-      <div className="w-full max-w-md rounded-xl border border-white/[.07] bg-[#0f131b] p-8 text-center">
-        <h1 className="text-[21px] font-bold tracking-[-.01em]">This match could not be loaded</h1>
-        <p className="mt-2 text-[13px] text-[#9aa6b6]">
-          It may not exist, you may not be one of its players, or the connection to the
-          match server may be down.
-        </p>
-        <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-          <button
-            type="button"
-            onClick={onRetry}
-            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 py-2.5 text-[13.5px] font-semibold text-white transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-          >
+    <MessageScreen
+      heading="This match could not be loaded"
+      actions={
+        <>
+          <ActionButton onClick={onRetry} tone="primary">
             <RefreshCw className="size-4" aria-hidden />
             Try again
-          </button>
-          <Link
-            href="/"
-            className="flex flex-1 items-center justify-center gap-2 rounded-[7px] border border-white/[.1] bg-gray-800 px-4 py-2.5 text-[13.5px] font-semibold text-[#eef2f8] transition hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-          >
+          </ActionButton>
+          <ActionLink href="/" tone="secondary">
             <ArrowLeft className="size-4" aria-hidden />
             Back to games
-          </Link>
-        </div>
-      </div>
-    </div>
+          </ActionLink>
+        </>
+      }
+    >
+      It may not exist, you may not be one of its players, or the connection to the match
+      server may be down.
+    </MessageScreen>
   );
 }
 function ActiveMatch({
@@ -189,8 +179,10 @@ function ActiveMatch({
         priceDirection={priceDirection}
         player={player}
         serverNow={serverNow}
+        matchOver={ended !== null}
       />
       <div className="flex flex-1 flex-col gap-4 xl:flex-row">
+
         <section
           aria-label={`${match.symbol} price chart`}
           className="min-h-[360px] flex-1 xl:min-h-0"
