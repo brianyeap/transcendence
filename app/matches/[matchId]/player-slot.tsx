@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { Avatar } from "../../components/duel/avatar";
-import type { PlayerRef } from "@/lib/match/types";
+import type { Match, PlayerRef } from "@/lib/match/types";
 
 export function PlayerSlot({
   player,
@@ -54,6 +54,33 @@ export function PlayerSlot({
         </p>
         <p className="sr-only">{isViewer ? "You are ready." : "This player is ready."}</p>
       </div>
+    </div>
+  );
+}
+
+export function PlayerPair({
+  match,
+  viewerUserId,
+  emptyLabel,
+}: {
+  match: Match;
+  viewerUserId: string | null;
+  emptyLabel?: string;
+}): React.ReactElement {
+  return (
+    <div className="mt-6 flex flex-col gap-2.5">
+      <PlayerSlot player={match.playerOne} viewerUserId={viewerUserId} />
+      <div
+        aria-hidden="true"
+        className="text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
+      >
+        vs
+      </div>
+      <PlayerSlot
+        player={match.playerTwo}
+        viewerUserId={viewerUserId}
+        emptyLabel={emptyLabel}
+      />
     </div>
   );
 }
