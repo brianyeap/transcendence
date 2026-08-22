@@ -34,15 +34,9 @@ export function CountdownScreen({
             {match.symbol} opens in
           </h1>
           <p
-            aria-hidden="true"
             className="mt-2 font-mono text-[64px] font-semibold leading-none tracking-[-.03em] tabular-nums text-[#eef2f8]"
           >
             {starting ? "—" : remaining < BARE_SECONDS_UNDER ? remaining : fmtClock(remaining)}
-          </p>
-          <p className="sr-only">
-            {starting
-              ? "The match is starting."
-              : `The match starts in ${remaining} second${remaining === 1 ? "" : "s"}.`}
           </p>
           <p className="mt-3 text-[13px] text-[#9aa6b6]">
             {starting
@@ -50,6 +44,7 @@ export function CountdownScreen({
               : "Get ready. The chart and your controls appear the moment it starts."}
           </p>
         </div>
+
         <PlayerPair match={match} viewerUserId={viewerUserId} emptyLabel="Opponent" />
       </div>
     </CentredScreen>
