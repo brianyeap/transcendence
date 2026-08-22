@@ -19,6 +19,7 @@ import {
 } from "lightweight-charts";
 
 import { fmtUSD } from "../../components/duel/format";
+import { fmtPrice } from "./format";
 import type { Candle, NetSide, Side, TradeFill } from "@/lib/match/types";
 
 const UP = "#1fcb83";
@@ -154,13 +155,9 @@ function chartSummary(
           preMatch === 1 ? "is" : "are"
         } shown for context.`;
 
-  return `Candlestick price chart. Latest price ${price(latest.close)}, ${move} within the current candle, between a low of ${price(
+  return `Candlestick price chart. Latest price ${fmtPrice(latest.close)}, ${move} within the current candle, between a low of ${fmtPrice(
     latest.low
-  )} and a high of ${price(latest.high)}. ${elapsed}${history} ${marked}`;
-}
-
-function price(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  )} and a high of ${fmtPrice(latest.high)}. ${elapsed}${history} ${marked}`;
 }
 
 export function MatchChart({

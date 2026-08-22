@@ -4,16 +4,10 @@ import type React from "react";
 import { ArrowLeft, CircleX, Equal, ScrollText, Trophy } from "lucide-react";
 import Link from "next/link";
 import { fmtUSD } from "../../components/duel/format";
-import type { Match, PlayerRef } from "@/lib/match/types";
+import { fmtPrice, pnlTone, signedUSD } from "./format";
+import type { Match, MatchEnded, PlayerRef } from "@/lib/match/types";
 
 type Outcome = "win" | "loss" | "draw";
-
-export type MatchResultData = {
-  finalPrice: number | null;
-  winnerUserId: string | null;
-  yourFinalCapital: number;
-  opponentFinalCapital: number;
-};
 
 export function MatchResultCard({
   result,
@@ -23,7 +17,7 @@ export function MatchResultCard({
   detailId,
   headingLevel = 2,
 }: {
-  result: MatchResultData;
+  result: MatchEnded;
   match: Match;
   viewerUserId: string;
   headingId?: string;
@@ -260,7 +254,7 @@ function Settlement({
           <p className="mt-1 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
             <span aria-hidden="true">{finalPrice === null ? "—" : finalPrice.toFixed(2)}</span>
             <span className="sr-only">
-              {finalPrice === null ? "not available" : spokenPrice(finalPrice)}
+              {finalPrice === null ? "not available" : fmtPrice(finalPrice)}
             </span>
           </p>
           <p className="mt-0.5 text-[10.5px] text-[#5d6877]">{symbol}</p>
@@ -283,7 +277,7 @@ function Settlement({
             Any exposure still held when time ran out was offset automatically at{" "}
             <span className="font-mono tabular-nums text-[#eef2f8]">
               <span aria-hidden="true">{finalPrice.toFixed(2)}</span>
-              <span className="sr-only">{spokenPrice(finalPrice)}</span>
+              <span className="sr-only">{fmtPrice(finalPrice)}</span>
             </span>
             , so every figure above is banked — nothing is still riding on the market.
           </>
@@ -291,19 +285,6 @@ function Settlement({
       </p>
     </div>
   );
-}
-function spokenPrice(value: number) {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function pnlTone(value: number) {
-  if (value > 0) return "text-[#1fcb83]";
-  if (value < 0) return "text-[#f6485d]";
-  return "text-[#9aa6b6]";
-}
-function signedUSD(value: number) {
-  const rounded = Math.round(value);
-  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
-  return `${sign}${fmtUSD(Math.abs(rounded))}`;
 }
 function signedPercent(value: number) {
   const sign = value > 0 ? "+" : value < 0 ? "−" : "";

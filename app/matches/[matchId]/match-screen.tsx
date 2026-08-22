@@ -6,6 +6,7 @@ import {
   MatchTransportProvider,
   useMatchConnection,
   type ConnectionStatus,
+  type MatchConnection,
 } from "@/lib/match/match-connection";
 import type { MatchStatus } from "@/lib/match/types";
 import { ConnectionBanner } from "./connection-banner";
@@ -70,7 +71,7 @@ function statusSpeech(
       return "This match was cancelled before it started.";
   }
 }
-function MatchPhase({ connection }: { connection: ReturnType<typeof useMatchConnection> }) {
+function MatchPhase({ connection }: { connection: MatchConnection }) {
   const { match } = connection;
   if (match === null) {
     return (
@@ -157,8 +158,8 @@ function ActiveMatch({
   connection,
   match,
 }: {
-  connection: ReturnType<typeof useMatchConnection>;
-  match: NonNullable<ReturnType<typeof useMatchConnection>["match"]>;
+  connection: MatchConnection;
+  match: NonNullable<MatchConnection["match"]>;
 }) {
   const {
     candles,

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
+import { fmtPrice } from "./format";
+import { SectionLabel } from "./section-label";
 import { LeaveMatch } from "./leave-match";
 import { useRemainingSeconds } from "@/lib/match/use-remaining-seconds";
 import type { Match, PlayerState } from "@/lib/match/types";
@@ -111,9 +113,7 @@ function spokenClock(seconds: number): string {
   const secondPart = rest === 0 && minutes > 0 ? "" : `${rest} second${rest === 1 ? "" : "s"}`;
   return [minutePart, secondPart].filter((part) => part !== "").join(" ");
 }
-function spokenPrice(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+
 function MatchupBlock({ match }: { match: Match }) {
   return (
     <div className="min-w-[170px]">
@@ -179,7 +179,7 @@ function PriceBlock({
       <p className="sr-only">
         {price === null
           ? `${symbol} price is not available yet.`
-          : `${symbol} price ${spokenPrice(price)}, ${directionLabel}.`}
+          : `${symbol} price ${fmtPrice(price)}, ${directionLabel}.`}
       </p>
     </div>
   );
@@ -261,10 +261,5 @@ function StandingLine({ player }: { player: PlayerState | null }) {
       {rounded > 0 ? "Ahead by " : "Behind by "}
       <span className="font-mono tabular-nums">{fmtUSD(Math.abs(rounded))}</span>
     </p>
-  );
-}
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">{children}</p>
   );
 }
