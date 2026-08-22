@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Receipt } from "lucide-react";
 
 import { fmtUSD } from "../../components/duel/format";
+import { fmtPrice, pnlTone, signedUSD } from "./format";
 import type { TradeFill } from "@/lib/match/types";
 
 const VISIBLE_ROWS = 6;
@@ -90,7 +91,7 @@ function TradeRow({ trade }: { trade: TradeFill }) {
             </span>
           </span>
           <span className="sr-only">
-            {fmtUSD(Math.round(trade.amount))} filled at {spokenPrice(trade.fillPrice)}.
+            {fmtUSD(Math.round(trade.amount))} filled at {fmtPrice(trade.fillPrice)}.
           </span>
         </span>
 
@@ -147,27 +148,10 @@ function elapsedLabel(elapsedMs: number) {
   return `${Math.floor(minutes / 60)}h`;
 }
 
-function pnlTone(value: number) {
-  const rounded = Math.round(value);
-  if (rounded > 0) return "text-[#1fcb83]";
-  if (rounded < 0) return "text-[#f6485d]";
-  return "text-[#9aa6b6]";
-}
-
-function signedUSD(value: number) {
-  const rounded = Math.round(value);
-  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
-  return `${sign}${fmtUSD(Math.abs(rounded))}`;
-}
-
 function realisedSpeech(value: number) {
   const rounded = Math.round(value);
   if (rounded === 0) return "This trade offset exposure and realised nothing.";
   return rounded > 0
     ? `This trade offset exposure and realised a profit of ${fmtUSD(rounded)}.`
     : `This trade offset exposure and realised a loss of ${fmtUSD(Math.abs(rounded))}.`;
-}
-
-function spokenPrice(value: number) {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
