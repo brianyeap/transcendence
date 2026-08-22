@@ -56,20 +56,10 @@ function FlatState({ player }: { player: PlayerState }) {
       <p className="mt-1 text-[12.5px] text-[#9aa6b6]">
         Bet on a rise or a fall to take a position.
       </p>
-      <p className="mt-3.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
-        Available balance
-      </p>
-      <p className="mt-1 font-mono text-[19px] font-semibold tracking-[-.02em] tabular-nums">
-        <span aria-hidden="true">{fmtUSD(Math.round(player.availableBalance))}</span>
-        <span className="sr-only">
-          Available balance {fmtUSD(Math.round(player.availableBalance))}.
-        </span>
-      </p>
       <RealisedRow realisedPnl={player.realisedPnl} className="mt-4" />
     </div>
   );
 }
-
 function ExposureState({ player }: { player: PlayerState }) {
   const long = player.netSide === "long";
   const DirectionIcon = long ? ArrowUpRight : ArrowDownRight;
@@ -77,7 +67,6 @@ function ExposureState({ player }: { player: PlayerState }) {
   const sideBg = long
     ? "border-[#1fcb83]/30 bg-[#1fcb83]/10"
     : "border-[#f6485d]/30 bg-[#f6485d]/10";
-
   return (
     <div className="mt-4 flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -114,21 +103,7 @@ function ExposureState({ player }: { player: PlayerState }) {
         </Figure>
       </div>
       <UnrealisedBlock unrealisedPnl={player.unrealisedPnl} />
-      <div className="grid grid-cols-2 gap-2.5">
-        <Figure
-          label="Available balance"
-          speech={`Available balance ${fmtUSD(Math.round(player.availableBalance))}.`}
-        >
-          {fmtUSD(Math.round(player.availableBalance))}
-        </Figure>
-        <Figure
-          label="Realised PnL"
-          tone={pnlTone(player.realisedPnl)}
-          speech={pnlSpeech(player.realisedPnl, "Realised")}
-        >
-          {signedUSD(player.realisedPnl)}
-        </Figure>
-      </div>
+      <RealisedRow realisedPnl={player.realisedPnl} />
     </div>
   );
 }
@@ -214,6 +189,7 @@ function pnlTone(value: number) {
   if (rounded < 0) return "text-[#f6485d]";
   return "text-[#9aa6b6]";
 }
+
 function signedUSD(value: number) {
   const rounded = Math.round(value);
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
@@ -227,6 +203,7 @@ function pnlSpeech(value: number, noun: string) {
     ? `${noun}: profit of ${fmtUSD(rounded)}.`
     : `${noun}: loss of ${fmtUSD(Math.abs(rounded))}.`;
 }
+
 function spokenPrice(value: number) {
   return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
