@@ -84,7 +84,7 @@ export function useMatchConnection(matchId: string): MatchConnection {
 
   const [generation, setGeneration] = useState(0);
 
-  const refreshedForRef = useRef<string | null>(null);
+  const refreshedForRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const subscription = transport.connect(matchId, {
@@ -136,13 +136,15 @@ export function useMatchConnection(matchId: string): MatchConnection {
           matchRef.current = { ...known, status };
         }
 
-        if (
-          status === "active" &&
-          known !== null &&
-          known.endsAt === null &&
-          refreshedForRef.current !== matchId
-        ) {
-          refreshedForRef.current = matchId;
+        const missingOpponent =
+          known !== null && status === "countdown" && known.playerTwo === null;
+        const missingClock =
+          known !== null && status === "active" && known.endsAt === null;
+
+        const refreshKey = `${matchId}:${status}`;
+
+        if ((missingOpponent || missingClock) && !refreshedForRef.current.has(refreshKey)) {
+          refreshedForRef.current.add(refreshKey);
           setGeneration((count) => count + 1);
         }
       },
