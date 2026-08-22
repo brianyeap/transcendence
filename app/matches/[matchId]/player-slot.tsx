@@ -17,19 +17,17 @@ export function PlayerSlot({
     return (
       <div className="flex flex-1 items-center gap-3 rounded-[7px] border border-dashed border-white/[.12] bg-[#0f131b] px-4 py-3.5">
         <span
-          aria-hidden="true"
           className="grid size-9 shrink-0 place-items-center rounded-[30%] border border-dashed border-white/[.12] text-sm text-[#3a434f]"
         >
           ?
         </span>
         <div className="min-w-0">
-          <p aria-hidden="true" className="truncate text-[14px] font-semibold text-[#5d6877]">
+          <p className="truncate text-[14px] font-semibold text-[#5d6877]">
             {emptyLabel}
           </p>
-          <p aria-hidden="true" className="mt-0.5 text-[11.5px] text-[#3a434f]">
+          <p className="mt-0.5 text-[11.5px] text-[#3a434f]">
             Open seat
           </p>
-          <p className="sr-only">{emptyLabel}. This seat is open.</p>
         </div>
       </div>
     );
@@ -49,10 +47,9 @@ export function PlayerSlot({
             </span>
           ) : null}
         </p>
-        <p aria-hidden="true" className="mt-0.5 text-[11.5px] text-[#1fcb83]">
+        <p className="mt-0.5 text-[11.5px] text-[#1fcb83]">
           Ready
         </p>
-        <p className="sr-only">{isViewer ? "You are ready." : "This player is ready."}</p>
       </div>
     </div>
   );
@@ -71,7 +68,6 @@ export function PlayerPair({
     <div className="mt-6 flex flex-col gap-2.5">
       <PlayerSlot player={match.playerOne} viewerUserId={viewerUserId} />
       <div
-        aria-hidden="true"
         className="text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
       >
         vs

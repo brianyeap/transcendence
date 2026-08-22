@@ -4,7 +4,7 @@ import type React from "react";
 import { ArrowLeft, CircleX, Equal, ScrollText, Trophy } from "lucide-react";
 import { ActionLink } from "./message-screen";
 import { fmtUSD } from "../../components/duel/format";
-import { fmtPrice, pnlTone, signedUSD } from "./format";
+import { pnlTone, signedUSD } from "./format";
 import type { Match, MatchEnded, PlayerRef } from "@/lib/match/types";
 
 type Outcome = "win" | "loss" | "draw";
@@ -13,15 +13,11 @@ export function MatchResultCard({
   result,
   match,
   viewerUserId,
-  headingId,
-  detailId,
   headingLevel = 2,
 }: {
   result: MatchEnded;
   match: Match;
   viewerUserId: string;
-  headingId?: string;
-  detailId?: string;
   headingLevel?: 1 | 2;
 }): React.ReactElement {
   const outcome: Outcome =
@@ -41,8 +37,6 @@ export function MatchResultCard({
       <OutcomeHeader
         outcome={outcome}
         opponentName={opponentName}
-        headingId={headingId}
-        detailId={detailId}
         headingLevel={headingLevel}
       />
 
@@ -73,11 +67,11 @@ export function MatchResultCard({
 
       <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
         <ActionLink href={`/history/${match.id}`} tone="primary">
-          <ScrollText className="size-4" aria-hidden />
+          <ScrollText className="size-4" />
           View match summary
         </ActionLink>
         <ActionLink href="/" tone="secondary">
-          <ArrowLeft className="size-4" aria-hidden />
+          <ArrowLeft className="size-4" />
           Back to games
         </ActionLink>
       </div>
@@ -114,14 +108,10 @@ const OUTCOME_COPY: Record<
 function OutcomeHeader({
   outcome,
   opponentName,
-  headingId,
-  detailId,
   headingLevel,
 }: {
   outcome: Outcome;
   opponentName: string;
-  headingId?: string;
-  detailId?: string;
   headingLevel: 1 | 2;
 }) {
   const copy = OUTCOME_COPY[outcome];
@@ -140,16 +130,13 @@ function OutcomeHeader({
       <span
         className={`inline-flex items-center gap-1.5 rounded-[7px] border px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[.08em] ${tone.chip} ${tone.text}`}
       >
-        <Icon className="size-3.5" aria-hidden />
+        <Icon className="size-3.5" />
         {copy.badge}
       </span>
-      <Heading
-        id={headingId}
-        className={`mt-3.5 text-[27px] font-bold tracking-[-.02em] ${tone.text}`}
-      >
+      <Heading className={`mt-3.5 text-[27px] font-bold tracking-[-.02em] ${tone.text}`}>
         {copy.heading}
       </Heading>
-      <p id={detailId} className="mt-1.5 text-[13px] text-[#9aa6b6]">
+      <p className="mt-1.5 text-[13px] text-[#9aa6b6]">
         {copy.detail(opponentName)}
       </p>
     </div>
@@ -190,7 +177,7 @@ function PlayerResult({
           ) : null}
           {isWinner ? (
             <span className="inline-flex items-center gap-1 rounded border border-[#1fcb83]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#1fcb83]">
-              <Trophy className="size-2.5" aria-hidden />
+              <Trophy className="size-2.5" />
               Winner
             </span>
           ) : null}
@@ -210,19 +197,16 @@ function PlayerResult({
           Final capital
         </p>
         <p className="text-[12px] text-[#9aa6b6]">
-          <span aria-hidden="true">
-            Net{" "}
-            <span className={`font-mono font-semibold tabular-nums ${pnlTone(net)}`}>
-              {signedUSD(net)}
-            </span>
-            {percent === null ? null : (
-              <span className={`font-mono tabular-nums ${pnlTone(net)}`}>
-                {" "}
-                ({signedPercent(percent)})
-              </span>
-            )}
+          Net{" "}
+          <span className={`font-mono font-semibold tabular-nums ${pnlTone(net)}`}>
+            {signedUSD(net)}
           </span>
-          <span className="sr-only">{netSpeech(net, percent)}</span>
+          {percent === null ? null : (
+            <span className={`font-mono tabular-nums ${pnlTone(net)}`}>
+              {" "}
+              ({signedPercent(percent)})
+            </span>
+          )}
         </p>
       </div>
     </div>
@@ -246,10 +230,7 @@ function Settlement({
             Settlement price
           </p>
           <p className="mt-1 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
-            <span aria-hidden="true">{finalPrice === null ? "—" : finalPrice.toFixed(2)}</span>
-            <span className="sr-only">
-              {finalPrice === null ? "not available" : fmtPrice(finalPrice)}
-            </span>
+            {finalPrice === null ? "—" : finalPrice.toFixed(2)}
           </p>
           <p className="mt-0.5 text-[10.5px] text-[#5d6877]">{symbol}</p>
         </div>
@@ -270,8 +251,7 @@ function Settlement({
           <>
             Any exposure still held when time ran out was offset automatically at{" "}
             <span className="font-mono tabular-nums text-[#eef2f8]">
-              <span aria-hidden="true">{finalPrice.toFixed(2)}</span>
-              <span className="sr-only">{fmtPrice(finalPrice)}</span>
+              {finalPrice.toFixed(2)}
             </span>
             , so every figure above is banked — nothing is still riding on the market.
           </>
@@ -280,15 +260,8 @@ function Settlement({
     </div>
   );
 }
+
 function signedPercent(value: number) {
   const sign = value > 0 ? "+" : value < 0 ? "−" : "";
   return `${sign}${Math.abs(value).toFixed(2)}%`;
-}
-function netSpeech(net: number, percent: number | null) {
-  const share =
-    percent === null ? "" : `, ${Math.abs(percent).toFixed(2)} percent of the starting capital`;
-  if (net === 0) return "Net: level with the starting capital.";
-  return net > 0
-    ? `Net: up ${fmtUSD(net)}${share}.`
-    : `Net: down ${fmtUSD(Math.abs(net))}${share}.`;
 }

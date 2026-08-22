@@ -42,7 +42,7 @@ export function MatchResult({
 }
 
 function ResultLoading() {
-  return <LoadingLine announce>Loading the final result…</LoadingLine>;
+  return <LoadingLine>Loading the final result…</LoadingLine>;
 }
 
 function ResultUnavailable({ match }: { match: Match }) {
@@ -55,7 +55,7 @@ function ResultUnavailable({ match }: { match: Match }) {
             View match summary
           </ActionLink>
           <ActionLink href="/" tone="secondary">
-            <ArrowLeft className="size-4" aria-hidden />
+            <ArrowLeft className="size-4" />
             Back to games
           </ActionLink>
         </>
