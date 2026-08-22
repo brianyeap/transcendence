@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { PlayerState, Side, TradeFill, TradeRejection } from "@/lib/match/types";
 import { fmtUSD } from "../../components/duel/format";
+import { fmtPrice } from "./format";
 
 const PRESETS = [0.25, 0.5, 0.75, 1] as const;
 
@@ -469,10 +470,4 @@ function validate(raw: string, amount: number | null, player: PlayerState | null
     }
   }
   return null;
-}
-function fmtPrice(value: number) {
-  return value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 }
