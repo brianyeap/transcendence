@@ -3,7 +3,8 @@
 import type React from "react";
 import { fmtClock } from "../../components/duel/format";
 import { LeaveMatch } from "./leave-match";
-import { PlayerSlot } from "./player-slot";
+import { CentredScreen } from "./message-screen";
+import { PlayerPair } from "./player-slot";
 import { useRemainingSeconds } from "@/lib/match/use-remaining-seconds";
 import type { Match } from "@/lib/match/types";
 
@@ -22,7 +23,7 @@ export function CountdownScreen({
   const starting = remaining === null || remaining === 0;
 
   return (
-    <div className="relative flex flex-1 items-center justify-center px-5 py-5">
+    <CentredScreen className="relative">
       <LeaveMatch needsConfirm={false} className="absolute right-5 top-5 sm:right-7" />
       <div className="w-full max-w-lg rounded-xl border border-white/[.07] bg-[#0f131b] p-6 sm:p-7">
         <div className="flex flex-col items-center text-center">
@@ -49,21 +50,8 @@ export function CountdownScreen({
               : "Get ready. The chart and your controls appear the moment it starts."}
           </p>
         </div>
-        <div className="mt-6 flex flex-col gap-2.5">
-          <PlayerSlot player={match.playerOne} viewerUserId={viewerUserId} />
-          <div
-            aria-hidden="true"
-            className="text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
-          >
-            vs
-          </div>
-          <PlayerSlot
-            player={match.playerTwo}
-            viewerUserId={viewerUserId}
-            emptyLabel="Opponent"
-          />
-        </div>
+        <PlayerPair match={match} viewerUserId={viewerUserId} emptyLabel="Opponent" />
       </div>
-    </div>
+    </CentredScreen>
   );
 }
