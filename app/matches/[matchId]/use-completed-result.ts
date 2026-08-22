@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { MatchResultData } from "./match-result-card";
+import type { MatchEnded } from "@/lib/match/types";
 
 export type SettledResult =
   | { status: "loading" }
-  | { status: "ready"; result: MatchResultData }
+  | { status: "ready"; result: MatchEnded }
   | { status: "unavailable" };
 
 export function useCompletedResult(
