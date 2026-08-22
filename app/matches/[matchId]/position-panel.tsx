@@ -95,7 +95,6 @@ function ExposureState({ player }: { player: PlayerState }) {
           <span className="sr-only">Exposure amount {fmtUSD(Math.round(player.netAmount))}.</span>
         </span>
       </div>
-
       <div className="grid grid-cols-2 gap-2.5">
         <Figure
           label="Entry price"
@@ -114,9 +113,7 @@ function ExposureState({ player }: { player: PlayerState }) {
           {fmtUSD(Math.round(player.reservedBalance))}
         </Figure>
       </div>
-
       <UnrealisedBlock unrealisedPnl={player.unrealisedPnl} />
-
       <div className="grid grid-cols-2 gap-2.5">
         <Figure
           label="Available balance"
@@ -139,7 +136,6 @@ function ExposureState({ player }: { player: PlayerState }) {
 function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
   const rounded = Math.round(unrealisedPnl);
   const tone = pnlTone(unrealisedPnl);
-
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
       <div className="flex items-baseline justify-between gap-3">
@@ -159,7 +155,6 @@ function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
     </div>
   );
 }
-
 function RealisedRow({ realisedPnl, className = "" }: { realisedPnl: number; className?: string }) {
   return (
     <p className={`text-[11.5px] text-[#5d6877] ${className}`}>
@@ -206,7 +201,6 @@ function Figure({
     </div>
   );
 }
-
 function SectionLabel({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
     <p id={id} className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
@@ -214,14 +208,12 @@ function SectionLabel({ id, children }: { id?: string; children: React.ReactNode
     </p>
   );
 }
-
 function pnlTone(value: number) {
   const rounded = Math.round(value);
   if (rounded > 0) return "text-[#1fcb83]";
   if (rounded < 0) return "text-[#f6485d]";
   return "text-[#9aa6b6]";
 }
-
 function signedUSD(value: number) {
   const rounded = Math.round(value);
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
@@ -235,7 +227,6 @@ function pnlSpeech(value: number, noun: string) {
     ? `${noun}: profit of ${fmtUSD(rounded)}.`
     : `${noun}: loss of ${fmtUSD(Math.abs(rounded))}.`;
 }
-
 function spokenPrice(value: number) {
   return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
