@@ -56,17 +56,13 @@ export function LeaveMatch({
         onClick={handleTrigger}
         className={`inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-2.5 text-[12.5px] font-semibold text-[#9aa6b6] transition hover:border-white/[.12] hover:text-[#eef2f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] ${className}`}
       >
-        <LogOut aria-hidden="true" className="size-3.5" />
+        <LogOut className="size-3.5" />
         Leave
       </button>
 
       {asking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="leave-match-heading"
-            aria-describedby="leave-match-detail"
             className="w-full max-w-sm rounded-xl border border-white/[.07] bg-[#0f131b] p-6 shadow-2xl"
           >
             <h2 id="leave-match-heading" className="text-[17px] font-bold tracking-[-.01em]">
@@ -83,7 +79,7 @@ export function LeaveMatch({
                 Stay in the match
               </ActionButton>
               <ActionButton onClick={leave} tone="secondary">
-                <LogOut aria-hidden="true" className="size-4" />
+                <LogOut className="size-4" />
                 Leave anyway
               </ActionButton>
             </div>
