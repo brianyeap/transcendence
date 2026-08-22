@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { SideNav } from "../../components/duel/side-nav";
 import { MatchScreen } from "./match-screen";
 
 export default async function MatchPage({
@@ -20,8 +19,8 @@ export default async function MatchPage({
   }
 
   return (
-    <SideNav>
+    <main className="flex min-h-screen flex-col bg-[#090b10] text-[#eef2f8]">
       <MatchScreen matchId={matchId} />
-    </SideNav>
+    </main>
   );
 }

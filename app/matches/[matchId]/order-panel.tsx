@@ -90,9 +90,12 @@ export function OrderPanel({
       .filter((id) => id !== null)
       .join(" ") || undefined;
 
+  const totalCapital =
+    player === null ? 0 : player.availableBalance + player.reservedBalance;
+
   function applyPreset(fraction: number) {
     if (player === null) return;
-    setRaw(String(Math.floor(available * fraction * 100) / 100));
+    setRaw(String(Math.floor(totalCapital * fraction * 100) / 100));
   }
 
   function submit(side: Side) {
@@ -258,12 +261,12 @@ function fillSpeech(fill: TradeFill | null): string {
     fill.fillPrice
   )}. ${exposure}${realised}`;
 }
+
 function presetLabel(fraction: number): string {
   return fraction === 1
-    ? "Set the amount to your full available balance"
-    : `Set the amount to ${fraction * 100}% of your available balance`;
+    ? "Set the amount to your full capital"
+    : `Set the amount to ${fraction * 100}% of your capital`;
 }
-
 function ExposureHint({ player }: { player: PlayerState | null }) {
   if (player === null || player.netSide === "flat") return null;
   const held = player.netSide === "long" ? "Long" : "Short";
