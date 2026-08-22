@@ -2,6 +2,30 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Docker development
+
+Start the development stack with Docker:
+
+```bash
+COMPOSE_DISABLE_ENV_FILE=1 docker compose up --build
+```
+
+The `web` service installs npm dependencies when `node_modules` is missing or older than `package.json` / `package-lock.json`, then starts the Next.js dev server on [http://localhost:3000](http://localhost:3000).
+
+If port `3000` is already in use, choose another host port:
+
+```bash
+COMPOSE_DISABLE_ENV_FILE=1 WEB_PORT=3001 docker compose up --build
+```
+
+The compose file uses a named `transcendence_dev` network so future services, such as a Socket.IO server, can be added beside `web` and communicate by service name.
+
+Stop the stack with:
+
+```bash
+COMPOSE_DISABLE_ENV_FILE=1 docker compose down
+```
+
 First, run the development server:
 
 ```bash
