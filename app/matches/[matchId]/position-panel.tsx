@@ -2,7 +2,7 @@
 
 import { ArrowDownRight, ArrowUpRight, CircleSlash2 } from "lucide-react";
 import { fmtUSD } from "../../components/duel/format";
-import { fmtPrice, pnlTone, signedUSD } from "./format";
+import { pnlTone, signedUSD } from "./format";
 import { SectionLabel } from "./section-label";
 import type { PlayerState } from "@/lib/match/types";
 
@@ -15,18 +15,12 @@ export function PositionPanel({
 }) {
   return (
     <section
-      aria-labelledby="exposure-heading"
       className="rounded-xl border border-white/[.07] bg-[#0f131b] p-5"
     >
       <div className="flex items-center justify-between gap-3">
         <SectionLabel id="exposure-heading">Exposure</SectionLabel>
         <span className="font-mono text-[11.5px] tabular-nums text-[#5d6877]">
-          <span aria-hidden="true">{price === null ? "—" : `Mark ${price.toFixed(2)}`}</span>
-          <span className="sr-only">
-            {price === null
-              ? "Mark price is not available yet."
-              : `Valued against a mark price of ${fmtPrice(price)}.`}
-          </span>
+          {price === null ? "—" : `Mark ${price.toFixed(2)}`}
         </span>
       </div>
 
@@ -53,7 +47,7 @@ function Connecting() {
 function FlatState({ player }: { player: PlayerState }) {
   return (
     <div className="mt-4 rounded-[7px] border border-dashed border-white/[.07] bg-[#151b25] px-4 py-6 text-center">
-      <CircleSlash2 className="mx-auto size-5 text-[#3a434f]" aria-hidden />
+      <CircleSlash2 className="mx-auto size-5 text-[#3a434f]" />
       <p className="mt-2.5 text-[13.5px] font-semibold text-[#eef2f8]">No exposure held</p>
       <p className="mt-1 text-[12.5px] text-[#9aa6b6]">
         Bet on a rise or a fall to take a position.
@@ -75,32 +69,18 @@ function ExposureState({ player }: { player: PlayerState }) {
         <span
           className={`inline-flex items-center gap-1.5 rounded-[7px] border px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[.08em] ${sideBg} ${sideTone}`}
         >
-          <DirectionIcon className="size-3.5" aria-hidden />
-          <span aria-hidden="true">{long ? "Long" : "Short"}</span>
-          <span className="sr-only">
-            {long ? "Holding long — a bet the price rises." : "Holding short — a bet the price falls."}
-          </span>
+          <DirectionIcon className="size-3.5" />
+          {long ? "Long" : "Short"}
         </span>
         <span className="font-mono text-[19px] font-semibold tracking-[-.02em] tabular-nums">
-          <span aria-hidden="true">{fmtUSD(Math.round(player.netAmount))}</span>
-          <span className="sr-only">Exposure amount {fmtUSD(Math.round(player.netAmount))}.</span>
+          {fmtUSD(Math.round(player.netAmount))}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
-        <Figure
-          label="Entry price"
-          speech={
-            player.entryPrice === null
-              ? "Entry price: none."
-              : `Entry price ${fmtPrice(player.entryPrice)}.`
-          }
-        >
+        <Figure label="Entry price">
           {player.entryPrice === null ? "—" : player.entryPrice.toFixed(2)}
         </Figure>
-        <Figure
-          label="Reserved balance"
-          speech={`Reserved balance ${fmtUSD(Math.round(player.reservedBalance))}.`}
-        >
+        <Figure label="Reserved balance">
           {fmtUSD(Math.round(player.reservedBalance))}
         </Figure>
       </div>
@@ -118,8 +98,7 @@ function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
       <div className="flex items-baseline justify-between gap-3">
         <SectionLabel>Unrealised PnL</SectionLabel>
         <span className={`font-mono text-[22px] font-semibold tracking-[-.02em] tabular-nums ${tone}`}>
-          <span aria-hidden="true">{signedUSD(rounded)}</span>
-          <span className="sr-only">{pnlSpeech(rounded, "Unrealised")}</span>
+          {signedUSD(rounded)}
         </span>
       </div>
       <p className="mt-1.5 text-[11.5px] text-[#5d6877]">
@@ -135,53 +114,30 @@ function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
 function RealisedRow({ realisedPnl, className = "" }: { realisedPnl: number; className?: string }) {
   return (
     <p className={`text-[11.5px] text-[#5d6877] ${className}`}>
-      <span aria-hidden="true">
-        Realised PnL{" "}
-        <span className={`font-mono font-semibold tabular-nums ${pnlTone(realisedPnl)}`}>
-          {signedUSD(realisedPnl)}
-        </span>
+      Realised PnL{" "}
+      <span className={`font-mono font-semibold tabular-nums ${pnlTone(realisedPnl)}`}>
+        {signedUSD(realisedPnl)}
       </span>
-      <span className="sr-only">{pnlSpeech(realisedPnl, "Realised")}</span>
     </p>
   );
 }
-
 function Figure({
   label,
   tone = "text-[#eef2f8]",
-  speech,
   children,
 }: {
   label: string;
   tone?: string;
-  speech?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2.5">
-      <p
-        aria-hidden={speech === undefined ? undefined : true}
-        className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
-      >
+      <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
         {label}
       </p>
       <p className={`mt-1 font-mono text-[14.5px] font-semibold tabular-nums ${tone}`}>
-        {speech === undefined ? (
-          children
-        ) : (
-          <>
-            <span aria-hidden="true">{children}</span>
-            <span className="sr-only">{speech}</span>
-          </>
-        )}
+        {children}
       </p>
     </div>
   );
-}
-function pnlSpeech(value: number, noun: string) {
-  const rounded = Math.round(value);
-  if (rounded === 0) return `${noun}: level, nothing gained or lost.`;
-  return rounded > 0
-    ? `${noun}: profit of ${fmtUSD(rounded)}.`
-    : `${noun}: loss of ${fmtUSD(Math.abs(rounded))}.`;
 }
