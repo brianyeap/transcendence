@@ -2,6 +2,8 @@
 
 import { ArrowDownRight, ArrowUpRight, CircleSlash2 } from "lucide-react";
 import { fmtUSD } from "../../components/duel/format";
+import { fmtPrice, pnlTone, signedUSD } from "./format";
+import { SectionLabel } from "./section-label";
 import type { PlayerState } from "@/lib/match/types";
 
 export function PositionPanel({
@@ -23,7 +25,7 @@ export function PositionPanel({
           <span className="sr-only">
             {price === null
               ? "Mark price is not available yet."
-              : `Valued against a mark price of ${spokenPrice(price)}.`}
+              : `Valued against a mark price of ${fmtPrice(price)}.`}
           </span>
         </span>
       </div>
@@ -90,7 +92,7 @@ function ExposureState({ player }: { player: PlayerState }) {
           speech={
             player.entryPrice === null
               ? "Entry price: none."
-              : `Entry price ${spokenPrice(player.entryPrice)}.`
+              : `Entry price ${fmtPrice(player.entryPrice)}.`
           }
         >
           {player.entryPrice === null ? "—" : player.entryPrice.toFixed(2)}
@@ -176,34 +178,10 @@ function Figure({
     </div>
   );
 }
-function SectionLabel({ id, children }: { id?: string; children: React.ReactNode }) {
-  return (
-    <p id={id} className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
-      {children}
-    </p>
-  );
-}
-function pnlTone(value: number) {
-  const rounded = Math.round(value);
-  if (rounded > 0) return "text-[#1fcb83]";
-  if (rounded < 0) return "text-[#f6485d]";
-  return "text-[#9aa6b6]";
-}
-
-function signedUSD(value: number) {
-  const rounded = Math.round(value);
-  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
-  return `${sign}${fmtUSD(Math.abs(rounded))}`;
-}
-
 function pnlSpeech(value: number, noun: string) {
   const rounded = Math.round(value);
   if (rounded === 0) return `${noun}: level, nothing gained or lost.`;
   return rounded > 0
     ? `${noun}: profit of ${fmtUSD(rounded)}.`
     : `${noun}: loss of ${fmtUSD(Math.abs(rounded))}.`;
-}
-
-function spokenPrice(value: number) {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
