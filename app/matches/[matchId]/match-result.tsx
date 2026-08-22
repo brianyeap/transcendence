@@ -3,9 +3,9 @@
 import type React from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { MatchResultCard, type MatchResultData } from "./match-result-card";
+import { MatchResultCard } from "./match-result-card";
 import { useCompletedResult } from "./use-completed-result";
-import type { Match } from "@/lib/match/types";
+import type { Match, MatchEnded } from "@/lib/match/types";
 
 export function MatchResult({
   match,
@@ -13,7 +13,7 @@ export function MatchResult({
   viewerUserId,
 }: {
   match: Match;
-  ended: MatchResultData | null;
+  ended: MatchEnded | null;
   viewerUserId: string | null;
 }): React.ReactElement {
   const settled = useCompletedResult(match.id, viewerUserId);
