@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ActionButton } from "./message-screen";
 
 export function LeaveMatch({
   needsConfirm,
@@ -78,22 +79,13 @@ export function LeaveMatch({
             </p>
 
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-              <button
-                ref={stayRef}
-                type="button"
-                onClick={() => setAsking(false)}
-                className="flex flex-1 cursor-pointer items-center justify-center rounded-[7px] bg-[#4d86ff] px-4 py-2.5 text-[13.5px] font-semibold text-white transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-              >
+              <ActionButton buttonRef={stayRef} onClick={() => setAsking(false)} tone="primary">
                 Stay in the match
-              </button>
-              <button
-                type="button"
-                onClick={leave}
-                className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[7px] border border-white/[.1] bg-gray-800 px-4 py-2.5 text-[13.5px] font-semibold text-[#eef2f8] transition hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-              >
+              </ActionButton>
+              <ActionButton onClick={leave} tone="secondary">
                 <LogOut aria-hidden="true" className="size-4" />
                 Leave anyway
-              </button>
+              </ActionButton>
             </div>
           </div>
         </div>

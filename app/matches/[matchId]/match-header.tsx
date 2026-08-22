@@ -18,12 +18,14 @@ export function MatchHeader({
   priceDirection,
   player,
   serverNow,
+  matchOver,
 }: {
   match: Match;
   price: number | null;
   priceDirection: "up" | "down" | "flat";
   player: PlayerState | null;
   serverNow: () => number;
+  matchOver: boolean;
 }) {
   const remaining = useRemainingSeconds(match.endsAt, serverNow);
   const announcement = useMoneyAnnouncement(player, match.startingCapital, remaining);
@@ -39,7 +41,7 @@ export function MatchHeader({
         <ClockBlock remaining={remaining} />
         <div aria-hidden="true" className="grow" />
         <CapitalBlock player={player} />
-        <LeaveMatch needsConfirm className="self-start" />
+        {matchOver ? null : <LeaveMatch needsConfirm className="self-start" />}
       </header>
     </>
   );
@@ -74,6 +76,7 @@ function direction(value: number, against: number): "up" | "down" | "level" {
   const gap = Math.round(value) - Math.round(against);
   return gap > 0 ? "up" : gap < 0 ? "down" : "level";
 }
+
 function clockBucket(remaining: number | null): string {
   if (remaining === null) return "no-clock";
   if (remaining <= 10) return "final-10";
@@ -203,7 +206,6 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
           </p>
         )}
       </div>
-
       <p className="sr-only">
         {remaining === null
           ? "Time left is not known yet."
