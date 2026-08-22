@@ -62,7 +62,7 @@ export type TradeRejection = {
 };
 
 export type MatchEnded = {
-  finalPrice: number;
+  finalPrice: number | null;
   winnerUserId: string | null;
   yourFinalCapital: number;
   opponentFinalCapital: number;
@@ -83,7 +83,4 @@ export type Tick = {
   serverTime: number;
 };
 
-export type Viewer = {
-  userId: string;
-  username: string;
-};
+export type Viewer = PlayerRef;
