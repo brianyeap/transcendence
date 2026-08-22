@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
+import { useRemainingSeconds } from "./use-remaining-seconds";
 import type { Match, PlayerState } from "@/lib/match/types";
 
 const URGENT_SECONDS = 30;
-
-const TICK_MS = 250;
 
 export function MatchHeader({
   match,
@@ -31,7 +30,6 @@ export function MatchHeader({
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
-
       <header className="flex flex-wrap items-stretch gap-x-8 gap-y-5 rounded-xl border border-white/[.07] bg-[#0f131b] px-5 py-4">
         <MatchupBlock match={match} />
         <PriceBlock symbol={match.symbol} price={price} direction={priceDirection} />
@@ -50,12 +48,10 @@ function useMoneyAnnouncement(
 ): string {
   const key = announcementKey(player, startingCapital, remaining);
   const text = announcementText(player, startingCapital, remaining);
-
   const [announced, setAnnounced] = useState({ key, text });
   if (announced.key !== key) {
     setAnnounced({ key, text });
   }
-
   return announced.text;
 }
 
@@ -71,7 +67,6 @@ function announcementKey(
     clockBucket(remaining),
   ].join(":");
 }
-
 function direction(value: number, against: number): "up" | "down" | "level" {
   const gap = Math.round(value) - Math.round(against);
   return gap > 0 ? "up" : gap < 0 ? "down" : "level";
@@ -84,14 +79,12 @@ function clockBucket(remaining: number | null): string {
   if (remaining <= 60) return "final-60";
   return `t${Math.floor(remaining / 30)}`;
 }
-
 function announcementText(
   player: PlayerState | null,
   startingCapital: number,
   remaining: number | null
 ): string {
   if (player === null) return "";
-
   const gap = Math.round(player.capital) - Math.round(player.opponentCapital);
   const standing =
     gap > 0
@@ -99,7 +92,6 @@ function announcementText(
       : gap < 0
         ? `You are behind by ${fmtUSD(Math.abs(gap))}.`
         : "You are level with your opponent.";
-
   const net = Math.round(player.capital) - Math.round(startingCapital);
   const versusStart =
     net > 0
@@ -107,14 +99,11 @@ function announcementText(
       : net < 0
         ? `Down ${fmtUSD(Math.abs(net))} on your starting capital.`
         : "Level with your starting capital.";
-
   const clock = remaining === null ? "" : ` ${spokenClock(remaining)} left.`;
-
   return `Your capital ${fmtUSD(Math.round(player.capital))}. Opponent capital ${fmtUSD(
     Math.round(player.opponentCapital)
   )}. ${standing} ${versusStart}${clock}`;
 }
-
 function spokenClock(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
@@ -122,24 +111,8 @@ function spokenClock(seconds: number): string {
   const secondPart = rest === 0 && minutes > 0 ? "" : `${rest} second${rest === 1 ? "" : "s"}`;
   return [minutePart, secondPart].filter((part) => part !== "").join(" ");
 }
-
 function spokenPrice(value: number): string {
   return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function useRemainingSeconds(endsAt: string | null, serverNow: () => number): number | null {
-  const [, forceRerender] = useReducer((count: number) => count + 1, 0);
-
-  useEffect(() => {
-    if (endsAt === null) return;
-    const id = window.setInterval(forceRerender, TICK_MS);
-    return () => window.clearInterval(id);
-  }, [endsAt]);
-
-  if (endsAt === null) return null;
-  const endsAtMs = new Date(endsAt).getTime();
-  if (Number.isNaN(endsAtMs)) return null;
-  return Math.max(0, Math.ceil((endsAtMs - serverNow()) / 1000));
 }
 
 function MatchupBlock({ match }: { match: Match }) {
@@ -166,7 +139,6 @@ function MatchupBlock({ match }: { match: Match }) {
           {match.playerTwo?.username ?? "waiting"}
         </p>
       </div>
-
       <p className="sr-only">
         {match.playerTwo === null
           ? `Match: ${match.playerOne.username}, waiting for an opponent.`
@@ -175,7 +147,6 @@ function MatchupBlock({ match }: { match: Match }) {
     </div>
   );
 }
-
 function PriceBlock({
   symbol,
   price,
@@ -191,7 +162,6 @@ function PriceBlock({
     direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : Minus;
   const directionLabel =
     direction === "up" ? "rising" : direction === "down" ? "falling" : "unchanged";
-
   return (
     <div className="min-w-[190px]">
       <div aria-hidden="true">
@@ -207,7 +177,6 @@ function PriceBlock({
           )}
         </div>
       </div>
-
       <p className="sr-only">
         {price === null
           ? `${symbol} price is not available yet.`
@@ -216,10 +185,8 @@ function PriceBlock({
     </div>
   );
 }
-
 function ClockBlock({ remaining }: { remaining: number | null }) {
   const urgent = remaining !== null && remaining <= URGENT_SECONDS;
-
   return (
     <div className="min-w-[120px]">
       <div aria-hidden="true">
@@ -231,13 +198,13 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
         >
           {remaining === null ? "—:——" : fmtClock(remaining)}
         </p>
+
         {urgent && (
           <p className="mt-1.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#f6485d]">
             Closing
           </p>
         )}
       </div>
-
       <p className="sr-only">
         {remaining === null
           ? "Time left is not known yet."
@@ -262,7 +229,6 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
             ? "Your capital is not known yet."
             : `Your capital ${fmtUSD(Math.round(player.capital))}.`}
         </p>
-
         <div className="mt-2.5 flex items-center gap-2 text-[11.5px]">
           <BalanceChip
             label="Available"
@@ -276,7 +242,6 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
           />
         </div>
       </div>
-
       <div>
         <div aria-hidden="true">
           <SectionLabel>Opponent</SectionLabel>
@@ -289,7 +254,6 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
             ? "Opponent capital is not known yet."
             : `Opponent capital ${fmtUSD(Math.round(player.opponentCapital))}.`}
         </p>
-
         <div className="mt-2.5">
           <StandingLine player={player} />
         </div>
@@ -297,7 +261,6 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
     </div>
   );
 }
-
 function StandingLine({ player }: { player: PlayerState | null }) {
   if (player === null) {
     return <p className="text-[11.5px] text-[#5d6877]">Connecting…</p>;
@@ -305,7 +268,6 @@ function StandingLine({ player }: { player: PlayerState | null }) {
 
   const gap = player.capital - player.opponentCapital;
   const rounded = Math.round(gap);
-
   if (rounded === 0) {
     return <p className="text-[11.5px] text-[#9aa6b6]">Level</p>;
   }
@@ -343,7 +305,6 @@ function BalanceChip({
     </span>
   );
 }
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">{children}</p>
