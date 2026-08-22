@@ -11,9 +11,7 @@ import type {
 
 export type MatchTransportHandlers = {
   onSnapshot: (snapshot: MatchSnapshot) => void;
-
   onTick: (tick: Tick) => void;
-
   onPlayerState: (player: PlayerState) => void;
   onStatusChange: (status: MatchStatus) => void;
   onTradeAccepted: (fill: TradeFill) => void;
@@ -29,7 +27,6 @@ export type SubmitTradeInput = {
 
 export type MatchSubscription = {
   submitTrade: (input: SubmitTradeInput) => void;
-
   reconnect: () => void;
   close: () => void;
 };
