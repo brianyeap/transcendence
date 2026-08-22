@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { ArrowLeft, CircleX, Equal, ScrollText, Trophy } from "lucide-react";
-import Link from "next/link";
+import { ActionLink } from "./message-screen";
 import { fmtUSD } from "../../components/duel/format";
 import { fmtPrice, pnlTone, signedUSD } from "./format";
 import type { Match, MatchEnded, PlayerRef } from "@/lib/match/types";
@@ -72,20 +72,14 @@ export function MatchResultCard({
       />
 
       <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-        <Link
-          href={`/history/${match.id}`}
-          className="flex flex-1 items-center justify-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 py-2.5 text-[13.5px] font-semibold text-white transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-        >
+        <ActionLink href={`/history/${match.id}`} tone="primary">
           <ScrollText className="size-4" aria-hidden />
           View match summary
-        </Link>
-        <Link
-          href="/"
-          className="flex flex-1 items-center justify-center gap-2 rounded-[7px] border border-white/[.1] bg-gray-800 px-4 py-2.5 text-[13.5px] font-semibold text-[#eef2f8] transition hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
-        >
+        </ActionLink>
+        <ActionLink href="/" tone="secondary">
           <ArrowLeft className="size-4" aria-hidden />
           Back to games
-        </Link>
+        </ActionLink>
       </div>
 
       <p className="mt-4 text-center text-[11.5px] text-[#5d6877]">{copy.footnote}</p>
