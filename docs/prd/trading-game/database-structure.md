@@ -30,85 +30,11 @@ Enum trade_side {
   short
 }
 
-Enum studio_status {
-  active
-  restricted
-}
-
-Enum account_status {
-  active
-  restricted
-}
-
-Enum payment_status {
-  pending
-  approved
-  rejected
-}
-
-Table studios {
-  id uuid [pk]
-  name text [not null, unique]
-  status studio_status [not null, default: 'active']
-  restriction_reason text
-  created_at timestamptz [not null]
-
-  Note: "An organisation (Ariden Group customer). Restricting a studio blocks all of its staff."
-}
-
 Table profiles {
   id uuid [pk, ref: > auth.users.id]
   username text [not null, unique]
   email text [not null, unique]
   created_at timestamptz [not null]
-  last_seen_at timestamptz
-
-  studio_id uuid [ref: > studios.id]
-  account_status account_status [not null, default: 'active']
-  restriction_reason text
-  access_expires_at timestamptz [note: 'paywall: app usable until this moment; defaults to now() + 7 days (free trial)']
-}
-
-Table payment_submissions {
-  id uuid [pk]
-  user_id uuid [not null, ref: > auth.users.id]
-
-  amount numeric [not null]
-  currency text [not null, default: 'MYR']
-  bank_name text [not null]
-  reference_code text [not null]
-  transferred_on date [not null]
-  note text
-
-  proof_path text [not null, note: 'file path inside the private payment-proofs storage bucket']
-
-  status payment_status [not null, default: 'pending']
-  reviewed_by_email text
-  reviewed_at timestamptz
-  review_note text
-  days_granted integer
-
-  created_at timestamptz [not null]
-
-  indexes {
-    user_id
-    status
-  }
-
-  Note: "Manual bank-transfer paywall: user uploads a receipt, an admin approves it, which extends profiles.access_expires_at."
-}
-
-Table admin_actions {
-  id uuid [pk]
-  admin_email text [not null]
-  action text [not null]
-  target_type text [not null, note: "'user' | 'studio' | 'payment'"]
-  target_id text [not null]
-  target_label text
-  detail text
-  created_at timestamptz [not null]
-
-  Note: "Audit log of admin-panel actions. RLS enabled with no policies: service-role only."
 }
 
 Table matches {
@@ -209,11 +135,6 @@ Table trades {
 ## Notes
 
 - Supabase Auth owns `auth.users`; application tables store compatible `uuid` user ids.
-- The admin/paywall schema (`studios`, `payment_submissions`, `admin_actions`, the new
-  `profiles` columns, and the private `payment-proofs` storage bucket with per-user-folder
-  upload/read policies) was applied directly to the live Supabase DB on 2026-08-24 — the
-  repo intentionally keeps no migration files. Admins are any `@aridengroup.com` login
-  (see `lib/admin.ts`); the paywall is enforced in `proxy.ts`.
 - Money-like, price, balance, and PnL fields use `numeric` to avoid JavaScript floating-point drift.
 - `match_players` stores the current net exposure for each player in a match.
 - `trades` is an execution ledger. It does not store `exit_price` or `closed_at`; opposite-side trades reduce or flip net exposure.
