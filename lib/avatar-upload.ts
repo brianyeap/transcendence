@@ -1,8 +1,9 @@
-export async function resizeImage(file: File, maxSize: number = 256): Promise<Blob> {
+export async function resizeImage(file: File, maxSize: number = 256): Promise<Blob>
+{
 	return new Promise((resolve, reject) => {
 	  const img = new Image();
 	  const reader = new FileReader();
-  
+
 	  reader.onload = (e) => {
 		img.src = e.target?.result as string;
 	  };
@@ -28,7 +29,7 @@ export async function resizeImage(file: File, maxSize: number = 256): Promise<Bl
 		  offsetX, offsetY, size, size,
 		  0, 0, maxSize, maxSize
 		);
-  
+
 		canvas.toBlob(
 		  (blob) => {
 			if (blob) resolve(blob);
@@ -43,4 +44,15 @@ export async function resizeImage(file: File, maxSize: number = 256): Promise<Bl
 	  reader.onerror = reject;
 	  reader.readAsDataURL(file);
 	});
-  }
+}
+
+// This function helps convert a Blob to base44 string.
+export async function blobToBase64(blob: Blob): Promise<string>
+{
+	return new Promise((resolve, reject) => {
+	  const reader = new FileReader();
+	  reader.onload = () => resolve(reader.result as string);
+	  reader.onerror = reject;
+	  reader.readAsDataURL(blob);
+	});
+}
