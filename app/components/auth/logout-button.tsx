@@ -2,10 +2,13 @@
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { Icon } from "@/app/components/duel/duel-icon";
+import { useTranslations } from "next-intl";
 
 export function LogoutButton() {
     const router = useRouter();
+    const t = useTranslations("SideNav");
 
     const handleLogout = async () => {
         const supabase = createSupabaseBrowserClient();
@@ -13,10 +16,11 @@ export function LogoutButton() {
         const { error } = await supabase.auth.signOut();
 
         if (error) {
-            console.error(Error);
+            toast.error(error.message);
             return;
         }
 
+        toast.success("Logged out successfully.");
         router.push("/login");
     };
 
@@ -26,7 +30,7 @@ export function LogoutButton() {
             className="mt-1 flex w-full items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-medium text-[#5d6877] transition hover:bg-[#f6485d]/15 hover:text-[#f6485d]"
         >
             <Icon name="logout" className="size-5" />
-            Logout
+            {t("logout")}
         </button>
     )
 }
