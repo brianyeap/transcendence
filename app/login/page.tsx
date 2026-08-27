@@ -2,15 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { Logo } from "../components/duel/logo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("trader@duel.gg");
+  const [password, setPassword] = useState("password");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,16 +38,12 @@ export default function LoginPage() {
     setError("");
 
     if (!email.includes("@")) {
-      const message = "Enter a valid email address.";
-      setError(message);
-      toast.error(message);
+      setError("Enter a valid email address.");
       return;
     }
 
     if (mode === "register" && username.trim().length < 3) {
-      const message = "Pick a username with at least 3 characters.";
-      setError(message);
-      toast.error(message);
+      setError("Pick a username with at least 3 characters.");
       return;
     }
 
@@ -56,70 +51,43 @@ export default function LoginPage() {
 
     const supabase = createSupabaseBrowserClient();
 
-    try {
-      if (mode === "login") {
-        await toast.promise(
-          async () => {
-            const { error } = await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
-
-            if (error) {
-              throw new Error(error.message);
-            }
-          },
-          {
-            loading: "Checking your credentials...",
-            success: "Logged in successfully.",
-            error: (error) => error.message || "Unable to log in.",
-          },
-          {
-            style: {
-              minWidth: "280px",
-            },
-          }
-        );
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username,
-            },
-          },
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        if (data?.user) {
-          const { error: profileError } = await supabase.from("profiles").insert({
-            id: data.user.id,
-            email,
+    if (mode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
             username,
-          });
+          },
+        },
+      });
 
-          if (profileError) {
-            throw new Error(profileError.message);
-          }
-        }
-
-        toast.success("Account created successfully.");
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
       }
 
-      router.push("/");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Something went wrong.";
-      setError(message);
-      if (mode === "register") {
-        toast.error(message);
+      if (data?.user) {
+        await supabase.from("profiles").insert({
+          id: data.user.id,
+          email,
+          username,
+        });
       }
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
+    router.push("/");
   }
   return (
     <main className="grid min-h-screen bg-[#090b10] text-[#eef2f8] lg:grid-cols-[1.05fr_.95fr]">
@@ -185,8 +153,6 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              suppressHydrationWarning
               className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
             />
           </label>
@@ -197,7 +163,6 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
               className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
             />
           </label>

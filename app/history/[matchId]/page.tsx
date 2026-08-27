@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { TrendingUp, TrendingDown, Clock, ArrowLeft, Swords } from "lucide-react";
 import Link from "next/link";
-import { getLocale, getTranslations } from "next-intl/server";
 
 // --- Helper Functions ---
 function formatMoney(value: number): string {
@@ -14,25 +13,15 @@ function formatMoney(value: number): string {
 	})}`;
 }
 
-function formatDuration(
-	starts_at: string,
-	ends_at: string,
-	t: (key: string, values?: Record<string, string | number>) => string,
-): string {
+function formatDuration(starts_at: string, ends_at: string): string {
 	const seconds = Math.round((new Date(ends_at).getTime() - new Date(starts_at).getTime()) / 1000);
 	const minutes = Math.floor(seconds / 60);
 	const remainingSeconds = seconds % 60;
-	return t("durationValue", { minutes, seconds: remainingSeconds });
+	return `${minutes}m ${remainingSeconds}s`;
 }
 
-function dateLocaleFromAppLocale(locale: string): string {
-	if (locale === "zh-CN") return "zh-CN";
-	if (locale === "ms") return "ms-MY";
-	return "en-GB";
-}
-
-function formatDateTime(dateString: string, locale: string): string {
-	return new Date(dateString).toLocaleDateString(dateLocaleFromAppLocale(locale), {
+function formatDateTime(dateString: string): string {
+	return new Date(dateString).toLocaleDateString("en-GB", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -63,8 +52,6 @@ export default async function MatchDetailPage({
 		redirect("/login");
 	}
 
-	const t = await getTranslations("HistoryDetail");
-	const locale = await getLocale();
 	const { matchId } = await params;
 
 	// Fetch match from Supabase
@@ -122,7 +109,7 @@ export default async function MatchDetailPage({
 		const pData = playersData?.find((p) => p.user_id === playerOneId);
 		playersList.push({
 			user_id: playerOneId,
-			username: usernameMap.get(playerOneId) ?? t("unknown"),
+			username: usernameMap.get(playerOneId) ?? "Unknown",
 			final_capital: pData && pData.final_capital !== null ? Number(pData.final_capital) : Number(matchData.starting_capital),
 			realized_pnl: pData ? Number(pData.realized_pnl ?? 0) : 0,
 			is_current_user: playerOneId === user.id,
@@ -132,7 +119,7 @@ export default async function MatchDetailPage({
 		const pData = playersData?.find((p) => p.user_id === playerTwoId);
 		playersList.push({
 			user_id: playerTwoId,
-			username: usernameMap.get(playerTwoId) ?? t("unknown"),
+			username: usernameMap.get(playerTwoId) ?? "Unknown",
 			final_capital: pData && pData.final_capital !== null ? Number(pData.final_capital) : Number(matchData.starting_capital),
 			realized_pnl: pData ? Number(pData.realized_pnl ?? 0) : 0,
 			is_current_user: playerTwoId === user.id,
@@ -146,7 +133,7 @@ export default async function MatchDetailPage({
 		: playersList.find((p) => p.user_id === playerOneId))
 		?? {
 		user_id: playerOneId || user.id,
-		username: playerOneId ? (usernameMap.get(playerOneId) ?? t("unknown")) : (usernameMap.get(user.id) ?? t("youLabel")),
+		username: playerOneId ? (usernameMap.get(playerOneId) ?? "Unknown") : (usernameMap.get(user.id) ?? "You"),
 		final_capital: Number(matchData.starting_capital),
 		realized_pnl: 0,
 		is_current_user: playerOneId === user.id,
@@ -157,22 +144,22 @@ export default async function MatchDetailPage({
 		: playersList.find((p) => p.user_id === playerTwoId))
 		?? {
 		user_id: playerTwoId || "none",
-		username: playerTwoId ? (usernameMap.get(playerTwoId) ?? t("unknown")) : t("noOpponent"),
+		username: playerTwoId ? (usernameMap.get(playerTwoId) ?? "Unknown") : "No Opponent",
 		final_capital: Number(matchData.starting_capital),
 		realized_pnl: 0,
 		is_current_user: playerTwoId === user.id,
 	};
 
 	// Construct the trades list
-	const trades = (tradesData ?? []).map((tradeRow) => ({
-		id: tradeRow.id,
-		user_id: tradeRow.user_id,
-		username: usernameMap.get(tradeRow.user_id) ?? t("unknown"),
-		side: tradeRow.side as "long" | "short",
-		amount_usdt: Number(tradeRow.amount_usdt),
-		execution_price: Number(tradeRow.execution_price),
-		executed_at: tradeRow.executed_at,
-		candle_sequence: tradeRow.candle_sequence ?? 0,
+	const trades = (tradesData ?? []).map((t) => ({
+		id: t.id,
+		user_id: t.user_id,
+		username: usernameMap.get(t.user_id) ?? "Unknown",
+		side: t.side as "long" | "short",
+		amount_usdt: Number(t.amount_usdt),
+		execution_price: Number(t.execution_price),
+		executed_at: t.executed_at,
+		candle_sequence: t.candle_sequence ?? 0,
 	}));
 
 	// Construct the candles list
@@ -259,19 +246,19 @@ export default async function MatchDetailPage({
 					<g transform="translate(80, 15)">
 						{/* Legend item 1: You Long */}
 						<path d="M 0 -4 L -4 2 L 4 2 Z" fill="#10b981" stroke="#ffffff" strokeWidth="1" />
-						<text x="8" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youLong")}</text>
+						<text x="8" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">You Long</text>
 
 						{/* Legend item 2: You Short */}
 						<path transform="translate(75, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="#ef4444" stroke="#ffffff" strokeWidth="1" />
-						<text x="83" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youShort")}</text>
+						<text x="83" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">You Short</text>
 
 						{/* Legend item 3: Opponent Long */}
 						<path transform="translate(155, 0)" d="M 0 -4 L -4 2 L 4 2 Z" fill="none" stroke="#34d399" strokeWidth="1.5" />
-						<text x="163" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentLong")}</text>
+						<text x="163" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">Opponent Long</text>
 
 						{/* Legend item 4: Opponent Short */}
 						<path transform="translate(255, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="none" stroke="#f87171" strokeWidth="1.5" />
-						<text x="263" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentShort")}</text>
+						<text x="263" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">Opponent Short</text>
 					</g>
 
 					{/* Grid lines */}
@@ -377,12 +364,7 @@ export default async function MatchDetailPage({
 									stroke={markerStroke}
 									strokeWidth={markerStrokeWidth}
 								>
-									<title>{t("tradeTooltip", {
-										username: trade.username,
-										side: isLong ? t("long") : t("short"),
-										amount: trade.amount_usdt.toLocaleString(undefined, { maximumFractionDigits: 0 }),
-										price: trade.execution_price.toLocaleString(undefined, { minimumFractionDigits: 2 }),
-									})}</title>
+									<title>{`${trade.username}: ${trade.side.toUpperCase()} ${trade.amount_usdt.toLocaleString(undefined, { maximumFractionDigits: 0 })} USDT @ $${trade.execution_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}</title>
 								</path>
 							</g>
 						);
@@ -402,7 +384,7 @@ export default async function MatchDetailPage({
 					className="inline-flex items-center gap-2 text-sm text-[#5d6877] hover:text-[#eef2f8] transition-colors mb-6"
 				>
 					<ArrowLeft className="w-4 h-4" />
-					{t("backToHistory")}
+					Back to History
 				</Link>
 
 				{/* MATCH RESULT HERO BANNER */}
@@ -419,10 +401,10 @@ export default async function MatchDetailPage({
 							<div className={`text-3xl font-bold mb-1 ${result === "WIN" ? "text-emerald-400" :
 								result === "LOSS" ? "text-rose-400" : "text-gray-400"
 								}`}>
-								{result === "WIN" ? t("victory") : result === "LOSS" ? t("defeat") : t("draw")}
+								{result === "WIN" ? "Victory" : result === "LOSS" ? "Defeat" : "Draw"}
 							</div>
 							<div className="text-sm text-[#5d6877]">
-								{match.symbol} · {formatDuration(match.starts_at, match.ends_at, t)}
+								{match.symbol} · {formatDuration(match.starts_at, match.ends_at)}
 							</div>
 						</div>
 
@@ -442,7 +424,7 @@ export default async function MatchDetailPage({
 							{/* VS divider */}
 							<div className="flex flex-col items-center">
 								<Swords className="w-5 h-5 text-[#5d6877]" />
-								<span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span>
+								<span className="text-[10px] text-[#5d6877] mt-1">VS</span>
 							</div>
 
 							{/* Opponent */}
@@ -461,25 +443,25 @@ export default async function MatchDetailPage({
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex item-center gap-1 mb-1">
-									<Clock className="w-3 h-3" /> {t("startTime")}
+									<Clock className="w-3 h-3" /> Start Time
 								</div>
-								<div className="text-sm font-semibold">{formatDateTime(match.starts_at, locale)}</div>
+								<div className="text-sm font-semibold">{formatDateTime(match.starts_at)}</div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex items-center gap-1 mb-1">
-									<Clock className="w-3 h-3" /> {t("endTime")}
+									<Clock className="w-3 h-3" /> End Time
 								</div>
-								<div className="text-sm font-semibold">{formatDateTime(match.ends_at, locale)}</div>
+								<div className="text-sm font-semibold">{formatDateTime(match.ends_at)}</div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
-								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{t("duration")}</div>
-								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at, t)}</div>
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">Duration</div>
+								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at)}</div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
-								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{t("finalPrice")}</div>
+								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">Final Price</div>
 								<div className="text-sm font-semibold font-mono">
 									${match.final_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 								</div>
@@ -490,10 +472,10 @@ export default async function MatchDetailPage({
 						<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6 w-full">
 							<div className="flex items-center gap-2 mb-4">
 								<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
-								<span className="text-sm font-semibold">{t("matchChart")}</span>
+								<span className="text-sm font-semibold">Match Chart</span>
 								{hasCandles && (
 									<span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0.5 ml-auto">
-										{t("intervals", { count: candles.length, symbol: match.symbol })}
+										{candles.length} intervals · {match.symbol}
 									</span>
 								)}
 							</div>
@@ -503,7 +485,7 @@ export default async function MatchDetailPage({
 								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex items-center justify-center">
 									<div className="text-center">
 										<TrendingUp className="w-8 h-8 text-[#5d6877] mx-auto mb-2 opacity-40" />
-										<p className="text-sm text-[#5d6877]">{t("noCandleData")}</p>
+										<p className="text-sm text-[#5d6877]">No candle data available for this match</p>
 										<p className="text-[10px] text-[#5d6877] mt-1 opacity-60">
 											match_id: {match.id}...
 										</p>
@@ -517,11 +499,11 @@ export default async function MatchDetailPage({
 					<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] overflow-hidden">
 						<div className="px-4 py-3 border-b border-white/[.05] flex item-center gap-2">
 							<TrendingUp className="w-4 h-4 text-[#4d86ff]" />
-							<span className="text-sm font-semibold"> {t("tradeLog")}</span>
-							<span className="text-[10px] text-[#5d6877]  ml-auto">{t("tradesCount", { count: match.trades.length })}</span>
+							<span className="text-sm font-semibold"> Trade Log</span>
+							<span className="text-[10px] text-[#5d6877]  ml-auto">{match.trades.length} trades</span>
 						</div>
 						<div className="grid grid-cols-5 px-4 py-2 border-b border-white/[.04]">
-							{[t("headerPlayer"), t("headerSide"), t("headerAmount"), t("headerPrice"), t("headerTime")].map((col) => (
+							{["Player", "Side", "Amount", "Price", "Time"].map((col) => (
 								<div key={col} className="text-[10px] uppercase tracking-wide text-[#5d6877]">
 									{col}
 								</div>
@@ -534,7 +516,7 @@ export default async function MatchDetailPage({
 										{trade.username}
 										{trade.user_id === user?.id && (
 											<span className="ml-1.5 text-[9px] text-[#4d86ff] border border-[#4d86ff]/30 rounded px-1 py-0.5">
-												{t("you")}
+												you
 											</span>
 										)}
 									</div>
@@ -544,16 +526,16 @@ export default async function MatchDetailPage({
 										) : (
 											<TrendingDown className="w-3.5 h-3.5 text-rose-400" />
 										)}
-										<span className={`text-sm font-semibold ${trade.side === "long" ? "text-emerald-400" : "text-rose-400"
+										<span className={`text-sm font-semibold capitalize ${trade.side === "long" ? "text-emerald-400" : "text-rose-400"
 											}`}>
-											{trade.side === "long" ? t("long") : t("short")}
+											{trade.side}
 										</span>
 									</div>
 									<div className="text-sm font-mono">
 										${trade.amount_usdt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 									</div>
 									<div className="text-[11px] text-[#5d6877]">
-										{new Date(trade.executed_at).toLocaleTimeString(dateLocaleFromAppLocale(locale), {
+										{new Date(trade.executed_at).toLocaleTimeString("en-GB", {
 											hour: "2-digit",
 											minute: "2-digit",
 											second: "2-digit",

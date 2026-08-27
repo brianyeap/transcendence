@@ -1,13 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Room } from "./types";
-import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
-// Every Match is one minute for now. Kept as a named constant so the fixed rule
-// is obvious at the call site and easy to lift back into an option later.
-const MATCH_DURATION_SECONDS = 60
+const DURATION_OPTIONS = [
+    { label: '1 min', value: 60 },
+    { label: '2 min', value: 120 },
+    { label: '3 min', value: 180 }
+]
 
 const CAPITAL_OPTIONS = [
     { label: '5K', value: 5000 },
@@ -18,24 +18,19 @@ const CAPITAL_OPTIONS = [
 interface Props {
     isOpen: boolean
     onClose: () => void
-    onCreated?: (room: Room) => void
 }
 
-export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
-    const router = useRouter() // used to send the creator into their new room
+export function CreateMatchModal({ isOpen, onClose }: Props) {
+    const router = useRouter()
     const backdropRef = useRef<HTMLDivElement>(null)
-    const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
+    const [duration, setDuration] = useState(120)
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const t = useTranslations("CreateMatch");
 
-    const handleClose = useCallback(() => {
+    function handleClose() {
         setIsCreating(false)
-        setError(null)
-        setName('') // start fresh next time the modal opens
         onClose()
-    }, [onClose])
+    }
 
     // button click outside the modal closes it
     function handleBackdropClick(e: React.MouseEvent) {
@@ -49,125 +44,76 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
             if (e.key === 'Escape')
                 handleClose()
         }
-        if (isOpen)
+        if (isOpen) 
             document.addEventListener('keydown', handleEscButton)
-        return () => document.removeEventListener('keydown', handleEscButton)
-    }, [isOpen, handleClose]) //dependencies: isOpen, handleClose
+        return () => document.addEventListener('keydown', handleEscButton)
+    }, [isOpen, onClose])
 
+    // incomplete function to create the match room
     async function handleCreate() {
         setIsCreating(true)
-        setError(null)
 
-        try {
-            const response = await fetch("/api/rooms", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name,
-                    startingCapital: capital,
-                    durationSeconds: MATCH_DURATION_SECONDS,
-                }),
-            })
-            const result = await response.json()
-
-            if (!response.ok) {
-                throw new Error(result.error ?? "Could not create room.")
-            }
-
-            if (onCreated) { // upsertRoom func
-                onCreated(result.room)
-            } else {
-                window.dispatchEvent(new CustomEvent("room-created", { detail: result.room })) // broadcast the event to all listeners
-            }
-
-            handleClose()
-            // The creator is player one — send them straight into their room to
-            // wait for an opponent (this is where the match screen lives).
-            router.push(`/matches/${result.room.id}`)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not create room.")
-            setIsCreating(false)
-        }
+        await new Promise((r) => setTimeout(r, 600))
+        const mockRoomId = crypto.randomUUID()
+        router.push(`/rooms/${mockRoomId}`)
     }
 
-    if (!isOpen) return null // if modal is not open, return null to not render anything
+    if (!isOpen) return null
 
     return (
-        <div
-            ref={backdropRef}
+        <div 
+            ref={backdropRef} 
             onClick={handleBackdropClick}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
         >
-            <div className="flex w-full max-w-sm flex-col gap-5 rounded-xl border border-white/[.07] bg-[#151b25] p-6 shadow-2xl">
+            <div className="flex flex-col gap-4 bg-[#151b25] border border-white/[.07] rounded-xl p-6 w-full max-w-sm shadow-2x1">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-[#eef2f8]">{t("title")}</h2>
-                    <button
-                        onClick={handleClose}
-                        aria-label="Close"
-                        className="grid size-7 place-items-center rounded-md text-[#5d6877] transition-colors hover:bg-white/[.06] hover:text-[#eef2f8]"
+                    <h2 className="text-lg font-semibold text-white">Create Match</h2>
+                    <button onClick={handleClose}
+                        className="text-gray-500 hover:text-white transition-colors"
                     >✕</button>
                 </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <label htmlFor="room-name" className="text-[13px] font-semibold text-[#9aa6b6]">{t("roomName")}</label>
-                    <input
-                        type="text" id="room-name" name="room-name" disabled={isCreating}
-                        value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
-                        placeholder={t("roomNamePlaceholder")}
-                        className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/50 disabled:opacity-50"
-                    />
+                <div className="flex flex-col">
+                    <label htmlFor="room-name" className="text-[#9aa6b6]">Room Name</label>
+                    <input type='text' id='room-name' name="room-name" disabled={isCreating}
+                        className="border border-white/[.4] py-2 px-2 rounded-lg disabled:opacity-50" placeholder="eg: Chicken Rice"></input>
                 </div>
-
-                {/* Duration is fixed at one minute — shown, not chosen. */}
-                <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("matchLength")}</span>
-                    <div className="flex items-center justify-between rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2.5">
-                        <span className="text-sm font-semibold text-[#eef2f8]">1 min</span>
-                        <span className="rounded-full bg-white/[.04] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.04em] text-[#5d6877]">{t("fixed")}</span>
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("startingCapital")}</span>
+                <div>
+                    <h2 className="text-[#9aa6b6]">Match Duration</h2>
                     <div className="flex gap-2">
-                        {CAPITAL_OPTIONS.map((opt) => {
-                            const selected = capital === opt.value
-                            return (
-                                <button
-                                    key={opt.value} onClick={() => setCapital(opt.value)} disabled={isCreating}
-                                    className={`flex-1 rounded-lg border py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
-                                        selected
-                                            ? 'border-transparent bg-[#4d86ff] text-white'
-                                            : 'border-white/[.07] bg-[#0f131b] text-[#9aa6b6] hover:border-white/[.12] hover:text-[#eef2f8]'
-                                    }`}
-                                >
-                                    {opt.label}
-                                </button>
-                            )
-                        })}
+                        {DURATION_OPTIONS.map((opt) => (
+                            <button key={opt.value} onClick={() => setDuration(opt.value)} disabled={isCreating}
+                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-white/[.4] transition-colors disabled:opacity-50
+                                    ${duration === opt.value ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
+                            >
+                                {opt.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
-
-                {error ? (
-                    <p className="rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]">
-                        {error}
-                    </p>
-                ) : null}
-
+                <div>
+                    <h2 className="text-[#9aa6b6]">Starting Capital</h2>
+                    <div className='flex gap-2'>
+                        {CAPITAL_OPTIONS.map((opt) => (
+                            <button key={opt.value} onClick={() => setCapital(opt.value)} disabled={isCreating}
+                                className={`flex-1 py-1 rounded-lg font-semibold text-sm border border-white/[.4] transition-colors disabled:opacity-50
+                                    ${capital === opt.value ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
+                            >
+                                {opt.value}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={handleClose}
-                        className="flex-1 rounded-lg border border-white/[.07] bg-[#0f131b] py-2 text-sm font-semibold text-[#9aa6b6] transition-colors hover:border-white/[.12] hover:text-[#eef2f8]"
+                    <button onClick={handleClose}
+                        className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-white/[.1] rounded-lg transition-colors"
                     >
-                        {t("cancel")}
+                        Cancel
                     </button>
-                    <button
-                        onClick={handleCreate} disabled={isCreating}
-                        className="flex-1 rounded-lg bg-[#4d86ff] py-2 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 disabled:opacity-50"
+                    <button onClick={handleCreate} disabled={isCreating}
+                        className="flex-1 py-2 bg-blue-600 font-semibold text-white hover:bg-blue-500 disabled:opacity-50 rounded-lg transition-colors"
                     >
-                        {isCreating ? t("creating") : t("create")}
+                        {isCreating ? 'Creating...' : 'Create'}
                     </button>
                 </div>
             </div>
