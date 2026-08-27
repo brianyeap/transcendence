@@ -76,7 +76,9 @@
     "readOnly": "只读",
     "username": "用户名",
     "editComingSoon": "编辑功能即将推出",
-    "security": "安全"
+    "security": "安全",
+    "language": "语言",
+    "chooseLanguage": "选择您的语言"
   },
   "Match": {
     "vs": "对阵",

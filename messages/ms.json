@@ -76,7 +76,9 @@
     "readOnly": "Baca sahaja",
     "username": "Nama pengguna",
     "editComingSoon": "Kemas kini akan datang",
-    "security": "Keselamatan"
+    "security": "Keselamatan",
+    "language": "Bahasa",
+    "chooseLanguage": "Pilih bahasa anda"
   },
   "Match": {
     "vs": "lwn",
