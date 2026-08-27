@@ -3,7 +3,6 @@ import { Avatar } from "../components/duel/avatar";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Trophy, Medal, Crown, TrendingUp, Swords } from "lucide-react";
-import { getTranslations } from "next-intl/server";
 
 interface PlayerStats {
   userId: string;
@@ -22,8 +21,6 @@ export default async function LeaderboardPage() {
   if (!user) {
     redirect("/login");
   }
-
-  const t = await getTranslations("Leaderboard");
 
   // Fetch all public profiles
   const { data: profiles, error: profilesError } = await supabase
@@ -122,14 +119,14 @@ export default async function LeaderboardPage() {
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
                 <span className="text-[11px] uppercase tracking-[0.2em] text-[#5d6877] font-medium">
-                  {t("competition")}
+                  Competition
                 </span>
               </div>
               <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#eef2f8] to-[#8a95a8] bg-clip-text text-transparent">
-                {t("title")}
+                Leaderboard
               </h1>
               <p className="text-sm text-[#5d6877] mt-1.5">
-                {t("subtitle")}
+                Top traders ranked by wins. Make your moves, climb the ranks.
               </p>
             </div>
           </div>
@@ -150,22 +147,22 @@ export default async function LeaderboardPage() {
                     <Medal className="w-5 h-5 text-black" />
                   </div>
                   <div className="mt-3 flex flex-col items-center text-center">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-300 font-bold">{t("secondPlace")}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-slate-300 font-bold">2nd Place</span>
                     <div className="mt-3">
                       <Avatar name={p2.username} size="md" />
                     </div>
                     <span className="mt-2.5 font-bold truncate max-w-[130px]">{p2.username}</span>
                     <div className="mt-4 grid grid-cols-3 gap-2 w-full border-t border-white/[.04] pt-3 text-center">
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("wins")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Wins</div>
                         <div className="text-xs font-semibold text-slate-300">{p2.wins}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("gamesPlayed")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Played</div>
                         <div className="text-xs font-semibold text-[#eef2f8]">{p2.gamesPlayed}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("winRate")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Win %</div>
                         <div className="text-xs font-semibold text-emerald-400">{p2.winRate.toFixed(1)}%</div>
                       </div>
                     </div>
@@ -182,22 +179,22 @@ export default async function LeaderboardPage() {
                     <Crown className="w-6 h-6 text-black" />
                   </div>
                   <div className="mt-4 flex flex-col items-center text-center">
-                    <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">{t("champion")}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">Champion</span>
                     <div className="mt-3">
                       <Avatar name={p1.username} size="lg" />
                     </div>
                     <span className="mt-3 text-lg font-bold truncate max-w-[150px]">{p1.username}</span>
                     <div className="mt-5 grid grid-cols-3 gap-2 w-full border-t border-white/[.04] pt-4 text-center">
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("wins")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Wins</div>
                         <div className="text-sm font-semibold text-amber-400">{p1.wins}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("gamesPlayed")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Played</div>
                         <div className="text-sm font-semibold text-[#eef2f8]">{p1.gamesPlayed}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("winRate")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Win %</div>
                         <div className="text-sm font-semibold text-emerald-400">{p1.winRate.toFixed(1)}%</div>
                       </div>
                     </div>
@@ -206,7 +203,7 @@ export default async function LeaderboardPage() {
               ) : (
                 <div className="order-1 md:order-2 flex flex-col items-center justify-center p-6 rounded-[10px] border border-white/[.07] bg-[#0f131b] text-center min-h-[220px]">
                   <Trophy className="w-10 h-10 text-[#5d6877] mb-2" />
-                  <p className="text-sm text-[#5d6877]">{t("noWins")}</p>
+                  <p className="text-sm text-[#5d6877]">No wins registered yet</p>
                 </div>
               )}
 
@@ -217,22 +214,22 @@ export default async function LeaderboardPage() {
                     <Medal className="w-5 h-5 text-black" />
                   </div>
                   <div className="mt-3 flex flex-col items-center text-center">
-                    <span className="text-[10px] uppercase tracking-widest text-amber-600 font-bold">{t("thirdPlace")}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-amber-600 font-bold">3rd Place</span>
                     <div className="mt-3">
                       <Avatar name={p3.username} size="md" />
                     </div>
                     <span className="mt-2.5 font-bold truncate max-w-[130px]">{p3.username}</span>
                     <div className="mt-4 grid grid-cols-3 gap-2 w-full border-t border-white/[.04] pt-3 text-center">
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("wins")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Wins</div>
                         <div className="text-xs font-semibold text-amber-600">{p3.wins}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("gamesPlayed")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Played</div>
                         <div className="text-xs font-semibold text-[#eef2f8]">{p3.gamesPlayed}</div>
                       </div>
                       <div>
-                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">{t("winRate")}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-[#5d6877]">Win %</div>
                         <div className="text-xs font-semibold text-emerald-400">{p3.winRate.toFixed(1)}%</div>
                       </div>
                     </div>
@@ -250,12 +247,12 @@ export default async function LeaderboardPage() {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-white/[.02] border-b border-white/[.07]">
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-center w-20">{t("rank")}</th>
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold">{t("player")}</th>
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">{t("gamesPlayed")}</th>
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">{t("wins")}</th>
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">{t("losses")}</th>
-                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">{t("winRate")}</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-center w-20">Rank</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold">Player</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">Games Played</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">Wins</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">Losses</th>
+                    <th className="py-4 px-5 text-[10px] uppercase tracking-wider text-[#5d6877] font-semibold text-right">Win Rate</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -264,7 +261,7 @@ export default async function LeaderboardPage() {
                       <td colSpan={6} className="py-12 text-center text-[#5d6877]">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Swords className="w-8 h-8 opacity-40" />
-                          <span>{t("noMatches")}</span>
+                          <span>No matches have been played yet. Be the first to start a duel!</span>
                         </div>
                       </td>
                     </tr>
@@ -310,7 +307,7 @@ export default async function LeaderboardPage() {
                                 {player.username}
                                 {isSelf && (
                                   <span className="ml-2 text-[9px] uppercase tracking-wider bg-[#4d86ff]/15 text-[#4d86ff] px-1.5 py-0.5 rounded-[4px] font-bold">
-                                    {t("you")}
+                                    You
                                   </span>
                                 )}
                               </span>
