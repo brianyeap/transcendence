@@ -8,6 +8,7 @@ import { RoomCard } from "./room-card";
 import { Icon } from "./duel-icon";
 import type { ActiveGame, IconName, Room } from "./types";
 import { CreateMatchModal } from "./create-match-modal";
+import { useTranslations } from "next-intl";
 
 export function LobbyScreen() {
   const router = useRouter(); // lets us send the user to the match page after joining
@@ -153,12 +154,14 @@ export function LobbyScreen() {
     );
   }, [hasCurrentUserRoom]);
 
+  const t = useTranslations("Lobby");
+
   return (
     <>
       <header className="flex min-h-[74px] items-center gap-4 border-b border-white/[.07] px-5 py-4 sm:px-7">
         <div className="min-w-0 flex-1">
-          <h1 className="text-[21px] font-bold tracking-[-.01em]">Games</h1>
-          <p className="mt-1 text-[13px] text-[#9aa6b6]">Find an open match or jump into the action</p>
+          <h1 className="text-[21px] font-bold tracking-[-.01em]">{t("title")}</h1>
+          <p className="mt-1 text-[13px] text-[#9aa6b6]">{t("subtitle")}</p>
         </div>
         <button onClick={refresh} className="grid size-10 cursor-pointer place-items-center rounded-[7px] border border-white/[.07] bg-[#0f131b] text-[#9aa6b6] transition hover:border-white/[.12]">
           <Icon name="refresh" className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -166,22 +169,22 @@ export function LobbyScreen() {
         <button
           onClick={() => setModalOpen(true)}
           disabled={hasCurrentUserRoom}
-          title={hasCurrentUserRoom ? "Delete or finish your current game before creating another." : undefined}
+          title={hasCurrentUserRoom ? t("tooltipLimit") : undefined}
           className="hidden h-10 cursor-pointer items-center gap-2 rounded-[7px] bg-[#4d86ff] px-4 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex"
         >
           <Icon name="plus" className="size-4" />
-          Create Room
+          {t("createRoom")}
         </button>
       </header>
-
+ 
       <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onCreated={upsertRoom}/>
-
+ 
       <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div className="inline-flex rounded-[7px] border border-white/[.07] bg-[#151b25] p-1">
             {[
-              ["open", "Open Games", "users", openRooms.length],
-              ["active", "Active Games", "bolt", activeGames.length],
+              ["open", t("openGames"), "users", openRooms.length],
+              ["active", t("activeGames"), "bolt", activeGames.length],
             ].map(([value, label, icon, count]) => {
               const active = tab === value;
               return (
@@ -199,15 +202,15 @@ export function LobbyScreen() {
           </div>
           <p className="flex items-center gap-2 text-xs text-[#5d6877]">
             <span className="size-2 animate-pulse rounded-full bg-[#1fcb83] shadow-[0_0_10px_#1fcb83]" />
-            Live · updated now
+            {t("liveUpdatedNow")}
           </p>
         </div>
-
+ 
         {tab === "open" ? (
           <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
             {!refreshing && openRooms.length === 0 ? (
               <p className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3 text-sm text-[#9aa6b6]">
-                No open rooms yet.
+                {t("noOpenRooms")}
               </p>
             ) : null}
             {openRooms.map((room) => (
@@ -226,7 +229,7 @@ export function LobbyScreen() {
           <div className="flex flex-col gap-2.5">
             {activeGames.length === 0 ? (
               <p className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3 text-sm text-[#9aa6b6]">
-                No active games yet.
+                {t("noActiveGames")}
               </p>
             ) : null}
             {activeGames.map((game) => (
