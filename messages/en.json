@@ -76,9 +76,7 @@
     "readOnly": "Read only",
     "username": "Username",
     "editComingSoon": "Edit coming soon",
-    "security": "Security",
-    "language": "Language",
-    "chooseLanguage": "Choose your language"
+    "security": "Security"
   },
   "Match": {
     "vs": "vs",
