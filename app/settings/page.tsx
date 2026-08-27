@@ -256,17 +256,17 @@ export default function SettingsPage() {
           <div className="px-4 py-3 flex items-center gap-2">
             <Languages className="h-3.5 w-3.5 text-[#4d86ff]" />
             <span className="text-[11px] uppercase tracking-widest text-[#5d6877] font-semibold">
-              Language
+              {t("language")}
             </span>
           </div>
 
           <div className="px-4 py-4 flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">
-                Language
+                {t("language")}
               </div>
               <div className="text-sm font-semibold">
-                Choose your language
+                {t("chooseLanguage")}
               </div>
             </div>
 
