@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Room } from "./types";
+import { useTranslations } from "next-intl";
 
 // Every Match is one minute for now. Kept as a named constant so the fixed rule
 // is obvious at the call site and easy to lift back into an option later.
@@ -27,6 +28,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
     const [capital, setCapital] = useState(10000)
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const t = useTranslations("CreateMatch");
 
     const handleClose = useCallback(() => {
         setIsCreating(false)
@@ -100,7 +102,7 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
         >
             <div className="flex w-full max-w-sm flex-col gap-5 rounded-xl border border-white/[.07] bg-[#151b25] p-6 shadow-2xl">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-[#eef2f8]">Create Match</h2>
+                    <h2 className="text-lg font-semibold text-[#eef2f8]">{t("title")}</h2>
                     <button
                         onClick={handleClose}
                         aria-label="Close"
@@ -109,26 +111,26 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="room-name" className="text-[13px] font-semibold text-[#9aa6b6]">Room Name</label>
+                    <label htmlFor="room-name" className="text-[13px] font-semibold text-[#9aa6b6]">{t("roomName")}</label>
                     <input
                         type="text" id="room-name" name="room-name" disabled={isCreating}
                         value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
-                        placeholder="eg: Chicken Rice"
+                        placeholder={t("roomNamePlaceholder")}
                         className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/50 disabled:opacity-50"
                     />
                 </div>
 
                 {/* Duration is fixed at one minute — shown, not chosen. */}
                 <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-semibold text-[#9aa6b6]">Match Length</span>
+                    <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("matchLength")}</span>
                     <div className="flex items-center justify-between rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2.5">
                         <span className="text-sm font-semibold text-[#eef2f8]">1 min</span>
-                        <span className="rounded-full bg-white/[.04] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.04em] text-[#5d6877]">Fixed</span>
+                        <span className="rounded-full bg-white/[.04] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.04em] text-[#5d6877]">{t("fixed")}</span>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-semibold text-[#9aa6b6]">Starting Capital</span>
+                    <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("startingCapital")}</span>
                     <div className="flex gap-2">
                         {CAPITAL_OPTIONS.map((opt) => {
                             const selected = capital === opt.value
@@ -159,13 +161,13 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                         onClick={handleClose}
                         className="flex-1 rounded-lg border border-white/[.07] bg-[#0f131b] py-2 text-sm font-semibold text-[#9aa6b6] transition-colors hover:border-white/[.12] hover:text-[#eef2f8]"
                     >
-                        Cancel
+                        {t("cancel")}
                     </button>
                     <button
                         onClick={handleCreate} disabled={isCreating}
                         className="flex-1 rounded-lg bg-[#4d86ff] py-2 text-sm font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 disabled:opacity-50"
                     >
-                        {isCreating ? 'Creating...' : 'Create'}
+                        {isCreating ? t("creating") : t("create")}
                     </button>
                 </div>
             </div>

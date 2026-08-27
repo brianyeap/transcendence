@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import { SideNav } from "../components/duel/side-nav";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 import {
 	TrendingUp,
 	TrendingDown,
@@ -47,7 +48,7 @@ function formatDuration(starts_at: string, ends_at: string): string {
 	return `${minutes}m ${remainingSeconds}s`;
 }
 
-function getRelativeTime(dateString: string): string {
+function getRelativeTime(dateString: string, t: any): string {
 	const date = new Date(dateString);
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
@@ -57,18 +58,18 @@ function getRelativeTime(dateString: string): string {
 	const diffDays = Math.floor(diffHours / 24);
 
 	if (diffSecs < 60)
-		return "just now";
+		return t("justNow");
 	if (diffMins < 60)
-		return `${diffMins}m ago`;
+		return t("minutesAgo", { count: diffMins });
 	if (diffHours < 24)
-		return `${diffHours}h ago`;
+		return t("hoursAgo", { count: diffHours });
 	if (diffDays < 7)
-		return `${diffDays}d ago`;
+		return t("daysAgo", { count: diffDays });
 	if (diffDays < 30)
-		return `${Math.floor(diffDays / 7)}w ago`;
+		return t("weeksAgo", { count: Math.floor(diffDays / 7) });
 	if (diffDays < 365)
-		return `${Math.floor(diffDays / 30)}mo ago`;
-	return `${Math.floor(diffDays / 365)}y ago`;
+		return t("monthsAgo", { count: Math.floor(diffDays / 30) });
+	return t("yearsAgo", { count: Math.floor(diffDays / 365) });
 }
 
 function formatMoney(value: number): string {
@@ -368,18 +369,20 @@ export default function HistoryPage() {
 	const filteredMatches =
 		filter === "ALL" ? matchHistory : matchHistory.filter((m) => m.result === filter);
 
+	const t = useTranslations("History");
+
 	const filters: { key: "ALL" | "WIN" | "LOSS" | "DRAW"; label: string; count: number }[] = [
-		{ key: "ALL", label: "All", count: matchHistory.length },
-		{ key: "WIN", label: "Wins", count: stats.wins },
-		{ key: "LOSS", label: "Losses", count: stats.losses },
-		{ key: "DRAW", label: "Draws", count: stats.draws },
+		{ key: "ALL", label: t("filterAll"), count: matchHistory.length },
+		{ key: "WIN", label: t("filterWins"), count: stats.wins },
+		{ key: "LOSS", label: t("filterLosses"), count: stats.losses },
+		{ key: "DRAW", label: t("filterDraws"), count: stats.draws },
 	];
 
 	if (loading) {
 		return (
 			<SideNav>
 				<div className="p-8 text-white">
-					Loading history...
+					Loading...
 				</div>
 			</SideNav>
 		);
@@ -399,44 +402,44 @@ export default function HistoryPage() {
 							<div className="flex items-center gap-2 mb-2">
 								<div className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
 								<span className="text-[11px] uppercase tracking-[0.2em] text-[#5d6877] font-medium">
-									Performance
+									{t("performance")}
 								</span>
 							</div>
 							<h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#eef2f8] to-[#8a95a8] bg-clip-text text-transparent">
-								Match History
+								{t("title")}
 							</h1>
 							<p className="text-sm text-[#5d6877] mt-1.5">
-								Track every duel. Learn from every trade.
+								{t("subtitle")}
 							</p>
 						</div>
 					</div>
 
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
 						<StatCard
-							label="Total PnL"
+							label={t("totalPnl")}
 							value={formatMoney(stats.totalPnl)}
-							sub={`${matchHistory.length} matches played`}
+							sub={t("matchesPlayed", { count: matchHistory.length })}
 							icon={<Activity className="w-3.5 h-3.5" />}
 							accent={stats.totalPnl >= 0 ? "emerald" : "rose"}
 						/>
 						<StatCard
-							label="Win Rate"
+							label={t("winRate")}
 							value={`${stats.winRate.toFixed(1)}%`}
-							sub={`${stats.wins} / ${stats.losses}L / ${stats.draws}D`}
+							sub={t("winsLossesDraws", { wins: stats.wins, losses: stats.losses, draws: stats.draws })}
 							icon={<Target className="w-3.5 h-3.5" />}
 							accent={stats.winRate >= 50 ? "emerald" : "rose"}
 						/>
 						<StatCard
-							label="Current Streak"
-							value={`${stats.streak} ${stats.streakType === "WIN" ? "Wins" : stats.streakType === "LOSS" ? "Losses" : "Draws"}`}
-							sub={stats.streak >= 3 ? "On fire 🔥" : "Keep pushing"}
+							label={t("currentStreak")}
+							value={`${stats.streak} ${stats.streakType === "WIN" ? t("winPlural") : stats.streakType === "LOSS" ? t("lossPlural") : t("drawPlural")}`}
+							sub={stats.streak >= 3 ? t("onFire") : t("keepPushing")}
 							icon={<Flame className="w-3.5 h-3.5" />}
 							accent={stats.streakType === "WIN" ? "amber" : stats.streakType === "LOSS" ? "rose" : "gray"}
 						/>
 						<StatCard
-							label="Best Trade"
+							label={t("bestTrade")}
 							value={formatMoney(stats.bestTrade)}
-							sub={`Worst: ${formatMoney(stats.worstTrade)}`}
+							sub={t("worstTradeSub", { worst: formatMoney(stats.worstTrade) })}
 							icon={<Trophy className="w-3.5 h-3.5" />}
 							accent="blue"
 						/>
@@ -446,7 +449,7 @@ export default function HistoryPage() {
 						<div className="flex items-center justify-between mb-4">
 							<div className="flex items-center gap-2">
 								<TrendingUp className="w-4 h-4 text-blue-400" />
-								<span className="text-sm font-semibold">Cumulative PnL</span>
+								<span className="text-sm font-semibold">{t("cumulativePnl")}</span>
 							</div>
 							<div className={`text-sm font-bold ${stats.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
 								{formatMoney(stats.totalPnl)}
@@ -477,7 +480,7 @@ export default function HistoryPage() {
 						{filteredMatches.length === 0 ? (
 							<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-12 text-center">
 								<Swords className="w-8 h-8 text-[#5d6877] mx-auto mb-3" />
-								<p className="text-sm text-[#5d6877]">No matches found for this filter.</p>
+								<p className="text-sm text-[#5d6877]">{t("noMatchesFilter")}</p>
 							</div>
 						) : (
 							filteredMatches.map((match) => (
@@ -499,13 +502,13 @@ export default function HistoryPage() {
 
 												<div className="min-w-0">
 													<div className="flex items-center gap-1.5">
-														<span className="text-[10px] uppercase tracking-wider text-[#5d6877]">vs</span>
+														<span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span>
 														<span className="text-sm font-semibold truncate">{match.opponent}</span>
 													</div>
 													<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877]">
 														<span className="font-mono">{match.symbol}</span>
 														<span className="opacity-40">•</span>
-														<span>{getRelativeTime(match.starts_at)}</span>
+														<span>{getRelativeTime(match.starts_at, t)}</span>
 													</div>
 												</div>
 											</div>
@@ -514,13 +517,13 @@ export default function HistoryPage() {
 											<div className="flex items-center gap-6">
 												<div className="hidden md:flex items-center gap-6">
 													<div className="text-right">
-														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Final</div>
+														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div>
 														<div className="text-sm font-semibold font-mono mt-0.5">
 															${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 														</div>
 													</div>
 													<div className="text-right">
-														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Net PnL</div>
+														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div>
 														<div className={`text-sm font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>
 															{formatMoney(match.realized_pnl)}
 														</div>
@@ -529,7 +532,7 @@ export default function HistoryPage() {
 														</div>
 													</div>
 													<div className="text-right">
-														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Duration</div>
+														<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div>
 														<div className="text-sm font-semibold mt-0.5 flex items-center gap-1 justify-end">
 															<Clock className="w-3 h-3 text-[#5d6877]" />
 															{formatDuration(match.starts_at, match.ends_at)}
@@ -545,19 +548,19 @@ export default function HistoryPage() {
 										{/* Mobile Stats Grid - Properly nested.*/}
 										<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
 											<div>
-												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Final</div>
+												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div>
 												<div className="text-xs font-semibold font-mono mt-0.5">
 													${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 												</div>
 											</div>
 											<div>
-												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Net PnL</div>
+												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div>
 												<div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>
 													{formatMoney(match.realized_pnl)}
 												</div>
 											</div>
 											<div>
-												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">Duration</div>
+												<div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div>
 												<div className="text-xs font-semibold mt-0.5">
 													{formatDuration(match.starts_at, match.ends_at)}
 												</div>

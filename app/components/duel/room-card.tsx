@@ -2,6 +2,7 @@ import type { Room } from "./types";
 import { Avatar } from "./avatar";
 import { Icon } from "./duel-icon";
 import { fmtClock, fmtUSD, timeAgo } from "./format";
+import { useTranslations } from "next-intl";
 
 export function RoomCard({
   room,
@@ -20,6 +21,7 @@ export function RoomCard({
 }) {
   // Your own room card is clickable so you can walk back into the room you left.
   const isOwner = room.ownedByCurrentUser;
+  const t = useTranslations("RoomCard");
 
   return (
     <article
@@ -32,10 +34,10 @@ export function RoomCard({
           <h3 className="truncate text-[15.5px] font-semibold tracking-[-.01em]">{room.name}</h3>
           <p className="flex items-center gap-1.5 text-xs text-[#9aa6b6]">
             <span>
-              by{" "}
+              {t("by")}{" "}
               {room.ownedByCurrentUser ? (
                 <span className="rounded-full border border-[#1fcb83]/25 bg-[#1fcb83]/10 px-2 py-0.5 font-semibold text-[#1fcb83]">
-                  you
+                  {t("you")}
                 </span>
               ) : (
                 room.creator
@@ -48,9 +50,9 @@ export function RoomCard({
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         {[
-          ["Symbol", room.symbol],
-          ["Duration", fmtClock(room.duration)],
-          ["Capital", fmtUSD(room.capital)],
+          [t("symbol"), room.symbol],
+          [t("duration"), fmtClock(room.duration)],
+          [t("capital"), fmtUSD(room.capital)],
         ].map(([label, value]) => (
           <div key={label}>
             <p className="mb-1 text-[10.5px] font-bold uppercase tracking-[.04em] text-[#5d6877]">{label}</p>
@@ -77,7 +79,7 @@ export function RoomCard({
               className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 text-xs font-semibold text-[#ff8c99] transition hover:bg-[#f6485d]/15 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon name="trash" className="size-3.5" />
-              {deleting ? "Deleting" : "Delete"}
+              {deleting ? t("deleting") : t("delete")}
             </button>
             <button
               onClick={(event) => {
@@ -86,7 +88,7 @@ export function RoomCard({
               }}
               className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110"
             >
-              Re-enter
+              {t("reEnter")}
               <Icon name="chevR" className="size-4" />
             </button>
           </div>
@@ -96,7 +98,7 @@ export function RoomCard({
             disabled={joining}
             className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] bg-[#4d86ff] px-3 text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {joining ? "Joining" : "Join"}
+            {joining ? t("joining") : t("join")}
             <Icon name="chevR" className="size-4" />
           </button>
         )}

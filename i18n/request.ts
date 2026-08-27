@@ -6,7 +6,7 @@ export default getRequestConfig(async () => {
     const locale = cookieStore.get("locale")?.value || "en";
 
     const validLocale =
-        locale === "ms" || locale === "en"
+        locale === "ms" || locale === "en" || locale === "zh-CN"
             ? locale
             : "en";
 
