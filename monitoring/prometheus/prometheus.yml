@@ -10,9 +10,14 @@ scrape_configs:
     scheme: https
     basic_auth:
       username: username
-      password: change-this-password
+      password: change-this-to-supabase-api
     static_configs:
       - targets:
           - 'mljqvfqtpargrwxifxum.supabase.co:443'
         labels:
           project: 'transcendence'
+
+  - job_name: otel-collector
+    static_configs:
+      - targets:
+          - otel-collector:8889

@@ -1,0 +1,32 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+      grpc:
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+service:
+  pipelines:
+    metrics:
+      receivers:
+        - otlp
+      exporters:
+        - prometheus
+
+
+
+#       OTLP
+#         │
+#         ▼
+# ┌─────────────────┐
+# │                 │
+# │ OTel Collector  │
+# │                 │
+# └────────┬────────┘
+#          │
+#          │ Prometheus format
+#          ▼
+#       :8889
