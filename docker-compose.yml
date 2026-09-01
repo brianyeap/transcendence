@@ -30,37 +30,9 @@ services:
     networks:
       - transcendence
 
-  prometheus:
-    image: prom/prometheus:v3.9.1
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    networks:
-      - transcendence
-
-  grafana:
-    image: grafana/grafana:12.3.1
-    depends_on:
-      - prometheus
-    ports:
-      - "3001:3000"
-    env_file:
-      - .env.local
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - transcendence
-
 volumes:
   web_node_modules:
   web_next_cache:
-  prometheus_data:
-  grafana_data:
 
 networks:
   transcendence:
