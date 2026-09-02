@@ -126,6 +126,9 @@ export function createSocketTransport(): MatchTransport {
       let closed = false; // set by close(), so late replies are ignored
       let socket: Socket | null = null;
       let viewerId: string | null = null;
+      // The engine verifies this token to work out who we are, so we keep it
+      // here and hand it over when the socket connects.
+      let accessToken: string | null = null;
       let opponentId: string | null = null;
       let position: EnginePosition | null = null;
       let latestPrice: number | null = null;
@@ -154,6 +157,13 @@ export function createSocketTransport(): MatchTransport {
           return;
         }
         viewerId = user.id;
+
+        // getUser() above proves who we are; getSession() gives us the token
+        // itself, which is what the match engine needs to check.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        accessToken = session?.access_token ?? null;
 
         // The match itself.
         const { data: matchRow } = await supabase
@@ -295,12 +305,15 @@ export function createSocketTransport(): MatchTransport {
       function openSocket() {
         if (closed || socket !== null) return;
 
-        socket = io(SOCKET_URL);
+        socket = io(SOCKET_URL, {
+          // Sent on every connect AND reconnect, so the engine can verify us.
+          auth: (cb) => cb({ token: accessToken }),
+        });
 
         socket.on("connect", () => {
           handlers.onConnectionChange?.(true);
           // Tell the engine which match we are, so it puts us in the room.
-          socket?.emit("match:join", { matchId, userId: viewerId });
+          socket?.emit("match:join", { matchId });
         });
 
         socket.on("disconnect", () => handlers.onConnectionChange?.(false));
@@ -432,7 +445,7 @@ export function createSocketTransport(): MatchTransport {
       // ------------------------------------------------------------------
       const subscription: MatchSubscription = {
         submitTrade({ side, amount }) {
-          socket?.emit("trade:submit", { matchId, userId: viewerId, side, amount });
+          socket?.emit("trade:submit", { matchId, side, amount });
         },
 
         reconnect() {
