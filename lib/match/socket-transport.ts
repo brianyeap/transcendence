@@ -309,7 +309,14 @@ export function createSocketTransport(): MatchTransport {
         // --- lifecycle ---
         socket.on("match:waiting", () => handlers.onStatusChange?.("waiting"));
         socket.on("match:countdown", () => handlers.onStatusChange?.("countdown"));
-        socket.on("match:started", () => handlers.onStatusChange?.("active"));
+        socket.on("match:started", () => {
+          handlers.onStatusChange?.("active");
+          //  Player one opens the match page while the room is still empty, so
+          //  the snapshot was built before player two existed. Now that the
+          //  match is live the row has them, so read it again - that fills in
+          //  the opponent's name, their capital, and the add-friend button.
+          if (opponentId === null) loadSnapshot();
+        });
 
         // --- price ---
         socket.on("match:tick", (tick: {

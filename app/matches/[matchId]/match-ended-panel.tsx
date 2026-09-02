@@ -4,6 +4,7 @@ import { ArrowLeft, CircleX, Equal, ScrollText, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { fmtUSD } from "../../components/duel/format";
+import { AddFriendButton } from "./add-friend-button";
 import type { Match, MatchEnded, PlayerRef } from "@/lib/match/types";
 
 type Outcome = "win" | "loss" | "draw";
@@ -106,6 +107,15 @@ export function MatchEndedPanel({
           symbol={match.symbol}
           startingCapital={match.startingCapital}
         />
+
+        {/* Only offer this when we actually know who the opponent was. */}
+        {opponent === null ? null : (
+          <AddFriendButton
+            viewerUserId={viewerUserId}
+            opponentUserId={opponent.userId}
+            opponentName={opponent.username}
+          />
+        )}
 
         <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
           <Link

@@ -143,7 +143,7 @@ export default async function ProfilePage() {
 	const riskRating = getRiskRating(userStats.wins, userStats.losses);
 
 	return (
-		<SideNav user={userStats.username}>
+		<SideNav>
 			<div className="p-8 text-[#eef2f8]">
 				<div className="flex items-center gap-4 mb-8">
 					<Avatar name={userStats.username} size="lg" />
