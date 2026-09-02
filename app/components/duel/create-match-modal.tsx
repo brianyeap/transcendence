@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Room } from "./types";
 
 // All matches are 1 minute for now, so this is the only option.
 const DURATION_OPTIONS = [
@@ -18,10 +17,9 @@ const CAPITAL_OPTIONS = [
 interface Props {
     isOpen: boolean
     onClose: () => void
-    onCreated?: (room: Room) => void
 }
 
-export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
+export function CreateMatchModal({ isOpen, onClose }: Props) {
     const router = useRouter() // used to send the creator into their new room
     const backdropRef = useRef<HTMLDivElement>(null)
     const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
@@ -74,12 +72,6 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
 
             if (!response.ok) {
                 throw new Error(result.error ?? "Could not create room.")
-            }
-
-            if (onCreated) { // upsertRoom func
-                onCreated(result.room)
-            } else {
-                window.dispatchEvent(new CustomEvent("room-created", { detail: result.room })) // broadcast the event to all listeners
             }
 
             handleClose()

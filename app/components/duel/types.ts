@@ -24,12 +24,3 @@ export type Room = {
   symbol: string;
   ownedByCurrentUser?: boolean;
 };
-
-export type ActiveGame = {
-  id: string;
-  p1: string;
-  p2: string;
-  status: "countdown" | "live" | "ending";
-  remaining: number;
-  symbol: string;
-};
