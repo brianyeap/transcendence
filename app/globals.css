@@ -1,27 +1,31 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Every colour in the app is named here, so no component contains a raw
+   hex code. Change a colour once and it changes everywhere. */
+@theme {
+  --color-base: #090b10;   /* page background */
+  --color-panel: #0f131b;  /* cards and the side nav */
+  --color-raised: #151b25; /* hover state, inner boxes */
+  --color-line: #1c222c;   /* borders */
+
+  --color-ink: #eef2f8;    /* main text */
+  --color-muted: #9aa6b6;  /* secondary text */
+  --color-dim: #5d6877;    /* labels */
+  --color-faint: #3a434f;  /* the quietest text */
+
+  --color-brand: #4d86ff;  /* buttons, the active nav item */
+  --color-win: #1fcb83;    /* profit, online */
+  --color-loss: #f6485d;   /* loss, delete */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: #090b10;
-  color: #eef2f8;
+  background: var(--color-base);
+  color: var(--color-ink);
   font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
 }
 
@@ -38,5 +42,5 @@ button:disabled,
 
 ::selection {
   background: rgba(77, 134, 255, 0.22);
-  color: #eef2f8;
+  color: var(--color-ink);
 }
