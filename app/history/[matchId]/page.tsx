@@ -375,7 +375,7 @@ export default async function MatchDetailPage({
 	}
 
 	return (
-		<SideNav user={user?.email ?? "Unknown"}>
+		<SideNav>
 			<div className="p-6 md:p-8 text-[#eef2f8] max-w-5xl mx-auto">
 
 				{/* BACK BUTTON */}
