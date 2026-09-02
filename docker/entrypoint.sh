@@ -15,13 +15,18 @@ elif [ package.json -nt node_modules/.package-lock.json ]; then
   needs_install=1
 fi
 
-if [ "$needs_install" -eq 1 ]; then
-  echo "Installing npm dependencies..."
-  if [ -f package-lock.json ]; then
-    npm ci
-  else
-    npm install
-  fi
-fi
+if [ -f package-lock.json ]; then
+	echo "Attempting clean install (npm ci)..."
+	if npm ci; then
+		echo "Clean install successful."
+	else
+		echo " Error :npm ci failed due to lockfile mismatch! Falling back to standard npm install..."
+		npm install
+	fi
+	else
+		echo "No lockfile found. Running npm install..."
+		npm install
+	fi
+
 
 exec "$@"
