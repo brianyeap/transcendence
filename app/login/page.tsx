@@ -7,16 +7,8 @@ import { Logo } from "../components/duel/logo";
 import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-//  The three selling points listed under the headline.
-const POINTS = [
-  { title: "Same capital", detail: "Fair start" },
-  { title: "Live price", detail: "Real-time" },
-  { title: "Short matches", detail: "60-180s" },
-];
-
 export default function LoginPage() {
   const router = useRouter();
-  //  The same form does both jobs: "login" signs in, "register" signs up.
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +22,7 @@ export default function LoginPage() {
     event.preventDefault();
     setError("");
 
-    //  Check the form before we call Supabase.
+    //  check the form before we call supabas
     if (!email.includes("@")) {
       setError("Enter a valid email address.");
       return;
@@ -76,8 +68,7 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (err) {
-      //  One place for every failure: show it above the button.
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "Something went wrong."); // making sure err is actually Error and setting the message
     } finally {
       setLoading(false);
     }
@@ -85,43 +76,21 @@ export default function LoginPage() {
 
   return (
     <main className="grid min-h-screen bg-base text-ink lg:grid-cols-2">
-      {/* Left half: what the game is. Hidden on small screens. */}
-      <section className="hidden flex-col justify-between border-r border-line bg-panel p-12 lg:flex">
+      <section className="hidden flex-col justify-between border-r border-line bg-panel p-12 lg:flex">  {/* flex veritcally  */}
         <Logo />
 
-        <div className="max-w-md">
-          <h1 className="text-4xl font-bold">
-            Trade head-to-head.
-            <br />
-            <span className="text-dim">Highest capital wins.</span>
-          </h1>
-
-          <p className="mt-4 text-muted">
-            Two traders, one BTC/USDT stream, equal starting capital. Go long or short,
-            manage the clock, and out-trade your opponent before the match ends.
-          </p>
-
-          <div className="mt-8 flex gap-8">
-            {POINTS.map((point) => (
-              <div key={point.title}>
-                <p className="text-sm font-semibold">{point.title}</p>
-                <p className="text-xs text-dim">{point.detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold">
+          Trade head-to-head.
+          <br />
+          <span className="text-dim">Highest capital wins.</span>
+        </h1>
 
         <p className="text-xs text-faint">Simulated markets - No real funds at risk</p>
       </section>
 
-      {/* Right half: the form */}
+      {/* Right side */}
       <section className="grid place-items-center p-6">
         <form onSubmit={submit} className="w-full max-w-sm">
-          {/* The logo only shows here when the left half is hidden. */}
-          <div className="mb-8 lg:hidden">
-            <Logo />
-          </div>
-
           <h2 className="text-2xl font-bold">
             {isRegister ? "Create your account" : "Welcome back"}
           </h2>
@@ -180,8 +149,6 @@ export default function LoginPage() {
   );
 }
 
-//  One labelled text box. All three inputs on this page use it, so the
-//  styling is written once.
 function Field({
   label,
   value,

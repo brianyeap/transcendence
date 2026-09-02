@@ -1,0 +1,32 @@
+-- ============================================================================
+-- Migration 0001: remove the "join open room as player two" UPDATE policy
+-- ----------------------------------------------------------------------------
+-- THE PROBLEM
+-- The policy decided WHO may update a room, but its `with check` only
+-- constrained a single column:
+--
+--     with check (player_two_user_id = auth.uid())
+--
+-- Nothing stopped the same UPDATE from also rewriting the other columns. Any
+-- logged-in user could "join" somebody else's waiting room and, in the very
+-- same statement, set winner_user_id to themselves, flip status to
+-- 'completed', and change starting_capital - inventing a match they had won
+-- without ever playing it.
+--
+-- WHY WE DELETE IT INSTEAD OF FIXING IT
+-- Nothing in the app relies on this policy. Every UPDATE to `matches` is made
+-- with the Supabase service-role key, which bypasses row level security
+-- entirely:
+--
+--     app/api/rooms/join/route.ts   (joining a room)
+--     socket/server.js              (starting, ending and closing matches)
+--
+-- So no user-scoped client ever updates this table. The policy granted
+-- nothing the app needed, and granted attackers everything above.
+--
+-- Removing it means `matches` has no UPDATE policy at all, which is the safe
+-- default: normal users cannot change a match by any route, and the server
+-- keeps working exactly as before.
+-- ============================================================================
+
+drop policy if exists "join open room as player two" on public.matches;

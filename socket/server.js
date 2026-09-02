@@ -470,16 +470,49 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: ALLOWED_ORIGINS } });
 
+// ----------------------------------------------------------------------------
+// Who is this socket? (authentication)
+// ----------------------------------------------------------------------------
+// Every connection has to prove who it is BEFORE it is allowed to do anything.
+// The browser sends its Supabase login token when it connects; we ask Supabase
+// to check that token and tell us which user it belongs to. We then remember
+// that user id on the socket.
+//
+// This is the ONLY place a user id is ever decided. The client used to send its
+// own userId inside each message, which meant anybody could simply claim to be
+// another player - read their balance, or place losing trades in their name.
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+
+  if (typeof token !== "string" || token.length === 0) {
+    return next(new Error("Not signed in."));
+  }
+
+  // Supabase verifies the token's signature and expiry for us.
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    return next(new Error("Not signed in."));
+  }
+
+  socket.data.userId = data.user.id; // trusted; never taken from a message
+  next();
+});
+
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
 
   // ------------------------------------------------------------------------
   // A player opens the match page and joins their match.
   // ------------------------------------------------------------------------
-  socket.on("match:join", async ({ matchId, userId }) => {
+  socket.on("match:join", async ({ matchId }) => {
+    // Who we are was settled when the socket connected (see io.use above), so a
+    // player cannot join a match as somebody else.
+    const userId = socket.data.userId;
+
     // Basic checks on the input.
-    if (typeof matchId !== "string" || typeof userId !== "string") {
-      socket.emit("error", { message: "matchId and userId are required." });
+    if (typeof matchId !== "string") {
+      socket.emit("error", { message: "matchId is required." });
       return;
     }
 
@@ -504,7 +537,6 @@ io.on("connection", (socket) => {
 
     // Remember who this socket is, and put it in the match's room.
     socket.data.matchId = matchId;
-    socket.data.userId = userId;
     socket.join(roomName(matchId));
 
     // If the room is still waiting for the second player, just say so.
@@ -555,7 +587,10 @@ io.on("connection", (socket) => {
   // ------------------------------------------------------------------------
   // A player places a buy/sell (long/short) order.
   // ------------------------------------------------------------------------
-  socket.on("trade:submit", async ({ matchId, userId, side, amount }) => {
+  socket.on("trade:submit", async ({ matchId, side, amount }) => {
+    // Same rule as match:join - the trader is whoever the token says they are.
+    const userId = socket.data.userId;
+
     const match = liveMatches.get(matchId);
 
     // The match must be live (started, not ended).

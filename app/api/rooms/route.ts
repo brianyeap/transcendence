@@ -257,13 +257,7 @@ export async function POST(request: Request) {
     }
 
     return Response.json(
-      {
-        error: insertError.message,
-        parsed: {
-          request: body,
-          insert: insertPayload,
-        },
-      },
+      { error: "Could not create the room." },
       { status: 500 }
     );
   }
@@ -313,19 +307,6 @@ export async function DELETE(request: Request) {
 
   const roomId = body.roomId.trim();
 
-  const { data: debugRoom, error: debugError } = await supabase
-    .from("matches")
-    .select("id, player_one_user_id, status")
-    .eq("id", roomId)
-    .maybeSingle(); // null if not found, single if found
-
-  console.log("[DELETE /api/rooms] debug", {
-    roomId,
-    userId: user.id,
-    debugRoom,
-    debugError: debugError?.message,
-  });
-
   const { count, error: deleteError } = await supabase
     .from("matches")
     .delete({ count: "exact" }) // return the number of rows deleted
@@ -339,10 +320,7 @@ export async function DELETE(request: Request) {
 
   if (!count || count === 0) {
     return Response.json(
-      {
-        error: "Room not found or you do not have permission to delete it.",
-        debug: { roomId, userId: user.id, foundRoom: debugRoom },
-      },
+      { error: "Room not found or you do not have permission to delete it." },
       { status: 404 }
     );
   }
