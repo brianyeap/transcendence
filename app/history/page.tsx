@@ -1,12 +1,8 @@
 "use client";
 
 import Link from "next/link";
-<<<<<<< Updated upstream
-import { useEffect, useState, useMemo } from "react";
-=======
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { redirect } from "next/navigation";
->>>>>>> Stashed changes
 import { SideNav } from "../components/duel/side-nav";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -196,7 +192,6 @@ function StatCard({ label, value, sub, icon, accent = "blue" }: StatCardProps) {
 	);
 }
 
-<<<<<<< Updated upstream
 export default function HistoryPage() {
 
 	console.log("HistoryPage rendered");
@@ -204,16 +199,11 @@ export default function HistoryPage() {
 
 	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
-=======
-export default function HistoryPage()
-{
-	
->>>>>>> Stashed changes
 	const [filter, setFilter] = useState<"ALL" | "WIN" | "LOSS" | "DRAW">("ALL");
 
 	useEffect(() => {
 		loadHistory();
-	}, []);
+	}, []);	
 
 	async function loadHistory() {
 
@@ -386,15 +376,17 @@ export default function HistoryPage()
 		{ key: "DRAW", label: "Draws", count: stats.draws },
 	];
 
+
 	if (loading) {
 		return (
-			<SideNav>
-				<div className="p-8 text-white">
-					Loading history...
+			<div className="flex min-h-screen bg-[#090b11]">
+				<div className="flex-1 flex items-center justify-center p-8 text-white font-medium tracking-wide">
+					<div className="animate-pulse">Loading history logs...</div>
 				</div>
-			</SideNav>
+			</div>
 		);
 	}
+	
 
 	return (
 		<SideNav>
