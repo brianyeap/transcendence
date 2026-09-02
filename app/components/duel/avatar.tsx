@@ -28,4 +28,4 @@ export function Avatar({
 		{initials}
 	  </div>
 	);
-  }
+}
