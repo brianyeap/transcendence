@@ -1,9 +1,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
 // All matches are 1 minute (60 seconds) for now.
-const ALLOWED_DURATION = new Set([60]);
-const DEFAULT_DURATION = 60;
+const ALLOWED_DURATION = new Set([MATCH_DURATION_SECONDS]);
+
 // Longest room name we accept, so one player can't stretch the lobby card.
 const MAX_NAME_LENGTH = 40;
 
@@ -34,7 +35,7 @@ type MatchRoom = {
 
 function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // only need starts_at and ends_at no need to pass the whole room object
   if (!room.starts_at || !room.ends_at) {
-    return 120;  // default duration 
+    return MATCH_DURATION_SECONDS;
   }
 
   const startsAt = new Date(room.starts_at).getTime();
@@ -43,7 +44,7 @@ function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // on
 
   return Number.isFinite(durationSeconds) && durationSeconds > 0 // check if time i num and dur > 0
     ? durationSeconds
-    : 120;
+    : MATCH_DURATION_SECONDS;
 }
 
 function getRoomAgeMinutes(createdAt: string) {
@@ -114,7 +115,7 @@ function getDurationSeconds(value: unknown) {
   const duration = Number(value);
 
   if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
-    return DEFAULT_DURATION;
+    return MATCH_DURATION_SECONDS;
   }
 
   return duration;
