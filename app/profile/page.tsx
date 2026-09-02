@@ -185,31 +185,6 @@ export default async function ProfilePage() {
 						>
 						</div>
 					</div>
-					{/* Legend
-					<div className="mt-3 flex item-center gap-4 text-s text-[#5d6877]">
-						<div className="flex items-center gap-1.5">
-							<span className="h-3 w-3 rounded-full bg-emerald-500"  />
-							<div>
-								<div>Wins</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Profitable Swaps</div>
-							</div>
-						</div>
-						<div className="flex items-center gap-1.5">	
-							<span className="h-3 w-3 rounded-full bg-rose-600"  />
-							<div>
-								<div>Losses</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Reversed Margins</div>
-
-							</div>
-						</div>
-						<div className="flex items-center gap-1.5">
-							<span className="h-3 w-3 rounded-full bg-gray-400"  />
-							<div>
-								<div>Draws</div>
-								<div className="text-[10px] text-[#5d6877]/60 italic">Equilibrium Cores</div>
-							</div>
-						</div>
-					</div> */}
 					{/*legend V2*/}
 					<div className="mt-4 grid grid-cols-3 gap-3 w-full">
 						{/* Win Box */}
