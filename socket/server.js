@@ -409,6 +409,57 @@ function sendPlayerState(socket, match, userId) {
   });
 }
 
+// ----------------------------------------------------------------------------
+// Startup clean-up
+// ----------------------------------------------------------------------------
+// If this server was down while a match was counting down or running, nobody
+// was there to finish it, so it is stuck forever. A player with a stuck match
+// cannot create or join another one (see /api/rooms/join), which locks them out
+// of the game. So on boot we close any match whose end time has already passed.
+//
+// There is no winner to pick — no trades were taken while we were away — so we
+// only mark it completed and leave winner_user_id as null (a draw).
+// How long an empty room may sit in the lobby before we treat it as abandoned.
+const ABANDONED_ROOM_HOURS = 1;
+
+async function closeStaleMatches() {
+  const now = new Date();
+
+  // 1. Matches that were counting down or running when we went away. Their end
+  //    time has already passed, so nobody can finish them any more.
+  const { data: expired, error: expiredError } = await supabase
+    .from("matches")
+    .update({ status: "completed" })
+    .neq("status", "completed")
+    .lt("ends_at", now.toISOString())
+    .select("id");
+
+  if (expiredError) {
+    console.log("could not close finished matches:", expiredError.message);
+  } else if (expired && expired.length > 0) {
+    console.log(`closed ${expired.length} match(es) whose time had already run out`);
+  }
+
+  // 2. Rooms still waiting for a second player. These never started, so they
+  //    have no ends_at at all and the check above skips them — we go by how
+  //    long they have been sitting there instead. This matters because a player
+  //    with ANY unfinished match cannot create or join another one.
+  const abandonedBefore = new Date(now.getTime() - ABANDONED_ROOM_HOURS * 60 * 60 * 1000);
+
+  const { data: abandoned, error: abandonedError } = await supabase
+    .from("matches")
+    .update({ status: "completed" })
+    .eq("status", "waiting")
+    .lt("created_at", abandonedBefore.toISOString())
+    .select("id");
+
+  if (abandonedError) {
+    console.log("could not close abandoned rooms:", abandonedError.message);
+  } else if (abandoned && abandoned.length > 0) {
+    console.log(`closed ${abandoned.length} abandoned room(s) nobody ever joined`);
+  }
+}
+
 // ============================================================================
 // HTTP + Socket.IO setup
 // ============================================================================
@@ -496,15 +547,6 @@ io.on("connection", (socket) => {
         at: Date.now(),
       });
     }
-    // If the match already finished, tell them the result.
-    if (match.ended) {
-      const finalCapitals = {};
-      for (const id of Object.keys(match.players)) {
-        finalCapitals[id] = match.players[id].availableBalance;
-      }
-      socket.emit("match:ended", { finalCapitals, winnerUserId: null });
-    }
-
     sendPlayerState(socket, match, userId);
     // Give the newcomer both capitals straight away so the header isn't blank.
     broadcastCapitals(match);
@@ -572,13 +614,7 @@ io.on("connection", (socket) => {
       resultingSide: result.next.side,
       resultingNotional: result.next.notional,
     });
-    socket.emit("player:state", {
-      availableBalance: result.next.availableBalance,
-      realizedPnl: result.next.realizedPnl,
-      side: result.next.side,
-      notional: result.next.notional,
-      avgEntry: result.next.avgEntry,
-    });
+    sendPlayerState(socket, match, userId);
     // The trade changed this player's capital — refresh it for both of them.
     broadcastCapitals(match);
   });
@@ -588,4 +624,5 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`match engine listening on :${PORT}`);
+  closeStaleMatches();
 });
