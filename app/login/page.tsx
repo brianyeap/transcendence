@@ -4,10 +4,19 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Logo } from "../components/duel/logo";
+import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+//  The three selling points listed under the headline.
+const POINTS = [
+  { title: "Same capital", detail: "Fair start" },
+  { title: "Live price", detail: "Real-time" },
+  { title: "Short matches", detail: "60-180s" },
+];
 
 export default function LoginPage() {
   const router = useRouter();
+  //  The same form does both jobs: "login" signs in, "register" signs up.
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,21 +24,20 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isRegister = mode === "register";
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
+    //  Check the form before we call Supabase.
     if (!email.includes("@")) {
-      const message = "Enter a valid email address.";
-      setError(message);
-      toast.error(message);
+      setError("Enter a valid email address.");
       return;
     }
 
-    if (mode === "register" && username.trim().length < 3) {
-      const message = "Pick a username with at least 3 characters.";
-      setError(message);
-      toast.error(message);
+    if (isRegister && username.trim().length < 3) {
+      setError("Pick a username with at least 3 characters.");
       return;
     }
 
@@ -38,169 +46,166 @@ export default function LoginPage() {
     const supabase = createSupabaseBrowserClient();
 
     try {
-      if (mode === "login") {
-        await toast.promise(
-          async () => {
-            const { error } = await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
-
-            if (error) {
-              throw new Error(error.message);
-            }
-          },
-          {
-            loading: "Checking your credentials...",
-            success: "Logged in successfully.",
-            error: (error) => error.message || "Unable to log in.",
-          },
-          {
-            style: {
-              minWidth: "280px",
-            },
-          }
-        );
-      } else {
-        const { data, error } = await supabase.auth.signUp({
+      if (isRegister) {
+        //  Create the account, then save the username in our profiles table.
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              username,
-            },
-          },
+          options: { data: { username } },
         });
 
-        if (error) {
-          throw new Error(error.message);
+        if (signUpError) throw new Error(signUpError.message);
+
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert({ id: data.user.id, email, username });
+
+          if (profileError) throw new Error(profileError.message);
         }
 
-        if (data?.user) {
-          const { error: profileError } = await supabase.from("profiles").insert({
-            id: data.user.id,
-            email,
-            username,
-          });
+        toast.success("Account created.");
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-          if (profileError) {
-            throw new Error(profileError.message);
-          }
-        }
-
-        toast.success("Account created successfully.");
+        if (signInError) throw new Error(signInError.message);
       }
 
       router.push("/");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Something went wrong.";
-      setError(message);
-      if (mode === "register") {
-        toast.error(message);
-      }
+    } catch (err) {
+      //  One place for every failure: show it above the button.
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
   }
+
   return (
-    <main className="grid min-h-screen bg-[#090b10] text-[#eef2f8] lg:grid-cols-[1.05fr_.95fr]">
-      <section className="relative hidden overflow-hidden border-r border-white/[.07] p-11 lg:flex lg:flex-col lg:justify-between">
-        <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_75%_15%,rgba(77,134,255,.12),transparent_56%),linear-gradient(115deg,rgba(31,203,131,.08),transparent_35%),linear-gradient(245deg,rgba(246,72,93,.08),transparent_35%)]" />
-        <div className="absolute inset-x-0 top-1/2 h-px bg-white/[.04]" />
-        <div className="absolute left-[52%] top-0 h-full w-px bg-white/[.04]" />
-        <div className="relative">
-          <Logo />
-        </div>
-        <div className="relative max-w-[470px]">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#4d86ff]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[.04em] text-[#4d86ff]">
-            <span className="size-2 rounded-full bg-[#4d86ff] shadow-[0_0_14px_#4d86ff]" />
-            1v1 · live markets
-          </div>
-          <h1 className="text-5xl font-bold leading-[1.02] tracking-[-.03em]">
+    <main className="grid min-h-screen bg-base text-ink lg:grid-cols-2">
+      {/* Left half: what the game is. Hidden on small screens. */}
+      <section className="hidden flex-col justify-between border-r border-line bg-panel p-12 lg:flex">
+        <Logo />
+
+        <div className="max-w-md">
+          <h1 className="text-4xl font-bold">
             Trade head-to-head.
             <br />
-            <span className="text-[#5d6877]">Highest capital wins.</span>
+            <span className="text-dim">Highest capital wins.</span>
           </h1>
-          <p className="mt-5 max-w-[410px] text-[15.5px] leading-7 text-[#9aa6b6]">
-            Two traders, one BTC/USDT stream, equal starting capital. Go long or short, manage the clock, and out-trade your opponent before the match ends.
+
+          <p className="mt-4 text-muted">
+            Two traders, one BTC/USDT stream, equal starting capital. Go long or short,
+            manage the clock, and out-trade your opponent before the match ends.
           </p>
+
           <div className="mt-8 flex gap-8">
-            {[
-              ["Same capital", "Fair start"],
-              ["Live price", "Real-time"],
-              ["Short matches", "60–180s"],
-            ].map(([title, copy]) => (
-              <div key={title}>
-                <div className="text-sm font-semibold">{title}</div>
-                <div className="text-xs text-[#5d6877]">{copy}</div>
+            {POINTS.map((point) => (
+              <div key={point.title}>
+                <p className="text-sm font-semibold">{point.title}</p>
+                <p className="text-xs text-dim">{point.detail}</p>
               </div>
             ))}
           </div>
         </div>
-        <p className="relative text-xs text-[#3a434f]">Simulated markets · No real funds at risk</p>
+
+        <p className="text-xs text-faint">Simulated markets - No real funds at risk</p>
       </section>
 
-      <section className="grid min-h-screen place-items-center px-6 py-10">
-        <form onSubmit={submit} className="w-full max-w-[380px]">
+      {/* Right half: the form */}
+      <section className="grid place-items-center p-6">
+        <form onSubmit={submit} className="w-full max-w-sm">
+          {/* The logo only shows here when the left half is hidden. */}
           <div className="mb-8 lg:hidden">
             <Logo />
           </div>
-          <h2 className="text-2xl font-bold tracking-[-.01em]">{mode === "login" ? "Welcome back" : "Create your account"}</h2>
-          <p className="mt-1.5 mb-7 text-sm text-[#9aa6b6]">{mode === "login" ? "Sign in to enter the lobby." : "Set up your trader profile to start dueling."}</p>
 
-          {mode === "register" && (
-            <label className="mb-4 block">
-              <span className="mb-2 block text-xs font-semibold text-[#9aa6b6]">Username</span>
-              <input
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="e.g. candle_wick"
-                className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
-              />
-            </label>
+          <h2 className="text-2xl font-bold">
+            {isRegister ? "Create your account" : "Welcome back"}
+          </h2>
+          <p className="mb-6 mt-1 text-sm text-muted">
+            {isRegister ? "Set up your trader profile to start dueling." : "Sign in to enter the lobby."}
+          </p>
+
+          {isRegister && (
+            <Field
+              label="Username"
+              value={username}
+              onChange={setUsername}
+              placeholder="e.g. candle_wick"
+            />
           )}
 
-          <label className="mb-4 block">
-            <span className="mb-2 block text-xs font-semibold text-[#9aa6b6]">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              suppressHydrationWarning
-              className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
-            />
-          </label>
+          <Field
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="you@example.com"
+          />
 
-          <label className="mb-5 block">
-            <span className="mb-2 block text-xs font-semibold text-[#9aa6b6]">Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-              className="h-12 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] px-3.5 text-[14.5px] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/40"
-            />
-          </label>
+          <Field
+            label="Password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder="Enter your password"
+          />
 
           {error && (
-            <div className="mb-4 flex items-center gap-2 rounded-[7px] bg-[#f6485d]/15 px-3 py-2.5 text-sm text-[#f6485d]">
+            <p className="mb-4 rounded-md border border-loss px-3 py-2 text-sm text-loss">
               {error}
-            </div>
+            </p>
           )}
 
-          <button type="submit" disabled={loading} className="flex h-[50px] w-full items-center justify-center rounded-[7px] bg-[#4d86ff] text-[15px] font-semibold text-white shadow-[0_6px_18px_-6px_rgba(77,134,255,.4)] transition hover:brightness-110 active:translate-y-px disabled:opacity-60">
-            {loading ? "Loading..." : mode === "login" ? "Log in" : "Create account"}
-          </button>
+          <Button type="submit" disabled={loading} className="w-full py-3">
+            {loading ? "Loading..." : isRegister ? "Create account" : "Log in"}
+          </Button>
 
-          <p className="mt-5 text-center text-[13.5px] text-[#9aa6b6]">
-            {mode === "login" ? "New here? " : "Already have an account? "}
-            <button type="button" onClick={() => setMode(mode === "login" ? "register" : "login")} className="font-semibold text-[#4d86ff]">
-              {mode === "login" ? "Create an account" : "Log in"}
+          <p className="mt-5 text-center text-sm text-muted">
+            {isRegister ? "Already have an account? " : "New here? "}
+            <button
+              type="button"
+              onClick={() => setMode(isRegister ? "login" : "register")}
+              className="font-semibold text-brand"
+            >
+              {isRegister ? "Log in" : "Create an account"}
             </button>
           </p>
         </form>
       </section>
     </main>
+  );
+}
+
+//  One labelled text box. All three inputs on this page use it, so the
+//  styling is written once.
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: string;
+}) {
+  return (
+    <label className="mb-4 block">
+      <span className="mb-2 block text-xs font-semibold text-muted">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        suppressHydrationWarning
+        className="h-12 w-full rounded-md border border-line bg-raised px-3 text-sm text-ink outline-none placeholder:text-faint focus:border-brand"
+      />
+    </label>
   );
 }
