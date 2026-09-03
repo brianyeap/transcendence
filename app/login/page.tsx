@@ -78,13 +78,14 @@ export default function LoginPage() {
         return;
       }
 
-      if (data?.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          email,
-          username,
-        });
-      }
+      //commenting out manual insert since i added a trigger in supabase to handle it
+      // if (data?.user) {
+      //   await supabase.from("profiles").insert({
+      //     id: data.user.id,
+      //     email,
+      //     username,
+      //   });
+      // }
     }
     setLoading(false);
     router.push("/");
