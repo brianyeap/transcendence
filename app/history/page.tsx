@@ -275,7 +275,7 @@ export default function HistoryPage() {
 		];
 
 		const { data: profiles, error: profilesError } = await supabase
-			.from("public_profiles")
+			.from("profiles")
 			.select("id, username")
 			.in("id", userIds);
 
