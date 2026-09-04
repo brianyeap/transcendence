@@ -226,9 +226,10 @@
 import { SideNav } from "../components/duel/side-nav";
 // Importing the Sidenav for it to be displayed in this page.
 import { redirect } from "next/navigation";
-// 
+// For redirects like in the Sidenav and also the Login.
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-//
+import { Avatar } from "../components/duel/avatar";
+// Importing for the use of the Avatar.
 
 export default async function ProfilePage()
 {
@@ -252,9 +253,47 @@ export default async function ProfilePage()
 	return(
 
 		<SideNav user={username}>
-			{/* Blank Main Canvas */}
-			<main className="min-h-screen w-full bg-[#0a0c10] text-white">
-				{/* Compact Banner would come right here.. ! */}
+			{/* Main canvas with relative positioning so the glowy-thinggy anchors to it */}
+			<main className="relative min-h-screen w-full bg-[#0a0c10] text-white overflow-hidden">
+
+				{/* AMBIENT BODY GLOW EFFECT */}
+				{/* 
+					- pointer-events-none: stops the glow overlay from blocking mouse clicks on buttons
+					- absolute left-1/2 -translate-x-1/2: centers the glow circle horizontally in the main panel
+					- top-5 & blur-[100px]: positions the indigo haze right behind the banner and avatar
+				*/}
+				<div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 h-[450px] w-full max-w-5xl bg-indigo-500/20 blur-[100px] rounded-full" />
+
+				{/* BANNER */}
+				<div className="relative w-full">
+
+					{/* The banner background & Dividing Border */}
+					{/*
+						- h-32 sm:h-36: keeps banner compact so it doesn't take up too much vertical space
+						- border-b-[3px] border-white/20: crisp bottom line separating banner from page body
+					*/}
+					<div className="h-32 sm:h-36 w-full overflow-hidden border-b-[3px] border-white/20 bg-gradient-to-r from-slate-950 via-indigo-900 to-slate-950 relative overflow-hidden">
+						{/* Subtle background glow effect, (current version is for the default but then I will change it so that it can be replaced with a image) */}
+						<div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent" />
+					</div>
+
+					{/* OVERLAPPING AVATAR */}
+					{/*
+						- absolute left-1/2 -translate-x-1/2: keeps profile picture centered in the main panel
+						- style bottom -1.0rem: pushes avatar over the dividing line
+						- ring-1 ring-white/20 & scale-530: applies the custom border ring cutout
+					*/}
+					<div className="absolute left-1/2 -translate-x-1/2" style ={{ bottom: "-1.0rem" }}>
+						<div className="rounded-full bg-[#0a0c10] ring-1 ring-white/20 scale-530 overflow-hidden">
+							<Avatar name={username}/>
+						</div>
+					</div>
+				</div>
+
+				{/* CONTENT AREA */}
+				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
+				<div className="mt-16 px-6 sm:mt-20">
+				</div>
 			</main>
 		</SideNav>
 	);
