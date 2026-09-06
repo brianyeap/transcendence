@@ -292,18 +292,23 @@ export default async function ProfilePage()
 	{
 		if(match.winner_user_id === user.id)
 			wins++;
+		else if (match.winner_user_id === null)
+			draws++;
 		else if (match.winner_user_id)
 			losses++;
 	}
 
+
+	const totalMatches = wins + losses + draws;
+	const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100 ) : 0;
 	const riskRating = getRiskRating(wins, losses);
 	const shortUserId = user.id.slice(0, 8);
 
 	return(
 
-		<SideNav user={username}>
+		<SideNav user={displayUsername}>
 			{/* Main canvas with relative positioning so the glowy-thinggy anchors to it */}
-			<main className="relative min-h-screen w-full bg-[#0a0c10] text-white overflow-hidden">
+			<main className="relative min-h-screen w-full bg-[#0a0c10] text-white overflow-hidden pb-20">
 
 				{/* AMBIENT BODY GLOW EFFECT */}
 				{/* 
@@ -338,7 +343,7 @@ export default async function ProfilePage()
 					*/}
 					<div className="absolute left-1/2 -translate-x-1/2" style ={{ bottom: "-1.0rem" }}>
 						<div className="rounded-full bg-[#0a0c10] ring-1 ring-white/20 scale-530 overflow-hidden">
-							<Avatar name={username}/>
+							<Avatar name={displayUsername}/>
 						</div>
 					</div>
 				</div>
@@ -346,11 +351,18 @@ export default async function ProfilePage()
 				{/* CONTENT AREA */}
 				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
 				<div className="mt-16 px-6 sm:mt-26 flex flex-col items-center text-center">
-					<h1 className="text-2xl sm:text-3xl font-bold tracking-wide text-white">
-						{displayUsername}
-					</h1>
 
-					<div className="mt-3 flex items-center gap-3">
+					{/* USERNAME WITH MOTION GLOW AURA */}
+					<div className="relative group">
+						<div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-70 blur-lg animate-pulse" />
+
+						<h1 className="relative text-2xl sm:text-3xl font-bold tracking-wide text-white">
+							{displayUsername}
+						</h1>
+					</div>
+					
+					{/* ID & RISK RATING BADGES */}
+					<div className="mt-4 flex items-center gap-3">
 						<span className="rounded-full border border-white/[0.03] px-3 py-1 text-xs font-mono text-gray-400">
 							ID: {shortUserId}
 						</span>
@@ -358,12 +370,48 @@ export default async function ProfilePage()
 						<span className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${
 							riskRating === "Pro"
 							? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-							: riskRating === "Amatuer"
+							: riskRating === "Amateur"
 							? "border-amber-500/30 bg-amber-500/10 text-amber-400"
 							: "border-slate-500/30 bg-slate-500/10 text-slate-400"
 						}`}>
 							{riskRating} Trader
 						</span>
+					</div>
+					
+					{/* PERFORMANCE STATS GRID & WIN/LOSS/DRAW BAR */}
+					<div className="w-full mt-10 p-6 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+						<div className="flex justify-between items-center mb-4">
+							<h2 className="text-lg font-semibold text-gray-200">Performance Stats</h2>
+							<span className="text-sm font-mono text-indigo-400">{winRate}% Win Rate</span>
+						</div>
+
+						{/* STAT CARDS */}
+						<div className="grid grid-cols-3 gap-4 mb-6">
+							<div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center">
+								<p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Wins</p>
+								<p className="text-2xl font-bold text-emerald-300 mt-1">{wins}</p>
+							</div>
+							<div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-center">
+								<p className="text-xs text-amber-400 uppercase tracking-wider font-semibold">Draws</p>
+								<p className="text-2xl font-bold text-amber-300 mt-1">{draws}</p>
+							</div>
+							<div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-center">
+								<p className="text-xs text-rose-400 uppercase tracking-wider font-semibold">Losses</p>
+								<p className="text-2xl font-bold text-rose-300 mt-1">{losses}</p>
+							</div>
+						</div>
+
+						<div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden flex">
+							{totalMatches > 0 ? (
+								<>
+									<div style={{width: `${(wins / totalMatches) * 100}%` }} className="bg-emerald-500 h-full" title={`Wins: ${wins}`} />
+									<div style={{ width: `${(draws / totalMatches) * 100}%` }} className="bg-amber-500 h-full" title={`Draws: ${draws}`} />
+									<div style={{ width: `${(losses / totalMatches) * 100}%` }} className="bg-rose-500 h-full" title={`Losses: ${losses}`} />
+								</>
+							) : (
+								<div className="w-full h-full bg-gray-700/50" />
+							)}
+						</div>
 					</div>
 				</div>
 			</main>
