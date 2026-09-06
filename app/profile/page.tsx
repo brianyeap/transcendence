@@ -231,6 +231,28 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Avatar } from "../components/duel/avatar";
 // Importing for the use of the Avatar.
 
+function getRiskRating(wins: number, losses: number): string
+{
+	if (wins > losses) return "Pro";
+	if (wins === losses) return "Amateur";
+	return "Beginner";
+}
+
+function generateSandwichUsername(emailOrUsername: string): string
+{
+	const prefix = emailOrUsername.split("@")[0];
+
+	if(prefix.length <= 7)
+	{
+		return prefix;
+	}
+
+	const firstChar = prefix.charAt(0);
+	const lastSixChar = prefix.slice(-6);
+
+	return firstChar + lastSixChar;
+}
+
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
@@ -250,6 +272,33 @@ export default async function ProfilePage()
 
 	const username = profile?.username ?? "Unknown";
 
+	const{ data: matches, error } = await supabase
+		.from("matches")
+		.select("winner_user_id, status")
+		.or(`player_one_user_id.eq.${user.id}, player_two_user_id.eq.${user.id}`)
+		.eq("status", "completed");
+
+	let wins = 0;
+	let losses = 0;
+	let draws = 0;
+
+	const rawIdentifier = user.email
+		? user.email
+		: (profile?.username?.split("_")[0] ?? "Unknown");
+
+	const displayUsername = generateSandwichUsername(rawIdentifier);
+
+	for (const match of matches ?? [] )
+	{
+		if(match.winner_user_id === user.id)
+			wins++;
+		else if (match.winner_user_id)
+			losses++;
+	}
+
+	const riskRating = getRiskRating(wins, losses);
+	const shortUserId = user.id.slice(0, 8);
+
 	return(
 
 		<SideNav user={username}>
@@ -261,6 +310,10 @@ export default async function ProfilePage()
 					- pointer-events-none: stops the glow overlay from blocking mouse clicks on buttons
 					- absolute left-1/2 -translate-x-1/2: centers the glow circle horizontally in the main panel
 					- top-5 & blur-[100px]: positions the indigo haze right behind the banner and avatar
+
+					What this line does in a nutshell is that it would make sure that the glow overlay does not block the mouse clicks
+					and then it will center the glow circle horizontally in the main panel and finally it will position the indigo haze
+					right behind the banner and the avatar.
 				*/}
 				<div className="pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 h-[450px] w-full max-w-5xl bg-indigo-500/20 blur-[100px] rounded-full" />
 
@@ -292,7 +345,26 @@ export default async function ProfilePage()
 
 				{/* CONTENT AREA */}
 				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
-				<div className="mt-16 px-6 sm:mt-20">
+				<div className="mt-16 px-6 sm:mt-26 flex flex-col items-center text-center">
+					<h1 className="text-2xl sm:text-3xl font-bold tracking-wide text-white">
+						{displayUsername}
+					</h1>
+
+					<div className="mt-3 flex items-center gap-3">
+						<span className="rounded-full border border-white/[0.03] px-3 py-1 text-xs font-mono text-gray-400">
+							ID: {shortUserId}
+						</span>
+
+						<span className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${
+							riskRating === "Pro"
+							? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+							: riskRating === "Amatuer"
+							? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+							: "border-slate-500/30 bg-slate-500/10 text-slate-400"
+						}`}>
+							{riskRating} Trader
+						</span>
+					</div>
 				</div>
 			</main>
 		</SideNav>
