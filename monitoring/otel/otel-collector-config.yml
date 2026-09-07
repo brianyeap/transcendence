@@ -1,12 +1,14 @@
 receivers:
   otlp:
     protocols:
-      http:
       grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
 exporters:
   prometheus:
-    endpoint: "0.0.0.0:8889"
+    endpoint: 0.0.0.0:8889
 
 service:
   pipelines:
@@ -15,7 +17,6 @@ service:
         - otlp
       exporters:
         - prometheus
-
 
 
 #       OTLP
