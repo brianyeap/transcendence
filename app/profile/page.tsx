@@ -289,6 +289,72 @@ function fireIcon({unlocked}: {unlocked: boolean})
 	);
 }
 
+
+// Box 2: Bronze Medal (5 Wins)
+function bronzeMedalIcon({ unlocked }: { unlocked: boolean }) {
+	if (!unlocked) {
+		return (
+			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+			</svg>
+		);
+	}
+
+	return (
+		<div className="relative flex items-center justify-center w-9 h-9">
+			{/* DUAL SPARKLE STAR ANIMATION (Using existing animate-medal-sparkle) */}
+			{/* Star 1: Top-Right (Larger) */}
+			<div className="absolute -top-0.0 -right-0.5 w-3.5 h-3.5 animate-medal-sparkle pointer-events-none z-10">
+				<svg viewBox="0 0 24 24" fill="#fbbf24" className="w-full h-full drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]">
+					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+				</svg>
+			</div>
+
+			{/* Star 2: Bottom-Left (Smaller with 1s delay for asynchronous sparkle) */}
+			<div className="absolute bottom-[-0px] -left-[1px] w-2.5 h-2.5 animate-ember-2 [animation-delay:700ms] pointer-events-none z-10">
+				<svg viewBox="0 0 24 24" fill="#f59e0b" className="w-full h-full drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]">
+					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+				</svg>
+			</div>
+
+			{/* METALLIC BRONZE MEDAL SVG */}
+			<svg className="w-8 h-8 drop-shadow-[0_4px_12px_rgba(180,83,9,0.45)]" viewBox="0 0 24 24" fill="none">
+				{/* WIDER FLAT BLUE RIBBON WITH DARK NAVY STRIPES */}
+				<path d="M5 1.5 L8.5 11 H15.5 L19 1.5 Z" fill="url(#blueRibbonBase)" stroke="#1e3a8a" strokeWidth="0.5" strokeLinejoin="miter" />
+				<path d="M7.5 1.5 L10 11 H11 L9 1.5 Z" fill="#0f172a" opacity="0.6" />
+				<path d="M16.5 1.5 L14 11 H13 L15 1.5 Z" fill="#0f172a" opacity="0.6" />
+				<path d="M11.5 1.5 L11.8 11 H12.2 L12.5 1.5 Z" fill="#0f172a" opacity="0.4" />
+
+				{/* OUTER BRONZE MEDAL RIM */}
+				<circle cx="12" cy="15.5" r="6.5" fill="url(#trueBronzeGradient)" stroke="#f97316" strokeWidth="0.5" />
+				<circle cx="12" cy="15.5" r="5.8" fill="none" stroke="#451a03" strokeWidth="0.5" opacity="0.6" />
+
+				{/* INNER DOTTED BRONZE RING DETAIL */}
+				<circle cx="12" cy="15.5" r="4.6" fill="none" stroke="#7c2d12" strokeWidth="0.65" strokeDasharray="1 1" />
+
+				{/* EMBOSSED BRONZE CENTER STAR */}
+				<path d="M12 12.2L12.8 14.1L14.8 14.3L13.3 15.7L13.7 17.7L12 16.6L10.3 17.7L10.7 15.7L9.2 14.3L11.2 14.1L12 12.2Z" fill="#451a03" />
+
+				{/* GRADIENT DEFINITIONS */}
+				<defs>
+					<linearGradient id="trueBronzeGradient" x1="6" y1="9" x2="18" y2="22" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#ea580c" />
+						<stop offset="30%" stopColor="#cd7f32" />
+						<stop offset="70%" stopColor="#9a3412" />
+						<stop offset="100%" stopColor="#451a03" />
+					</linearGradient>
+
+					<linearGradient id="blueRibbonBase" x1="5" y1="1.5" x2="19" y2="11" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#2563eb" />
+						<stop offset="50%" stopColor="#1d4ed8" />
+						<stop offset="100%" stopColor="#1e3a8a" />
+					</linearGradient>
+				</defs>
+			</svg>
+		</div>
+	);
+}
+
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
@@ -457,14 +523,106 @@ export default async function ProfilePage()
 
 						{/* Stack of Achivement box placeholder */}
 						<div className="grid grid-cols-2 gap-4 w-full">
+
 							{/* Achievement Box 1[Special Fire] */}
-							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
-								<span className="text-xs font-mono text-gray-500">// Box 1 Placeholder</span>
+							<div className={`"h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+								wins >= 1
+									? "bg-orange-500/[0.03] border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+							}`}>
+								<div className="flex items-center gap-4">
+									{/* FIRE ICON CONTAINER */}
+									<div className={`p-2.5 rounded-lg border ${
+										wins >= 1
+											? "bg-orange-500/10 border-orange-500/30"
+											: "bg-white/[0.02] border-white/10"
+									}`}>
+
+										{/* Calling the custom fireIcon function */}
+										{fireIcon({unlocked: wins >= 1 })}
+								</div>
+
+								{/* Tittle & Description */}
+								<div className="text-left">
+									<div className="flex items-center gap-2">
+										<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+											First Victory
+										</h3>
+										<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${ 
+											wins >= 1
+												? "bg-orange-500/30 text-orange-400 bg-orange-500/10"
+												:"border-gray-700 text-gray-500 bg-gray-800/20"
+										}`}>
+											Novice
+										</span>
+									</div>
+									<p className="text-xs text-gray-400 mt-0.5"> Win your first duel on the platform !</p>
+								</div>
 							</div>
-							{/* Achievement Box 2 */}
-							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
-								<span className="text-xs font-mono text-gray-500">// Box 2 Placeholder</span>
+
+							{/* UNLOCKED / LOCKED BADGE */}
+							<div className="shrink-0 text-right">
+								{wins >= 1 ? (
+									<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-md">
+										Unlocked
+									</span>
+								) : (
+									<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
+										1 Win Left.
+									</span>
+								)}
 							</div>
+						</div>
+							
+
+
+						{/* ACHIEVEMENT BOX 2: Greenhorn Trader (5 Wins - Bronze) */}
+							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+								wins >= 1
+									? "bg-amber-600/[0.03] border-amber-600/30 shadow-[0_0_15px_rgba(217,119,6,0.1)]"
+									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+							}`}>
+								<div className="flex items-center gap-4">
+									{/* BRONZE MEDAL CONTAINER */}
+									<div className={`p-2.5 rounded-lg border ${
+										wins >= 5
+											? "bg-amber-600/10 border-amber-600/30"
+											: "bg-white/[0.02] border-white/10"
+									}`}>
+										{bronzeMedalIcon({ unlocked: wins >= 1 })}
+									</div>
+									{/* TITLE & DESCRIPTION */}
+									<div className="text-left">
+										<div className="flex items-center gap-2">
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+												Greenhorn Trader
+											</h3>
+											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+												wins >= 1
+													? "border-amber-600/30 text-amber-500 bg-amber-600/10"
+													: "border-gray-700 text-gray-500 bg-gray-800/20"
+											}`}>
+												Bronze
+											</span>
+										</div>
+										<p className="text-xs text-gray-400 mt-0.5">Win 5 matches to earn your Bronze Medal</p>
+									</div>
+								</div>
+								{/* UNLOCKED / LOCKED BADGE */}
+								<div className="shrink-0 text-right">
+									{wins >= 1 ? (
+										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 bg-amber-600/10 border border-amber-600/20 px-2.5 py-1 rounded-md">
+											Unlocked
+										</span>
+									) : (
+										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
+											{5 - wins} Wins Left
+										</span>
+									)}
+								</div>
+							</div>
+
+
 							{/* Achievement Box 3 */}
 							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
 								<span className="text-xs font-mono text-gray-500">// Box 3 Placeholder</span>
