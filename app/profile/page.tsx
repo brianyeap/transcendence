@@ -253,6 +253,43 @@ function generateSandwichUsername(emailOrUsername: string): string
 	return firstChar + lastSixChar;
 }
 
+
+function fireIcon({unlocked}: {unlocked: boolean})
+{
+	if(!unlocked)
+	{
+		return (<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+			<path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+		</svg>);
+	}
+	
+	return (
+		<div className="relative flex items-center justify-center w-8 h-8">
+			{/* Animated glowy thinggy particles */}
+			<span className="absolute -top-1 left-2 w-1.5 h-1.5 bg-amber-400 rounded-full animate-ember-1 pointer-events-none" />
+			<span className="absolute -top-2 right-2 w-1 h-1 bg-orange-500 rounded-full animate-ember-2 pointer-events-none" />
+			<span className="absolute -top-1.5 left-4 w-1 h-1 bg-yellow-300 rounded-full animate-ember-3 pointer-events-none" />
+
+			{/* Glowing Orange flame */}
+			<svg className="w-7 h-7 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" viewBox="0 0 24 24" fill="none">
+				<path
+					d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"
+					className="fill-gradient"
+					fill="url(#flameGradient)"
+				/>
+				<defs>
+					<linearGradient id="flameGradient" x1="12" y1="2" x2="12" y2="21" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#fef08a" />
+						<stop offset="40%" stopColor="#f97316" />
+						<stop offset="100%" stopColor="#dc2626" />
+					</linearGradient>
+				</defs>
+			</svg>
+		</div>
+	);
+}
+
+
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
