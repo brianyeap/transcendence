@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+	--background: #0a0a0a;
+	--foreground: #ededed;
   }
 }
 
@@ -39,4 +39,33 @@ button:disabled,
 ::selection {
   background: rgba(77, 134, 255, 0.22);
   color: #eef2f8;
+}
+
+
+@keyframes emberFloat
+{
+	0%
+	{
+		transform: translateY(0) scale(1);
+		opacity: 0.9;
+	}
+	100%
+	{
+		transform: translateY(-16px) scale(0.2);
+		opacity: 0;
+	}
+}
+
+.animate-ember-1
+{
+	animation: emberFloat 1.4s infinite ease-out;
+}
+
+.animate-ember-2
+{
+	animation: emberFloat 1.8s infinite ease-out 0.4s;
+}
+.animate-ember-3
+{
+	animation: emberFloat 1.2s infinite ease-out 0.8s;
 }
