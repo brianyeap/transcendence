@@ -355,6 +355,73 @@ function bronzeMedalIcon({ unlocked }: { unlocked: boolean }) {
 	);
 }
 
+// Box 3: Silver Medal
+function silverMedalIcon({ unlocked }: { unlocked: boolean }) {
+	if (!unlocked) {
+		return (
+			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+			</svg>
+		);
+	}
+
+	return (
+		<div className="relative flex items-center justify-center w-9 h-9">
+			{/* DUAL SPARKLE STAR ANIMATION */}
+			{/* Star 1: Top-Right (Cool White / Silver Sparkle) */}
+			<div className="absolute top-[7px] -right-[1px] w-3.5 h-3.5 animate-medal-sparkle pointer-events-none z-10">
+				<svg viewBox="0 0 24 24" fill="#f8fafc" className="w-full h-full drop-shadow-[0_0_6px_rgba(248,250,252,0.9)]">
+					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+				</svg>
+			</div>
+
+			{/* Star 2: Bottom-Left (Cyan-Tinted Sparkle with emberTwo drift) */}
+			<div className="absolute bottom-[-0px] -left-[1px] w-2.5 h-2.5 animate-ember-2 [animation-delay:700ms] pointer-events-none z-10">
+				<svg viewBox="0 0 24 24" fill="#38bdf8" className="w-full h-full drop-shadow-[0_0_4px_rgba(56,189,248,0.8)]">
+					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+				</svg>
+			</div>
+
+			{/* METALLIC SILVER MEDAL SVG */}
+			<svg className="w-8 h-8 drop-shadow-[0_4px_12px_rgba(148,163,184,0.45)]" viewBox="0 0 24 24" fill="none">
+				{/* WIDER FLAT RED/CRIMSON RIBBON WITH DARK STRIPES */}
+				<path d="M5 1.5 L8.5 11 H15.5 L19 1.5 Z" fill="url(#silverRibbonBase)" stroke="#991b1b" strokeWidth="0.5" strokeLinejoin="miter" />
+				<path d="M7.5 1.5 L10 11 H11 L9 1.5 Z" fill="#450a0a" opacity="0.6" />
+				<path d="M16.5 1.5 L14 11 H13 L15 1.5 Z" fill="#450a0a" opacity="0.6" />
+				<path d="M11.5 1.5 L11.8 11 H12.2 L12.5 1.5 Z" fill="#450a0a" opacity="0.4" />
+
+				{/* OUTER SILVER MEDAL RIM */}
+				<circle cx="12" cy="15.5" r="6.5" fill="url(#trueSilverGradient)" stroke="#e2e8f0" strokeWidth="0.5" />
+				<circle cx="12" cy="15.5" r="5.8" fill="none" stroke="#1e293b" strokeWidth="0.5" opacity="0.5" />
+
+				{/* INNER DOTTED SILVER RING DETAIL */}
+				<circle cx="12" cy="15.5" r="4.6" fill="none" stroke="#475569" strokeWidth="0.65" strokeDasharray="1 1" />
+
+				{/* EMBOSSED SILVER CENTER STAR */}
+				<path d="M12 12.2L12.8 14.1L14.8 14.3L13.3 15.7L13.7 17.7L12 16.6L10.3 17.7L10.7 15.7L9.2 14.3L11.2 14.1L12 12.2Z" fill="#334155" />
+
+				{/* GRADIENT DEFINITIONS */}
+				<defs>
+					{/* Authentic Metallic Silver Gradient */}
+					<linearGradient id="trueSilverGradient" x1="6" y1="9" x2="18" y2="22" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#ffffff" />
+						<stop offset="30%" stopColor="#cbd5e1" />
+						<stop offset="70%" stopColor="#64748b" />
+						<stop offset="100%" stopColor="#334155" />
+					</linearGradient>
+
+					{/* Deep Red Ribbon Gradient */}
+					<linearGradient id="silverRibbonBase" x1="5" y1="1.5" x2="19" y2="11" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#ef4444" />
+						<stop offset="50%" stopColor="#dc2626" />
+						<stop offset="100%" stopColor="#7f1d1d" />
+					</linearGradient>
+				</defs>
+			</svg>
+		</div>
+	);
+}
+
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
@@ -623,10 +690,56 @@ export default async function ProfilePage()
 							</div>
 
 
-							{/* Achievement Box 3 */}
-							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
-								<span className="text-xs font-mono text-gray-500">// Box 3 Placeholder</span>
+							{/* ACHIEVEMENT BOX 3: Market Competitor (10 Wins - Silver) */}
+							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+								wins >= 1 // Change to wins >= 10 when done testing
+									? "bg-slate-500/[0.03] border-slate-500/30 shadow-[0_0_15px_rgba(148,163,184,0.1)]"
+									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+							}`}>
+								<div className="flex items-center gap-4">
+									{/* SILVER MEDAL CONTAINER */}
+									<div className={`p-2.5 rounded-lg border ${
+										wins >= 1
+											? "bg-slate-500/10 border-slate-500/30"
+											: "bg-white/[0.02] border-white/10"
+									}`}>
+										{silverMedalIcon({ unlocked: wins >= 1 })}
+									</div>
+
+									{/* TITLE & DESCRIPTION */}
+									<div className="text-left">
+										<div className="flex items-center gap-2">
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+												Market Competitor
+											</h3>
+											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+												wins >= 1
+													? "border-slate-500/30 text-slate-300 bg-slate-500/10"
+													: "border-gray-700 text-gray-500 bg-gray-800/20"
+											}`}>
+												Silver
+											</span>
+										</div>
+										<p className="text-xs text-gray-400 mt-0.5">Win 10 matches</p>
+									</div>
+								</div>
+
+								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
+								<div className="shrink-0 text-right">
+									{wins >= 1 ? (
+										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 rounded-md">
+											Unlocked
+										</span>
+									) : (
+										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
+											{10 - wins} Wins Left
+										</span>
+									)}
+								</div>
 							</div>
+
+
+
 							{/* Achievement Box 3 */}
 							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
 								<span className="text-xs font-mono text-gray-500">// Box 4 Placeholder</span>
