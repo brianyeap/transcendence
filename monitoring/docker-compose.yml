@@ -36,6 +36,17 @@ services:
       - "4318:4318" # OTLP HTTP port
       - "8889:8889" # endpoint where Collector exposes metrics in a Prometheus-compatible format
 
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      - otel-collector
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
 volumes:
   prometheus_data:
   grafana_data:
