@@ -289,7 +289,6 @@ function fireIcon({unlocked}: {unlocked: boolean})
 	);
 }
 
-
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
@@ -416,23 +415,23 @@ export default async function ProfilePage()
 					</div>
 					
 					{/* PERFORMANCE STATS GRID & WIN/LOSS/DRAW BAR */}
-					<div className="w-full mt-10 p-6 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+					<div className="w-full mt-10 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
 						<div className="flex justify-between items-center mb-4">
-							<h2 className="text-lg font-semibold text-gray-200">Performance Stats</h2>
+							<h2 className="text-xl font-semibold text-gray-200">Performance Stats</h2>
 							<span className="text-sm font-mono text-indigo-400">{winRate}% Win Rate</span>
 						</div>
 
 						{/* STAT CARDS */}
 						<div className="grid grid-cols-3 gap-4 mb-6">
-							<div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center">
+							<div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-center">
 								<p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Wins</p>
 								<p className="text-2xl font-bold text-emerald-300 mt-1">{wins}</p>
 							</div>
-							<div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-center">
+							<div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
 								<p className="text-xs text-amber-400 uppercase tracking-wider font-semibold">Draws</p>
 								<p className="text-2xl font-bold text-amber-300 mt-1">{draws}</p>
 							</div>
-							<div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 text-center">
+							<div className="p-4 rounded-lg bg-rose-500/5 border border-rose-500/20 text-center">
 								<p className="text-xs text-rose-400 uppercase tracking-wider font-semibold">Losses</p>
 								<p className="text-2xl font-bold text-rose-300 mt-1">{losses}</p>
 							</div>
@@ -448,6 +447,32 @@ export default async function ProfilePage()
 							) : (
 								<div className="w-full h-full bg-gray-700/50" />
 							)}
+						</div>
+					</div>
+
+					<div className="w-full mt-8 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+						<div className="flex justify-between items-center mb-6">
+							<h2 className="text-lg font-semibold text-gray-200">Achievements</h2>
+						</div>
+
+						{/* Stack of Achivement box placeholder */}
+						<div className="grid grid-cols-2 gap-4 w-full">
+							{/* Achievement Box 1[Special Fire] */}
+							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
+								<span className="text-xs font-mono text-gray-500">// Box 1 Placeholder</span>
+							</div>
+							{/* Achievement Box 2 */}
+							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
+								<span className="text-xs font-mono text-gray-500">// Box 2 Placeholder</span>
+							</div>
+							{/* Achievement Box 3 */}
+							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
+								<span className="text-xs font-mono text-gray-500">// Box 3 Placeholder</span>
+							</div>
+							{/* Achievement Box 3 */}
+							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
+								<span className="text-xs font-mono text-gray-500">// Box 4 Placeholder</span>
+							</div>
 						</div>
 					</div>
 				</div>
