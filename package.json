@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.222.0",
+    "@opentelemetry/sdk-metrics": "^2.10.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "@vercel/otel": "^2.1.3",
