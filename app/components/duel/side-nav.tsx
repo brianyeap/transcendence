@@ -36,11 +36,8 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 				.eq("id", authUser.id)
 				.maybeSingle();  // null or data
 
-			const name =
-				profile?.username || "Trader";
-
 			//  The component may have unmounted while we were waiting.
-			if (!cancelled) setFetchedName(name);
+			if (!cancelled) setFetchedName(profile?.username || "Trader");
 		}
 
 		loadName();
@@ -55,6 +52,15 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 			<aside className="hidden w-58 shrink-0 flex-col border-r border-line bg-panel px-3 py-4 lg:flex">
 				<CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
+				<Link href="/" className="px-2 pb-5 pt-1">
+					<Logo />
+				</Link>
+
+				{/* Section label above the links. Purely decorative. */}
+				<div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-widest text-faint">
+					Menu
+				</div>
+
 				<nav className="flex flex-col gap-1">
 					{navItems.map((item) => {
 						const isActive = pathname === item.page;
@@ -63,10 +69,14 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 							<Link
 								key={item.label}
 								href={item.page}
-								className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
+								className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
 									isActive ? "bg-raised text-ink" : "text-dim hover:bg-raised"
 								}`}
 							>
+								{/* The blue bar on the left edge of the current page. */}
+								{isActive ? (
+									<span className="absolute -left-2 top-1/2 h-4.5 w-0.75 -translate-y-1/2 rounded-full bg-brand" />
+								) : null}
 								<Icon name={item.icon} className={`size-5 ${isActive ? "text-brand" : ""}`} />
 								{item.label}
 							</Link>
