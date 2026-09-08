@@ -4,7 +4,7 @@ import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 export function register() {
   const metricExporter = new OTLPMetricExporter({
-    url: 'http://localhost:8080/v1/metrics',
+    url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics`,
   });
 
   const metricReader = new PeriodicExportingMetricReader({
