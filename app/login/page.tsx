@@ -1,12 +1,17 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "../components/duel/logo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { validateSafeRedirect } from "@/lib/auth/redirect";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawNext = searchParams.get("next");
+  const safeNext = validateSafeRedirect(rawNext, "/");
+
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("trader@duel.gg");
   const [password, setPassword] = useState("password");
@@ -23,7 +28,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
       },
     });
 
@@ -61,8 +66,18 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
+
+      // Check if user has enrolled MFA and needs secondary factor verification
+      const { data: aalData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+      if (aalData?.currentLevel === "aal1" && aalData?.nextLevel === "aal2") {
+        setLoading(false);
+        router.push(`/auth/verify-mfa?next=${encodeURIComponent(safeNext)}`);
+        return;
+      }
     } else {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -77,19 +92,11 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-
-      //commenting out manual insert since i added a trigger in supabase to handle it
-      // if (data?.user) {
-      //   await supabase.from("profiles").insert({
-      //     id: data.user.id,
-      //     email,
-      //     username,
-      //   });
-      // }
     }
     setLoading(false);
-    router.push("/");
+    router.push(safeNext);
   }
+
   return (
     <main className="grid min-h-screen bg-[#090b10] text-[#eef2f8] lg:grid-cols-[1.05fr_.95fr]">
       <section className="relative hidden overflow-hidden border-r border-white/[.07] p-11 lg:flex lg:flex-col lg:justify-between">
@@ -223,5 +230,13 @@ export default function LoginPage() {
         </form>
       </section>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#090b10]" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
