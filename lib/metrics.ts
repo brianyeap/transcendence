@@ -4,7 +4,7 @@ const meter = metrics.getMeter('ft-transcendence')
 
 // gamesStarted.add(1)
 export const gamesStarted = meter.createCounter(
-	'transcendence_game_started_total',
+	'transcendence_games_started_total',
 	{
 		description: 'Total number of games started',
 	}
