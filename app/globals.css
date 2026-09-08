@@ -1,11 +1,9 @@
 @import "tailwindcss";
 
-/* Every colour in the app is named here, so no component contains a raw
-   hex code. Change a colour once and it changes everywhere. */
 @theme {
-  --color-base: #090b10;   /* page background */
-  --color-panel: #0f131b;  /* cards and the side nav */
-  --color-raised: #151b25; /* hover state, inner boxes */
+  --color-base: #090b10;   /* page bg color */
+  --color-panel: #0f131b;  /* cards and side nav */
+  --color-raised: #151b25; /* on hover colors */
   --color-line: #1c222c;   /* borders */
 
   --color-ink: #eef2f8;    /* main text */
@@ -18,15 +16,9 @@
   --color-loss: #f6485d;   /* loss, delete */
 }
 
-@theme inline {
-  --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-jetbrains-mono);
-}
-
 body {
   background: var(--color-base);
   color: var(--color-ink);
-  font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
 }
 
 button,
@@ -38,9 +30,4 @@ a[href] {
 button:disabled,
 [aria-disabled="true"] {
   cursor: not-allowed;
-}
-
-::selection {
-  background: rgba(77, 134, 255, 0.22);
-  color: var(--color-ink);
 }

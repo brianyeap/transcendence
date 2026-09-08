@@ -12,43 +12,32 @@ import { usePathname } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useOnlinePing } from "./use-online-ping";
 
-//  Wraps every page: the menu on the left, the page itself on the right.
-//  `user` is optional. If a page doesn't pass a name the nav looks one up
-//  itself, so every page shows the same name.
 export function SideNav({ children, user }: { children: React.ReactNode; user?: string }) {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [fetchedName, setFetchedName] = useState("");
 	const pathname = usePathname();
 
-	//  Every page is wrapped in SideNav, so this one call keeps the
-	//  "I am online" ping alive on every page of the app.
+	// becasue this exist on evrey page so we always ping
 	useOnlinePing();
 
 	useEffect(() => {
-		//  A name was passed in already, no need to look one up.
 		if (user) return;
 
 		const supabase = createSupabaseBrowserClient();
 		let cancelled = false;
 
-		//  Try the profile username first, then the name given at signup,
-		//  then the part of the email before the "@".
 		async function loadName() {
-			//  getUser() throws when nobody is signed in, so swallow that here.
-			const { data: { user: authUser } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+			const { data: { user: authUser } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } })); // catch results ot null
 			if (!authUser) return;
 
 			const { data: profile } = await supabase
 				.from("profiles")
-				.select("username")
+				.select("username") // i only need username
 				.eq("id", authUser.id)
-				.maybeSingle();
+				.maybeSingle();  // null or data
 
 			const name =
-				profile?.username ||
-				(typeof authUser.user_metadata.username === "string" ? authUser.user_metadata.username : null) ||
-				authUser.email?.split("@")[0] ||
-				"Trader";
+				profile?.username || "Trader";
 
 			//  The component may have unmounted while we were waiting.
 			if (!cancelled) setFetchedName(name);
@@ -63,12 +52,7 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 	return (
 		<main className="flex min-h-screen bg-base text-ink">
-			{/* The menu. Hidden on small screens - see the bottom bar below. */}
 			<aside className="hidden w-58 shrink-0 flex-col border-r border-line bg-panel px-3 py-4 lg:flex">
-				<Link href="/" className="px-2 pb-5 pt-1">
-					<Logo />
-				</Link>
-
 				<CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
 				<nav className="flex flex-col gap-1">

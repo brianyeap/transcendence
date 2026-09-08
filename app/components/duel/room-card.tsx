@@ -4,8 +4,6 @@ import { Button } from "./button";
 import { Icon } from "./duel-icon";
 import { fmtClock, fmtUSD, timeAgo } from "./format";
 
-//  One card in the lobby. Your own room is clickable so you can walk back
-//  into the room you left; other people's rooms have a Join button.
 export function RoomCard({
   room,
   deleting = false,
@@ -24,7 +22,7 @@ export function RoomCard({
   const isOwner = room.ownedByCurrentUser;
 
   return (
-    <article
+    <div
       onClick={isOwner ? () => onEnter?.(room) : undefined}
       className={`flex flex-col gap-4 rounded-lg border border-line bg-panel p-5 ${isOwner ? "cursor-pointer" : ""}`}
     >
@@ -62,7 +60,7 @@ export function RoomCard({
               variant="danger"
               disabled={deleting}
               onClick={(event) => {
-                event.stopPropagation();
+                event.stopPropagation();  // becasue we have a click card to enter so this prevents
                 onDelete?.(room);
               }}
             >
@@ -84,7 +82,7 @@ export function RoomCard({
           </Button>
         )}
       </div>
-    </article>
+    </div>
   );
 }
 

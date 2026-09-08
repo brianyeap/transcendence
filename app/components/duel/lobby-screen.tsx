@@ -9,8 +9,19 @@ import { Button } from "./button";
 import type { Room } from "./types";
 import { CreateMatchModal } from "./create-match-modal";
 
+//  A match you are already in. /api/rooms sends this back so the lobby can
+//  offer a way in — a match in countdown or active is NOT in the open-rooms
+//  list, so without this you would be locked out of your own game.
+type ActiveMatch = {
+  id: string;
+  name: string;
+  status: string;
+  opponent: string;
+  endsAt: string | null;
+};
+
 //  Your own room goes to the top of the list, then the newest rooms.
-function ownRoomFirst(rooms: Room[]) {
+function ownRoomFirst(rooms: Room[]) { // just have to say whic one comes first algo will sort the rest
   return rooms.toSorted((roomA, roomB) => {
     if (roomA.ownedByCurrentUser !== roomB.ownedByCurrentUser) {
       return roomA.ownedByCurrentUser ? -1 : 1;
@@ -27,16 +38,17 @@ export function LobbyScreen() {
   const [openRooms, setOpenRooms] = useState<Room[]>([]);
   const [deletingRoomIds, setDeletingRoomIds] = useState<string[]>([]);
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
+  const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
 
   //  You may only have one room at a time, so this disables "Create Room".
-  const hasCurrentUserRoom = openRooms.some((room) => room.ownedByCurrentUser);
+  const hasCurrentUserRoom = openRooms.some((room) => room.ownedByCurrentUser); // any room as long as one is owned by the current user
 
-  const deleteRoom = useCallback(async (room: Room) => {
+  const deleteRoom = useCallback(async (room: Room) => { // usecallback is for function so that it dont get created again on every render
     if (!room.ownedByCurrentUser) {
       return;
     }
 
-    setDeletingRoomIds((roomIds) => [...roomIds, room.id]); // for keeping track which room is deleting
+    setDeletingRoomIds((roomIds) => [...roomIds, room.id]); // for keeping track which room is deleting, appending
 
     try {
       const response = await fetch("/api/rooms", {
@@ -100,6 +112,7 @@ export function LobbyScreen() {
       }
 
       setOpenRooms(ownRoomFirst(result.rooms));
+      setActiveMatch(result.activeMatch ?? null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not load rooms.");
     } finally {
@@ -137,6 +150,27 @@ export function LobbyScreen() {
       <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
       <div className="flex-1 overflow-y-auto p-6">
+        {/* Your game in progress. Shown above the list so it is the first thing
+            you see when you come back to the lobby mid-match. */}
+        {activeMatch ? (
+          <div className="mb-6 flex items-center gap-4 rounded-lg border border-brand/40 bg-brand/10 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {activeMatch.status === "countdown"
+                  ? "Your match is starting"
+                  : "Your match is live"}
+              </p>
+              <p className="truncate text-xs text-muted">
+                {activeMatch.name} · vs {activeMatch.opponent}
+              </p>
+            </div>
+
+            <Button onClick={() => router.push(`/matches/${activeMatch.id}`)}>
+              Rejoin
+            </Button>
+          </div>
+        ) : null}
+
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-dim">
           <Icon name="users" className="size-4" />
           Open Games ({openRooms.length})
