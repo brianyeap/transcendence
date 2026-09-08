@@ -1,5 +1,4 @@
-//  A profile picture, or a coloured square with the first two letters of the
-//  name when the user has not uploaded one.
+
 export function Avatar({
   name,
   imageUrl,
@@ -11,7 +10,6 @@ export function Avatar({
 }) {
   const sizeClass = size === "lg" ? "size-11 text-base" : size === "sm" ? "size-8 text-xs" : "size-9 text-sm";
 
-  //  shrink-0 stops the square being squashed inside a flex row.
   if (imageUrl) {
     return (
       <img

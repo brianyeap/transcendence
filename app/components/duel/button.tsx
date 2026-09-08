@@ -1,8 +1,5 @@
-//  One button used everywhere, so the styling lives in a single file.
-//  primary = the main action, danger = delete, quiet = a plain bordered button.
-type Variant = "primary" | "danger" | "quiet";
-
-const styles: Record<Variant, string> = {
+// tailwinf doesnt have built in btn styling
+const styles = {
   primary: "bg-brand text-white hover:opacity-90",
   danger: "border border-loss bg-panel text-loss hover:bg-raised",
   quiet: "border border-line bg-panel text-muted hover:text-ink",
@@ -11,8 +8,8 @@ const styles: Record<Variant, string> = {
 export function Button({
   variant = "primary",
   className = "",
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+  ...props // passing all other props to the button element, like onClick, disabled, etc.
+}: React.ComponentProps<"button"> & { variant?: keyof typeof styles }) {
   return (
     <button
       {...props}
