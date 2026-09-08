@@ -16,7 +16,7 @@ services:
     ports:
       - "3001:3000"
     env_file:
-      - ../.env.local
+      - .env
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
