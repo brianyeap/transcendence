@@ -27,6 +27,7 @@ const { Server } = require("socket.io");
 const { createClient } = require("@supabase/supabase-js");
 // The pure trading maths lives in its own file so it can be tested on its own.
 const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
+const { gamesStarted, gamesCompleted, activeGames, matchesPlayed } = require("./metrics");
 
 // ----------------------------------------------------------------------------
 // Settings
@@ -259,6 +260,8 @@ async function onTick(match) {
       match.started = true;
       await supabase.from("matches").update({ status: "active" }).eq("id", match.matchId);
       io.to(roomName(match.matchId)).emit("match:started");
+	  gamesStarted.add(1);
+	  activeGames.add(1);
     }
 
     // ---- 3. The match has ended ----
@@ -368,6 +371,9 @@ async function endMatch(match) {
       winner_user_id: winnerUserId,
     })
     .eq("id", match.matchId);
+	gamesCompleted.add(1);
+	matchesPlayed.add(1);
+	activeGames.add(-1);
 
   // Tell both players the result.
   io.to(roomName(match.matchId)).emit("match:ended", {
