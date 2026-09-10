@@ -409,6 +409,57 @@ function sendPlayerState(socket, match, userId) {
   });
 }
 
+// ----------------------------------------------------------------------------
+// Startup clean-up
+// ----------------------------------------------------------------------------
+// If this server was down while a match was counting down or running, nobody
+// was there to finish it, so it is stuck forever. A player with a stuck match
+// cannot create or join another one (see /api/rooms/join), which locks them out
+// of the game. So on boot we close any match whose end time has already passed.
+//
+// There is no winner to pick — no trades were taken while we were away — so we
+// only mark it completed and leave winner_user_id as null (a draw).
+// How long an empty room may sit in the lobby before we treat it as abandoned.
+const ABANDONED_ROOM_HOURS = 1;
+
+async function closeStaleMatches() {
+  const now = new Date();
+
+  // 1. Matches that were counting down or running when we went away. Their end
+  //    time has already passed, so nobody can finish them any more.
+  const { data: expired, error: expiredError } = await supabase
+    .from("matches")
+    .update({ status: "completed" })
+    .neq("status", "completed")
+    .lt("ends_at", now.toISOString())
+    .select("id");
+
+  if (expiredError) {
+    console.log("could not close finished matches:", expiredError.message);
+  } else if (expired && expired.length > 0) {
+    console.log(`closed ${expired.length} match(es) whose time had already run out`);
+  }
+
+  // 2. Rooms still waiting for a second player. These never started, so they
+  //    have no ends_at at all and the check above skips them — we go by how
+  //    long they have been sitting there instead. This matters because a player
+  //    with ANY unfinished match cannot create or join another one.
+  const abandonedBefore = new Date(now.getTime() - ABANDONED_ROOM_HOURS * 60 * 60 * 1000);
+
+  const { data: abandoned, error: abandonedError } = await supabase
+    .from("matches")
+    .update({ status: "completed" })
+    .eq("status", "waiting")
+    .lt("created_at", abandonedBefore.toISOString())
+    .select("id");
+
+  if (abandonedError) {
+    console.log("could not close abandoned rooms:", abandonedError.message);
+  } else if (abandoned && abandoned.length > 0) {
+    console.log(`closed ${abandoned.length} abandoned room(s) nobody ever joined`);
+  }
+}
+
 // ============================================================================
 // HTTP + Socket.IO setup
 // ============================================================================
@@ -419,16 +470,49 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: ALLOWED_ORIGINS } });
 
+// ----------------------------------------------------------------------------
+// Who is this socket? (authentication)
+// ----------------------------------------------------------------------------
+// Every connection has to prove who it is BEFORE it is allowed to do anything.
+// The browser sends its Supabase login token when it connects; we ask Supabase
+// to check that token and tell us which user it belongs to. We then remember
+// that user id on the socket.
+//
+// This is the ONLY place a user id is ever decided. The client used to send its
+// own userId inside each message, which meant anybody could simply claim to be
+// another player - read their balance, or place losing trades in their name.
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+
+  if (typeof token !== "string" || token.length === 0) {
+    return next(new Error("Not signed in."));
+  }
+
+  // Supabase verifies the token's signature and expiry for us.
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    return next(new Error("Not signed in."));
+  }
+
+  socket.data.userId = data.user.id; // trusted; never taken from a message
+  next();
+});
+
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
 
   // ------------------------------------------------------------------------
   // A player opens the match page and joins their match.
   // ------------------------------------------------------------------------
-  socket.on("match:join", async ({ matchId, userId }) => {
+  socket.on("match:join", async ({ matchId }) => {
+    // Who we are was settled when the socket connected (see io.use above), so a
+    // player cannot join a match as somebody else.
+    const userId = socket.data.userId;
+
     // Basic checks on the input.
-    if (typeof matchId !== "string" || typeof userId !== "string") {
-      socket.emit("error", { message: "matchId and userId are required." });
+    if (typeof matchId !== "string") {
+      socket.emit("error", { message: "matchId is required." });
       return;
     }
 
@@ -453,7 +537,6 @@ io.on("connection", (socket) => {
 
     // Remember who this socket is, and put it in the match's room.
     socket.data.matchId = matchId;
-    socket.data.userId = userId;
     socket.join(roomName(matchId));
 
     // If the room is still waiting for the second player, just say so.
@@ -496,15 +579,6 @@ io.on("connection", (socket) => {
         at: Date.now(),
       });
     }
-    // If the match already finished, tell them the result.
-    if (match.ended) {
-      const finalCapitals = {};
-      for (const id of Object.keys(match.players)) {
-        finalCapitals[id] = match.players[id].availableBalance;
-      }
-      socket.emit("match:ended", { finalCapitals, winnerUserId: null });
-    }
-
     sendPlayerState(socket, match, userId);
     // Give the newcomer both capitals straight away so the header isn't blank.
     broadcastCapitals(match);
@@ -513,7 +587,10 @@ io.on("connection", (socket) => {
   // ------------------------------------------------------------------------
   // A player places a buy/sell (long/short) order.
   // ------------------------------------------------------------------------
-  socket.on("trade:submit", async ({ matchId, userId, side, amount }) => {
+  socket.on("trade:submit", async ({ matchId, side, amount }) => {
+    // Same rule as match:join - the trader is whoever the token says they are.
+    const userId = socket.data.userId;
+
     const match = liveMatches.get(matchId);
 
     // The match must be live (started, not ended).
@@ -572,13 +649,7 @@ io.on("connection", (socket) => {
       resultingSide: result.next.side,
       resultingNotional: result.next.notional,
     });
-    socket.emit("player:state", {
-      availableBalance: result.next.availableBalance,
-      realizedPnl: result.next.realizedPnl,
-      side: result.next.side,
-      notional: result.next.notional,
-      avgEntry: result.next.avgEntry,
-    });
+    sendPlayerState(socket, match, userId);
     // The trade changed this player's capital — refresh it for both of them.
     broadcastCapitals(match);
   });
@@ -588,4 +659,5 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`match engine listening on :${PORT}`);
+  closeStaleMatches();
 });

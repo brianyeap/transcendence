@@ -1,11 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
 // How many seconds the pre-match countdown lasts before trading starts.
 const COUNTDOWN_SECONDS = 10;
-
-// If a room somehow has no duration saved, fall back to 2 minutes.
-const DEFAULT_DURATION_SECONDS = 120;
 
 type JoinRoomRequest = {
   roomId?: unknown;
@@ -90,7 +88,7 @@ export async function POST(request: Request) {
   }
 
   // --- work out the three timestamps the game runs on ----------------------
-  const durationSeconds = room.duration_seconds ?? DEFAULT_DURATION_SECONDS;
+  const durationSeconds = room.duration_seconds ?? MATCH_DURATION_SECONDS;
 
   const countdownStartsAt = new Date(); // now
   const startsAt = new Date(countdownStartsAt.getTime() + COUNTDOWN_SECONDS * 1000);

@@ -5,6 +5,7 @@
     "games": "Games",
     "history": "History",
     "leaderboard": "Leaderboard",
+    "friends": "Friends",
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Log out"
@@ -18,7 +19,11 @@
     "liveUpdatedNow": "Live · updated now",
     "noOpenRooms": "No open rooms yet.",
     "noActiveGames": "No active games yet.",
-    "tooltipLimit": "Delete or finish your current game before creating another."
+    "tooltipLimit": "Delete or finish your current game before creating another.",
+    "matchStarting": "Your match is starting",
+    "matchLive": "Your match is live",
+    "vs": "vs",
+    "rejoin": "Rejoin"
   },
   "RoomCard": {
     "by": "by",

@@ -1,7 +1,6 @@
 export type IconName =
   | "bolt"
   | "chevR"
-  | "flame"
   | "games"
   | "history"
   | "logout"
@@ -11,7 +10,6 @@ export type IconName =
   | "settings"
   | "trash"
   | "users"
-  | "x"
   | "trophy";
 
 export type Room = {
@@ -24,15 +22,5 @@ export type Room = {
   duration: number;
   capital: number;
   symbol: string;
-  hot?: boolean;
   ownedByCurrentUser?: boolean;
-};
-
-export type ActiveGame = {
-  id: string;
-  p1: string;
-  p2: string;
-  status: "countdown" | "live" | "ending";
-  remaining: number;
-  symbol: string;
 };

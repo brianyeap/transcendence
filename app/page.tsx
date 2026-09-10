@@ -21,10 +21,7 @@ export default async function HomePage() {
     .maybeSingle();
 
   const displayName =
-    profile?.username ||
-    (typeof user.user_metadata.username === "string" ? user.user_metadata.username : null) ||
-    user.email?.split("@")[0] ||
-    "Trader";
+    profile?.username || "Trader";
     
   return (
     <SideNav user={displayName}>
