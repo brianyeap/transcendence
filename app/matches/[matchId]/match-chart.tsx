@@ -97,7 +97,6 @@ function buildTradeMarkers(trades: TradeFill[], phase: number): SeriesMarker<Tim
       const label = `${long ? "Long" : "Short"} ${fmtUSD(Math.round(bucket.amount))}`;
       return {
         time: bucket.time as UTCTimestamp,
-
         position: long ? "belowBar" : "aboveBar",
         shape: long ? "arrowUp" : "arrowDown",
         color: long ? UP : DOWN,
@@ -118,47 +117,6 @@ function mergeMarkers(
   return merged.sort((a, b) => (a.time as number) - (b.time as number));
 }
 
-function chartSummary(
-  candles: Candle[],
-  lastCandle: Candle | null,
-  trades: TradeFill[]
-): string {
-  if (candles.length === 0) {
-    return "Price chart. Waiting for market data.";
-  }
-
-  const latest = lastCandle ?? candles[candles.length - 1];
-  const matchCandles = candles.reduce((count, candle) => (candle.preMatch ? count : count + 1), 0);
-  const preMatch = candles.length - matchCandles;
-
-  const move =
-    latest.close > latest.open
-      ? "rising"
-      : latest.close < latest.open
-        ? "falling"
-        : "unchanged";
-
-  const elapsed =
-    matchCandles === 0
-      ? "The match has not produced a candle yet."
-      : `${matchCandles} minute${matchCandles === 1 ? "" : "s"} of the match drawn so far.`;
-
-  const marked =
-    trades.length === 0
-      ? "None of your trades are marked on it yet."
-      : `${trades.length} of your trade${trades.length === 1 ? " is" : "s are"} marked on it.`;
-
-  return `Candlestick price chart. Latest price ${price(latest.close)}, ${move} within the current candle, between a low of ${price(
-    latest.low
-  )} and a high of ${price(latest.high)}. ${elapsed} ${preMatch} earlier candle${
-    preMatch === 1 ? "" : "s"
-  } of pre-match history are shown for context. ${marked}`;
-}
-
-function price(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 export function MatchChart({
   candles,
   lastCandle,
@@ -169,7 +127,6 @@ export function MatchChart({
   candles: Candle[];
   lastCandle: Candle | null;
   trades: TradeFill[];
-
   entryPrice: number | null;
   netSide: NetSide;
 }): React.ReactElement {
@@ -184,9 +141,11 @@ export function MatchChart({
   const lastTimeRef = useRef<number | null>(null);
 
   const dividerTime = useMemo(() => {
-    const divider = candles.find((candle) => !candle.preMatch);
-    return divider === undefined ? null : divider.time;
+    const boundary = candles.findIndex((candle) => !candle.preMatch);
+    return boundary <= 0 ? null : candles[boundary].time;
   }, [candles]);
+
+  const hasPreMatch = useMemo(() => candles.some((candle) => candle.preMatch), [candles]);
 
   const candlePhase = useMemo(() => {
     const first = candles[0];
@@ -252,7 +211,6 @@ export function MatchChart({
         barSpacing: 8,
         minBarSpacing: 2,
         rightOffset: 4,
-
         shiftVisibleRangeOnNewBar: true,
       },
     });
@@ -297,7 +255,6 @@ export function MatchChart({
       size.width = width;
       size.height = height;
       chart.applyOptions({ width, height });
-
       if (wasCollapsed) {
         chart.timeScale().fitContent();
       }
@@ -330,6 +287,7 @@ export function MatchChart({
 
     if (!continuation && !(drawn === 0 && candles.length === 0)) {
       series.setData(candles.map(toPoint));
+      lastTimeRef.current = candles.length > 0 ? candles[candles.length - 1].time : null;
 
       if (candles.length > 0) {
         chart.timeScale().fitContent();
@@ -338,8 +296,6 @@ export function MatchChart({
 
     drawnCountRef.current = candles.length;
     firstTimeRef.current = first;
-    lastTimeRef.current =
-      candles.length > 0 ? candles[candles.length - 1].time : null;
   }, [candles]);
 
   useEffect(() => {
@@ -391,16 +347,8 @@ export function MatchChart({
 
   const isEmpty = candles.length === 0;
 
-  const summary = useMemo(
-    () => chartSummary(candles, lastCandle, trades),
-    [candles, lastCandle, trades]
-  );
-
   return (
     <div
-
-      role="img"
-      aria-label={summary}
       className="relative h-full min-h-[260px] w-full overflow-hidden rounded-xl border border-white/[.07] bg-[#0f131b]"
     >
       <div ref={hostRef} className="absolute inset-0 font-mono" />
@@ -412,7 +360,7 @@ export function MatchChart({
             Waiting for market data…
           </p>
         </div>
-      ) : (
+      ) : hasPreMatch ? (
         <div className="pointer-events-none absolute left-3.5 top-3 flex items-center gap-3.5 text-[10.5px] font-bold uppercase tracking-[.08em]">
           <span className="flex items-center gap-1.5 text-[#5d6877]">
             <span className="h-2.5 w-[3px] rounded-[1px] bg-[#3a434f] ring-1 ring-[#5d6877]" />
@@ -423,7 +371,7 @@ export function MatchChart({
             Match
           </span>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

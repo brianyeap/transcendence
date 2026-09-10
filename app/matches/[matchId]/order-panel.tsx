@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { PlayerState, Side, TradeFill, TradeRejection } from "@/lib/match/types";
 import { fmtUSD } from "../../components/duel/format";
+import { fmtPrice } from "./format";
 
 const PRESETS = [0.25, 0.5, 0.75, 1] as const;
 
@@ -27,7 +28,6 @@ export function OrderPanel({
   onDismissFeedback: () => void;
 }): React.ReactElement {
   const [raw, setRaw] = useState("");
-
   const [pendingSide, setPendingSide] = useState<Side | null>(null);
 
   const [seen, setSeen] = useState({ pendingTrade, fill: lastFill, rejection: lastRejection });
@@ -71,10 +71,10 @@ export function OrderPanel({
   const amount = parseAmount(raw);
   const error = validate(raw, amount, player);
   const canSubmit = !locked && amount !== null && error === null;
-
   const canSubmitSide = (side: Side) =>
     canSubmit && amount !== null && amount <= (side === "long" ? maxLong : maxShort);
 
+<<<<<<< HEAD
   const lockedReason = disabled
     ? "Trading is unavailable — the match is not live, or the connection has dropped."
     : busy
@@ -126,6 +126,14 @@ export function OrderPanel({
     if (player === null) return;
 
     setRaw(String(Math.floor(maxOrder * fraction * 100) / 100));
+=======
+  const totalCapital =
+    player === null ? 0 : player.availableBalance + player.reservedBalance;
+
+  function applyPreset(fraction: number) {
+    if (player === null) return;
+    setRaw(String(Math.floor(totalCapital * fraction * 100) / 100));
+>>>>>>> amber/grafana
   }
 
   function submit(side: Side) {
@@ -136,7 +144,6 @@ export function OrderPanel({
 
   return (
     <section
-      aria-labelledby="order-panel-heading"
       className="rounded-xl border border-white/[.07] bg-[#0f131b] p-4"
     >
       <div className="flex items-baseline justify-between gap-3">
@@ -147,6 +154,7 @@ export function OrderPanel({
           Place a Trade
         </h2>
         <p className="text-[11px] text-[#5d6877]">
+<<<<<<< HEAD
           <span aria-hidden="true">
             Cash{" "}
             <span className="font-mono font-semibold text-[#9aa6b6]">
@@ -157,6 +165,11 @@ export function OrderPanel({
             {player === null
               ? "Free cash not known yet."
               : `Free cash ${fmtUSD(Math.floor(available))}.`}
+=======
+          Available{" "}
+          <span className="font-mono font-semibold text-[#9aa6b6]">
+            {player === null ? "—" : fmtUSD(Math.floor(available))}
+>>>>>>> amber/grafana
           </span>
         </p>
       </div>
@@ -167,11 +180,10 @@ export function OrderPanel({
         htmlFor="order-amount"
         className="mt-3 mb-1.5 block text-[10.5px] font-bold uppercase tracking-[.04em] text-[#5d6877]"
       >
-        Amount<span className="sr-only"> to bet, in US dollars</span>
+        Amount
       </label>
       <div className="relative">
         <span
-          aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-[13px] text-[#5d6877]"
         >
           $
@@ -186,8 +198,6 @@ export function OrderPanel({
           value={raw}
           disabled={locked}
           onChange={(e) => setRaw(sanitise(e.target.value))}
-          aria-invalid={error !== null}
-          aria-describedby={inputDescribedBy}
           className="h-10 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-[14px] text-[#eef2f8] transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
         />
       </div>
@@ -199,9 +209,6 @@ export function OrderPanel({
             type="button"
             disabled={locked}
             onClick={() => applyPreset(fraction)}
-
-            aria-label={presetLabel(fraction)}
-            aria-describedby={lockedReason === null ? undefined : "order-controls-reason"}
             className="h-8 rounded-[7px] border border-white/[.07] bg-[#151b25] font-mono text-[11.5px] font-semibold text-[#9aa6b6] transition hover:border-white/[.12] hover:text-[#eef2f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
           >
             {fraction * 100}%
@@ -215,6 +222,7 @@ export function OrderPanel({
         </p>
       )}
 
+<<<<<<< HEAD
       {error === null && sideNote !== null && (
         <p id="order-side-note" className="mt-2 text-[11.5px] text-[#9aa6b6]">
           {sideNote}
@@ -252,23 +260,31 @@ export function OrderPanel({
       </p>
 
       <div className="mt-1.5 flex items-stretch gap-3">
+=======
+      <div className="mt-3 flex items-stretch gap-3">
+>>>>>>> amber/grafana
         <BetButton
           side="long"
           disabled={!canSubmitSide("long")}
           pending={pendingSide === "long"}
+<<<<<<< HEAD
           describedBy={betReasonFor("long")}
+=======
+>>>>>>> amber/grafana
           onClick={() => submit("long")}
         />
-        <div aria-hidden="true" className="w-px self-stretch bg-white/[.07]" />
+        <div className="w-px self-stretch bg-white/[.07]" />
         <BetButton
           side="short"
           disabled={!canSubmitSide("short")}
           pending={pendingSide === "short"}
+<<<<<<< HEAD
           describedBy={betReasonFor("short")}
+=======
+>>>>>>> amber/grafana
           onClick={() => submit("short")}
         />
       </div>
-
       <Feedback
         fill={lastFill}
         rejection={lastRejection}
@@ -276,12 +292,11 @@ export function OrderPanel({
         disabled={disabled}
         connecting={player === null}
       />
-
-      <OrderAnnouncements fill={lastFill} rejection={lastRejection} busy={busy} />
     </section>
   );
 }
 
+<<<<<<< HEAD
 function OrderAnnouncements({
   fill,
   rejection,
@@ -338,9 +353,10 @@ function presetLabel(fraction: number): string {
     : `Set the amount to ${fraction * 100}% of the largest order you can place`;
 }
 
+=======
+>>>>>>> amber/grafana
 function ExposureHint({ player }: { player: PlayerState | null }) {
   if (player === null || player.netSide === "flat") return null;
-
   const held = player.netSide === "long" ? "Long" : "Short";
   const opposite = player.netSide === "long" ? "Short" : "Long";
   const tone = player.netSide === "long" ? "text-[#1fcb83]" : "text-[#f6485d]";
@@ -373,35 +389,26 @@ function BetButton({
   side,
   disabled,
   pending,
-  describedBy,
   onClick,
 }: {
   side: Side;
   disabled: boolean;
   pending: boolean;
-  describedBy: string | undefined;
   onClick: () => void;
 }) {
   const isLong = side === "long";
   const Arrow = isLong ? ArrowUp : ArrowDown;
-
   return (
     <button
       type="button"
-      aria-disabled={disabled}
-      aria-describedby={describedBy}
+      disabled={disabled}
       onClick={onClick}
-      aria-label={
-        isLong
-          ? "Long — bet that the price rises"
-          : "Short — bet that the price falls"
-      }
-      className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-[7px] px-3 py-2.5 transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eef2f8] aria-disabled:opacity-50 aria-disabled:hover:brightness-100 ${
+      className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-[7px] px-3 py-2.5 transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eef2f8] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 ${
         isLong ? "bg-[#1fcb83] text-[#06180f]" : "bg-[#f6485d] text-white"
       }`}
     >
       <span className="flex items-center gap-1.5 text-[14px] font-bold tracking-[-.01em]">
-        <Arrow aria-hidden="true" className="size-4" strokeWidth={2.75} />
+        <Arrow className="size-4" strokeWidth={2.75} />
         {pending ? "Placing…" : isLong ? "Long" : "Short"}
       </span>
       <span className="text-[10.5px] font-semibold opacity-75">
@@ -427,7 +434,6 @@ function Feedback({
   if (hidden) {
     return (
       <p
-        aria-hidden="true"
         className="mt-3 flex items-center gap-2 text-[11.5px] text-[#5d6877]"
       >
         <span className="size-1.5 animate-pulse rounded-full bg-[#4d86ff]" />
@@ -435,23 +441,19 @@ function Feedback({
       </p>
     );
   }
-
   if (rejection !== null) {
     return (
       <p
-        aria-hidden="true"
         className="mt-3 rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]"
       >
         Trade rejected — {rejection.reason}
       </p>
     );
   }
-
   if (fill !== null) {
     const isLong = fill.side === "long";
     return (
       <div
-        aria-hidden="true"
         className="mt-3 rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2"
       >
         <p className="text-[12.5px] text-[#eef2f8]">
@@ -492,36 +494,31 @@ function Feedback({
       </div>
     );
   }
-
   if (connecting) {
     return (
-      <p aria-hidden="true" className="mt-3 text-[11.5px] text-[#5d6877]">
+      <p className="mt-3 text-[11.5px] text-[#5d6877]">
         Connecting to the match…
       </p>
     );
   }
-
   if (disabled) {
     return (
-      <p aria-hidden="true" className="mt-3 text-[11.5px] text-[#5d6877]">
+      <p className="mt-3 text-[11.5px] text-[#5d6877]">
         Trading is unavailable right now.
       </p>
     );
   }
-
   return (
-    <p aria-hidden="true" className="mt-3 text-[11.5px] text-[#3a434f]">
+    <p className="mt-3 text-[11.5px] text-[#3a434f]">
       Nothing moves until the server confirms your Trade.
     </p>
   );
 }
-
 function sanitise(value: string) {
   const cleaned = value.replace(/[^0-9.]/g, "");
   const [whole, ...rest] = cleaned.split(".");
   return rest.length === 0 ? whole : `${whole}.${rest.join("")}`;
 }
-
 function parseAmount(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === "" || trimmed === ".") return null;
@@ -565,11 +562,4 @@ function validate(raw: string, amount: number | null, player: PlayerState | null
     }
   }
   return null;
-}
-
-function fmtPrice(value: number) {
-  return value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 }

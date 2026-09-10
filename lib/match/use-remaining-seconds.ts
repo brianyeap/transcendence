@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer } from "react";
 
 const TICK_MS = 250;
 
