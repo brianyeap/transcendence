@@ -28,7 +28,6 @@ export type Match = {
   status: MatchStatus;
   symbol: string;
   startingCapital: number;
-
   startsAt: string | null;
   endsAt: string | null;
   playerOne: PlayerRef;
@@ -40,13 +39,10 @@ export type PlayerState = {
   availableBalance: number;
   reservedBalance: number;
   realisedPnl: number;
-
   unrealisedPnl: number;
   netSide: NetSide;
   netAmount: number;
-
   entryPrice: number | null;
-
   opponentCapital: number;
 };
 
@@ -54,13 +50,10 @@ export type TradeFill = {
   id: string;
   side: Side;
   amount: number;
-
   fillPrice: number;
-
   executedAt: number;
   resultingNetSide: NetSide;
   resultingNetAmount: number;
-
   realisedPnl: number | null;
 };
 
@@ -69,8 +62,7 @@ export type TradeRejection = {
 };
 
 export type MatchEnded = {
-  finalPrice: number;
-
+  finalPrice: number | null;
   winnerUserId: string | null;
   yourFinalCapital: number;
   opponentFinalCapital: number;
@@ -78,12 +70,10 @@ export type MatchEnded = {
 
 export type MatchSnapshot = {
   match: Match;
-
   viewer: Viewer;
   candles: Candle[];
   player: PlayerState;
   trades: TradeFill[];
-
   serverTime: number;
 };
 
@@ -93,7 +83,4 @@ export type Tick = {
   serverTime: number;
 };
 
-export type Viewer = {
-  userId: string;
-  username: string;
-};
+export type Viewer = PlayerRef;
