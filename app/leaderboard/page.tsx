@@ -24,7 +24,7 @@ export default async function LeaderboardPage() {
 
   // Fetch all public profiles
   const { data: profiles, error: profilesError } = await supabase
-    .from("public_profiles")
+    .from("profiles")
     .select("id, username");
 
   // Fetch all completed matches
