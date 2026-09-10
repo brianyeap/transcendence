@@ -2,86 +2,67 @@
 
 import type React from "react";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { MatchResultCard, type MatchResultData } from "./match-result-card";
-import type { Match, PlayerState } from "@/lib/match/types";
+import { ActionLink, CentredScreen, LoadingLine, MessageScreen } from "./message-screen";
+import { MatchResultCard } from "./match-result-card";
+import { useCompletedResult } from "./use-completed-result";
+import type { Match, MatchEnded } from "@/lib/match/types";
 
 export function MatchResult({
-	match,
-	ended,
-	player,
-	price,
-	viewerUserId
+  match,
+  ended,
+  viewerUserId,
 }: {
-	match: Match;
-	ended: MatchResultData | null;
-	player: PlayerState | null;
-	price: number | null;
-	viewerUserId: string | null;
+  match: Match;
+  ended: MatchEnded | null;
+  viewerUserId: string | null;
 }): React.ReactElement {
-	const result = ended ?? deriveResult(match, player, price, viewerUserId);
+  const settled = useCompletedResult(match.id, viewerUserId);
 
-	if (result === null || viewerUserId === null) {
-		return <ResultUnavailable match={match} />;
-	}
+  const result = ended ?? (settled.status === "ready" ? settled.result : null);
 
-	return (
-		<div>
-			<p>Final Result</p>
-			<MatchResultCard
-				result={result}
-				match={match}
-				viewerUserId={viewerUserId}
-				headingLevel={1}
-			/>
-		</div>
-	);
+  if (result === null || viewerUserId === null) {
+    return settled.status === "loading" ? <ResultLoading /> : <ResultUnavailable match={match} />;
+  }
+
+  return (
+    <CentredScreen>
+      <div className="w-full max-w-lg rounded-xl border border-white/[.07] bg-[#0f131b] p-6 sm:p-7">
+        <p className="mb-4 text-center text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          Final result
+        </p>
+        <MatchResultCard
+          result={result}
+          match={match}
+          viewerUserId={viewerUserId}
+          headingLevel={1}
+        />
+      </div>
+    </CentredScreen>
+  );
 }
 
-function deriveResult(
-	match: Match,
-	player: PlayerState | null,
-	price: number | null,
-	viewerUserId: string | null
-): MatchResultData | null {
-	if (player === null || viewerUserId === null)
-		return null;
-
-	return {
-		finalPrice: price,
-		winnerUserId: deriveWinner(match, player, viewerUserId),
-		yourFinalCapital: player.capital,
-		opponentFinalCapital: player.opponentCapital
-	};
-}
-
-const UNKNOWN_OPPONENT_ID = "unknown-opponent";
-
-function deriveWinner(match: Match, player: PlayerState, viewerUserId:string): string | null {
-	const gap = Math.round(player.capital) - Math.round(player.opponentCapital);
-	if (gap === 0)
-		return null;
-	if (gap > 0)
-		return viewerUserId;
-
-	const opponent = match.playerOne.userId === viewerUserId ? match.playerTwo : match.playerOne;
-	return opponent?.userId ?? UNKNOWN_OPPONENT_ID;
+function ResultLoading() {
+  return <LoadingLine>Loading the final result…</LoadingLine>;
 }
 
 function ResultUnavailable({ match }: { match: Match }) {
-	return (
-		<div>
-			<h1>Match is over!</h1>
-			<p>The final figures are not available on this screen. You can find the match summary in the full record.</p>
-			<div>
-				<Link href={`/history/${match.id}`}>
-					View match summary
-				</Link>
-				<Link href="/">
-					<ArrowLeft />
-					Back to games
-				</Link>
-			</div>
-		</div>
-	)
+  return (
+    <MessageScreen
+      heading="This match has finished"
+      actions={
+        <>
+          <ActionLink href={`/history/${match.id}`} tone="primary">
+            View match summary
+          </ActionLink>
+          <ActionLink href="/" tone="secondary">
+            <ArrowLeft className="size-4" />
+            Back to games
+          </ActionLink>
+        </>
+      }
+    >
+      The final figures are not available on this screen. The match summary has the full
+      record.
+    </MessageScreen>
+  );
 }
