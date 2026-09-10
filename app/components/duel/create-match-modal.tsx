@@ -18,10 +18,9 @@ const CAPITAL_OPTIONS = [
 interface Props {
     isOpen: boolean
     onClose: () => void
-    onCreated?: (room: Room) => void
 }
 
-export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
+export function CreateMatchModal({ isOpen, onClose }: Props) {
     const router = useRouter() // used to send the creator into their new room
     const backdropRef = useRef<HTMLDivElement>(null)
     const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
@@ -74,12 +73,6 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
 
             if (!response.ok) {
                 throw new Error(result.error ?? "Could not create room.")
-            }
-
-            if (onCreated) { // upsertRoom func
-                onCreated(result.room)
-            } else {
-                window.dispatchEvent(new CustomEvent("room-created", { detail: result.room })) // broadcast the event to all listeners
             }
 
             handleClose()
@@ -137,11 +130,10 @@ export function CreateMatchModal({ isOpen, onClose, onCreated }: Props) {
                             return (
                                 <button
                                     key={opt.value} onClick={() => setCapital(opt.value)} disabled={isCreating}
-                                    className={`flex-1 rounded-lg border py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
-                                        selected
+                                    className={`flex-1 rounded-lg border py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${selected
                                             ? 'border-transparent bg-[#4d86ff] text-white'
                                             : 'border-white/[.07] bg-[#0f131b] text-[#9aa6b6] hover:border-white/[.12] hover:text-[#eef2f8]'
-                                    }`}
+                                        }`}
                                 >
                                     {opt.label}
                                 </button>

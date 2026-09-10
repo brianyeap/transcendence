@@ -5,6 +5,7 @@
     "games": "Permainan",
     "history": "Sejarah",
     "leaderboard": "Papan Pendahulu",
+    "friends": "Rakan",
     "profile": "Profil",
     "settings": "Tetapan",
     "logout": "Log keluar"
@@ -18,7 +19,11 @@
     "liveUpdatedNow": "Langsung · dikemas kini sekarang",
     "noOpenRooms": "Tiada bilik terbuka lagi.",
     "noActiveGames": "Tiada permainan aktif lagi.",
-    "tooltipLimit": "Padam atau selesaikan permainan semasa anda sebelum mencipta yang lain."
+    "tooltipLimit": "Padam atau selesaikan permainan semasa anda sebelum mencipta yang lain.",
+    "matchStarting": "Perlawanan anda sedang bermula",
+    "matchLive": "Perlawanan anda sedang berlangsung",
+    "vs": "lwn",
+    "rejoin": "Sertai Semula"
   },
   "RoomCard": {
     "by": "oleh",
