@@ -1,12 +1,7 @@
 "use client";
 
 import Link from "next/link";
-<<<<<<< Updated upstream
 import { useEffect, useState, useMemo } from "react";
-=======
-import { useState, useMemo } from "react";
-import { redirect } from "next/navigation";
->>>>>>> Stashed changes
 import { SideNav } from "../components/duel/side-nav";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
@@ -197,7 +192,6 @@ function StatCard({ label, value, sub, icon, accent = "blue" }: StatCardProps) {
 	);
 }
 
-<<<<<<< Updated upstream
 export default function HistoryPage() {
 
 	console.log("HistoryPage rendered");
@@ -205,11 +199,6 @@ export default function HistoryPage() {
 
 	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
-=======
-export default function HistoryPage()
-{
-	
->>>>>>> Stashed changes
 	const [filter, setFilter] = useState<"ALL" | "WIN" | "LOSS" | "DRAW">("ALL");
 
 	useEffect(() => {
