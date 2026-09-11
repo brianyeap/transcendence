@@ -117,3 +117,59 @@ button:disabled,
 .animate-ember-2 {
 	animation: emberTwo 3.7s cubic-bezier(0.25, 1, 0.5, 1) infinite;
 }
+
+
+
+
+
+/* The sparking effect of the 42 logo, for the 42 wins achivement*/
+@keyframes cornerShortCircuit {
+	0%, 100% {
+		transform: scale(0.2) rotate(0deg);
+		opacity: 0;
+		filter: drop-shadow(0 0 1px #38bdf8);
+	}
+	10% {
+		transform: scale(0.6) rotate(15deg);
+		opacity: 1;
+		stroke: #38bdf8;
+		filter: drop-shadow(0 0 3px #38bdf8);
+	}
+	25% {
+		opacity: 0.1;
+	}
+	35% {
+		transform: scale(1.1) rotate(-20deg);
+		opacity: 1;
+		stroke: #06b6d4;
+		filter: drop-shadow(0 0 5px #06b6d4);
+	}
+	40% {
+		opacity: 0.3;
+	}
+	50% {
+		transform: scale(1.6) rotate(35deg);
+		opacity: 1;
+		stroke: #ffffff;
+		filter: drop-shadow(0 0 9px #38bdf8) drop-shadow(0 0 12px #ffffff);
+	}
+	65% {
+		transform: scale(0.5) rotate(-10deg);
+		opacity: 0.8;
+		stroke: #0284c7;
+	}
+	75%, 99% {
+		transform: scale(0.1);
+		opacity: 0;
+	}
+}
+
+.animate-short-circuit-1 {
+	animation: cornerShortCircuit 2.4s infinite cubic-bezier(0.1, 0.9, 0.2, 1);
+	transform-origin: 0px 372px; /* true leftmost extremity of the "4" */
+}
+.animate-short-circuit-2 {
+	animation: cornerShortCircuit 2.4s infinite cubic-bezier(0.1, 0.9, 0.2, 1);
+	animation-delay: 1.2s;
+	transform-origin: 839px 0px; /* true top-right corner of the "2" */
+}
