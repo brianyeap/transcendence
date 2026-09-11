@@ -422,6 +422,64 @@ function silverMedalIcon({ unlocked }: { unlocked: boolean }) {
 	);
 }
 
+// Box 4: Official 42 Geometric Logo (Traced from actual logo — pixel-accurate)
+function fortyTwoIcon({ unlocked }: { unlocked: boolean }) {
+	if (!unlocked) {
+		return (
+			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+			</svg>
+		);
+	}
+
+	return (
+		<div className="relative flex items-center justify-center w-9 h-9">
+			{/* 42 BLUE ELECTRIC GLOW AURA */}
+			<div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-md animate-pulse pointer-events-none" />
+
+			{/* EXACT 42 SVG — traced from the real logo, viewBox matches its true 840x590 proportions */}
+			<svg className="w-8 h-8 drop-shadow-[0_0_10px_rgba(6,182,212,0.7)] z-10 overflow-visible" viewBox="0 0 840 590" fill="none">
+
+				{/* --- "4" --- */}
+				<path
+					d="M463 0 L309 0 L0 310 L0 434 L309 434 L309 589 L463 589 L463 310 L154 310 Z"
+					fill="url(#official42Gradient)"
+				/>
+
+				{/* --- "2" (main Z-body + the two corner wedges that create the faceted cut look) --- */}
+				<path
+					d="M839 0 L685 0 L685 155 L531 310 L531 464 L685 464 L685 310 L839 155 Z
+					   M685 0 L531 0 L531 155 Z
+					   M839 310 L685 464 L839 464 Z"
+					fill="url(#official42Gradient)"
+				/>
+
+				{/* SHORT CIRCUIT 1: leftmost edge of "4" (its true extremity is the vertical edge at x=0, y 310–434) */}
+				<g className="animate-short-circuit-1">
+					<path d="M0 372 L-70 322 M0 372 L-100 372 M0 372 L-70 422" stroke="#ffffff" strokeWidth="18" strokeLinecap="round" />
+					<circle cx="0" cy="372" r="18" fill="#ffffff" />
+				</g>
+
+				{/* SHORT CIRCUIT 2: top-right corner of "2" — a genuine sharp vertex at (839, 0) */}
+				<g className="animate-short-circuit-2">
+					<path d="M839 0 L909 -70 M839 0 L939 0 M839 0 L889 84" stroke="#ffffff" strokeWidth="18" strokeLinecap="round" />
+					<circle cx="839" cy="0" r="18" fill="#ffffff" />
+				</g>
+
+				{/* GRADIENT DEFINITIONS */}
+				<defs>
+					<linearGradient id="official42Gradient" x1="0" y1="0" x2="840" y2="590" gradientUnits="userSpaceOnUse">
+						<stop offset="0%" stopColor="#38bdf8" />
+						<stop offset="50%" stopColor="#06b6d4" />
+						<stop offset="100%" stopColor="#0284c7" />
+					</linearGradient>
+				</defs>
+			</svg>
+		</div>
+	);
+}
+
+
 export default async function ProfilePage()
 {
 	const supabase = await createSupabaseServerClient();
@@ -623,7 +681,7 @@ export default async function ProfilePage()
 											Novice
 										</span>
 									</div>
-									<p className="text-xs text-gray-400 mt-0.5"> Win your first duel on the platform !</p>
+									<p className="text-xs text-gray-400 mt-0.5"> Win your first Duel match !</p>
 								</div>
 							</div>
 
@@ -645,7 +703,7 @@ export default async function ProfilePage()
 
 						{/* ACHIEVEMENT BOX 2: Greenhorn Trader (5 Wins - Bronze) */}
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 1
+								wins >= 5
 									? "bg-amber-600/[0.03] border-amber-600/30 shadow-[0_0_15px_rgba(217,119,6,0.1)]"
 									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
 							}`}>
@@ -656,28 +714,28 @@ export default async function ProfilePage()
 											? "bg-amber-600/10 border-amber-600/30"
 											: "bg-white/[0.02] border-white/10"
 									}`}>
-										{bronzeMedalIcon({ unlocked: wins >= 1 })}
+										{bronzeMedalIcon({ unlocked: wins >= 5 })}
 									</div>
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 5 ? "text-white" : "text-gray-400"}`}>
 												Greenhorn Trader
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 1
+												wins >= 5
 													? "border-amber-600/30 text-amber-500 bg-amber-600/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
 												Bronze
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">Win 5 matches to earn your Bronze Medal</p>
+										<p className="text-xs text-gray-400 mt-0.5">Win 5 matches on Duel !</p>
 									</div>
 								</div>
 								{/* UNLOCKED / LOCKED BADGE */}
 								<div className="shrink-0 text-right">
-									{wins >= 1 ? (
+									{wins >= 5 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 bg-amber-600/10 border border-amber-600/20 px-2.5 py-1 rounded-md">
 											Unlocked
 										</span>
@@ -692,41 +750,41 @@ export default async function ProfilePage()
 
 							{/* ACHIEVEMENT BOX 3: Market Competitor (10 Wins - Silver) */}
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 1 // Change to wins >= 10 when done testing
+								wins >= 10 // Change to wins >= 10 when done testing
 									? "bg-slate-500/[0.03] border-slate-500/30 shadow-[0_0_15px_rgba(148,163,184,0.1)]"
 									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* SILVER MEDAL CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
-										wins >= 1
+										wins >= 10
 											? "bg-slate-500/10 border-slate-500/30"
 											: "bg-white/[0.02] border-white/10"
 									}`}>
-										{silverMedalIcon({ unlocked: wins >= 1 })}
+										{silverMedalIcon({ unlocked: wins >= 10 })}
 									</div>
 
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 10 ? "text-white" : "text-gray-400"}`}>
 												Market Competitor
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 1
+												wins >= 10
 													? "border-slate-500/30 text-slate-300 bg-slate-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
 												Silver
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">Win 10 matches</p>
+										<p className="text-xs text-gray-400 mt-0.5">Win 10 matches on Duel !</p>
 									</div>
 								</div>
 
 								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
 								<div className="shrink-0 text-right">
-									{wins >= 1 ? (
+									{wins >= 10 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 rounded-md">
 											Unlocked
 										</span>
@@ -739,10 +797,52 @@ export default async function ProfilePage()
 							</div>
 
 
+							{/* ACHIEVEMENT BOX 4: The Answer to Everything (42 Wins) */}
+							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+								wins >= 42 // Change to wins >= 42 when done testing
+									? "bg-emerald-500/[0.04] border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+							}`}>
+								<div className="flex items-center gap-4">
+									{/* 42 BADGE CONTAINER */}
+									<div className={`p-2.5 rounded-lg border ${
+										wins >= 42
+											? "bg-emerald-500/10 border-emerald-500/30 shadow-[inset_0_0_10px_rgba(16,185,129,0.1)]"
+											: "bg-white/[0.02] border-white/10"
+									}`}>
+										{fortyTwoIcon({ unlocked: wins >= 42 })}
+									</div>
 
-							{/* Achievement Box 3 */}
-							<div className="h-20 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-between px-4">
-								<span className="text-xs font-mono text-gray-500">// Box 4 Placeholder</span>
+									{/* TITLE & DESCRIPTION */}
+									<div className="text-left">
+										<div className="flex items-center gap-2">
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 42 ? "text-white" : "text-gray-400"}`}>
+												42 Trader
+											</h3>
+											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+												wins >=42
+													? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+													: "border-gray-700 text-gray-500 bg-gray-800/20"
+											}`}>
+												Special
+											</span>
+										</div>
+										<p className="text-xs text-gray-400 mt-0.5">The answer to everything !</p>
+									</div>
+								</div>
+
+								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
+								<div className="shrink-0 text-right">
+									{wins >= 42 ? (
+										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
+											Unlocked
+										</span>
+									) : (
+										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
+											{42 - wins} Wins Left
+										</span>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
