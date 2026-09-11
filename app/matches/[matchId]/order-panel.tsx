@@ -74,66 +74,12 @@ export function OrderPanel({
   const canSubmitSide = (side: Side) =>
     canSubmit && amount !== null && amount <= (side === "long" ? maxLong : maxShort);
 
-<<<<<<< HEAD
-  const lockedReason = disabled
-    ? "Trading is unavailable — the match is not live, or the connection has dropped."
-    : busy
-      ? "A trade is already in flight. The controls unlock when the server answers."
-      : player === null
-        ? "Connecting to the match. The controls unlock when your balances arrive."
-        : null;
-
-  const unspokenReason =
-    lockedReason ?? (error === null && amount === null ? "Enter an amount to bet." : null);
-
-  // The amount can be fine in general but too big for ONE side — for example a
-  // Long that your free money cannot cover, while a Short of the same size would
-  // simply close your position. Say which, instead of greying the button silently.
-  const overSide =
-    amount === null || error !== null
-      ? null
-      : amount > maxLong
-        ? "long"
-        : amount > maxShort
-          ? "short"
-          : null;
-
-  const sideNote =
-    overSide === null
-      ? null
-      : overSide === "long"
-        ? `More than you can Long right now — at most ${fmtUSD(Math.floor(maxLong))}.`
-        : `More than you can Short right now — at most ${fmtUSD(Math.floor(maxShort))}.`;
-
-  // Which message a given side's button should point at while it is unavailable.
-  function betReasonFor(side: Side): string | undefined {
-    if (canSubmitSide(side)) return undefined;
-    if (unspokenReason !== null) return "order-controls-reason";
-    if (error !== null) return "order-amount-error";
-    if (sideNote !== null) return "order-side-note";
-    return undefined;
-  }
-
-  const inputDescribedBy =
-    [
-      error === null ? null : "order-amount-error",
-      lockedReason === null ? null : "order-controls-reason",
-    ]
-      .filter((id) => id !== null)
-      .join(" ") || undefined;
-
-  function applyPreset(fraction: number) {
-    if (player === null) return;
-
-    setRaw(String(Math.floor(maxOrder * fraction * 100) / 100));
-=======
   const totalCapital =
     player === null ? 0 : player.availableBalance + player.reservedBalance;
 
   function applyPreset(fraction: number) {
     if (player === null) return;
     setRaw(String(Math.floor(totalCapital * fraction * 100) / 100));
->>>>>>> amber/grafana
   }
 
   function submit(side: Side) {
@@ -154,22 +100,9 @@ export function OrderPanel({
           Place a Trade
         </h2>
         <p className="text-[11px] text-[#5d6877]">
-<<<<<<< HEAD
-          <span aria-hidden="true">
-            Cash{" "}
-            <span className="font-mono font-semibold text-[#9aa6b6]">
-              {player === null ? "—" : fmtUSD(Math.floor(available))}
-            </span>
-          </span>
-          <span className="sr-only">
-            {player === null
-              ? "Free cash not known yet."
-              : `Free cash ${fmtUSD(Math.floor(available))}.`}
-=======
           Available{" "}
           <span className="font-mono font-semibold text-[#9aa6b6]">
             {player === null ? "—" : fmtUSD(Math.floor(available))}
->>>>>>> amber/grafana
           </span>
         </p>
       </div>
@@ -222,55 +155,11 @@ export function OrderPanel({
         </p>
       )}
 
-<<<<<<< HEAD
-      {error === null && sideNote !== null && (
-        <p id="order-side-note" className="mt-2 text-[11.5px] text-[#9aa6b6]">
-          {sideNote}
-        </p>
-      )}
-
-      {unspokenReason !== null && (
-        <p id="order-controls-reason" className="sr-only">
-          {unspokenReason}
-        </p>
-      )}
-
-      {/* Mirrors the button row's layout below, so each cap sits over its button. */}
-      <div aria-hidden="true" className="mt-3 flex items-stretch gap-3">
-        <p className="flex-1 text-center text-[10.5px] text-[#5d6877]">
-          Long up to{" "}
-          <span className="font-mono font-semibold text-[#9aa6b6]">
-            {player === null ? "—" : fmtUSD(Math.floor(maxLong))}
-          </span>
-        </p>
-        <div className="w-px" />
-        <p className="flex-1 text-center text-[10.5px] text-[#5d6877]">
-          Short up to{" "}
-          <span className="font-mono font-semibold text-[#9aa6b6]">
-            {player === null ? "—" : fmtUSD(Math.floor(maxShort))}
-          </span>
-        </p>
-      </div>
-      <p className="sr-only">
-        {player === null
-          ? "Order limits not known yet."
-          : `You can Long up to ${fmtUSD(Math.floor(maxLong))}, and Short up to ${fmtUSD(
-              Math.floor(maxShort)
-            )}.`}
-      </p>
-
-      <div className="mt-1.5 flex items-stretch gap-3">
-=======
       <div className="mt-3 flex items-stretch gap-3">
->>>>>>> amber/grafana
         <BetButton
           side="long"
           disabled={!canSubmitSide("long")}
           pending={pendingSide === "long"}
-<<<<<<< HEAD
-          describedBy={betReasonFor("long")}
-=======
->>>>>>> amber/grafana
           onClick={() => submit("long")}
         />
         <div className="w-px self-stretch bg-white/[.07]" />
@@ -278,10 +167,6 @@ export function OrderPanel({
           side="short"
           disabled={!canSubmitSide("short")}
           pending={pendingSide === "short"}
-<<<<<<< HEAD
-          describedBy={betReasonFor("short")}
-=======
->>>>>>> amber/grafana
           onClick={() => submit("short")}
         />
       </div>
@@ -296,65 +181,6 @@ export function OrderPanel({
   );
 }
 
-<<<<<<< HEAD
-function OrderAnnouncements({
-  fill,
-  rejection,
-  busy,
-}: {
-  fill: TradeFill | null;
-  rejection: TradeRejection | null;
-  busy: boolean;
-}) {
-  const polite = busy ? "Placing your trade. Waiting for the server to fill it." : fillSpeech(fill);
-
-  return (
-    <>
-      <p role="status" aria-live="polite" className="sr-only">
-        {polite}
-      </p>
-      <p role="alert" className="sr-only">
-        {rejection === null
-          ? ""
-          : `Trade rejected. ${rejection.reason} Your exposure is unchanged.`}
-      </p>
-    </>
-  );
-}
-
-function fillSpeech(fill: TradeFill | null): string {
-  if (fill === null) return "";
-
-  const side = fill.side === "long" ? "Long" : "Short";
-  const exposure =
-    fill.resultingNetSide === "flat"
-      ? "Your exposure is now flat."
-      : `Your exposure is now ${fill.resultingNetSide} ${fmtUSD(
-          Math.round(fill.resultingNetAmount)
-        )}.`;
-
-  const realised =
-    fill.realisedPnl === null
-      ? ""
-      : Math.round(fill.realisedPnl) === 0
-        ? " The offset realised nothing."
-        : Math.round(fill.realisedPnl) > 0
-          ? ` The offset realised a profit of ${fmtUSD(Math.round(fill.realisedPnl))}.`
-          : ` The offset realised a loss of ${fmtUSD(Math.abs(Math.round(fill.realisedPnl)))}.`;
-
-  return `Trade accepted. ${side} ${fmtUSD(Math.round(fill.amount))} filled at ${fmtPrice(
-    fill.fillPrice
-  )}. ${exposure}${realised}`;
-}
-
-function presetLabel(fraction: number): string {
-  return fraction === 1
-    ? "Set the amount to the largest order you can place"
-    : `Set the amount to ${fraction * 100}% of the largest order you can place`;
-}
-
-=======
->>>>>>> amber/grafana
 function ExposureHint({ player }: { player: PlayerState | null }) {
   if (player === null || player.netSide === "flat") return null;
   const held = player.netSide === "long" ? "Long" : "Short";
