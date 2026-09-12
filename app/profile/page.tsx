@@ -1,6 +1,3 @@
-// // version-2/ProfilePage.tsx
-// // The "I just learned basics" version - extremely basic
-
 // import { SideNav } from "../components/duel/side-nav";
 // import { Avatar } from "../components/duel/avatar";
 // import { redirect } from "next/navigation";
@@ -12,52 +9,6 @@
 // 	return "Beginner";
 // }
 
-// function getAchievements(wins: number) {
-// 	return [
-// 		{
-// 			id: "create_an_account",
-// 			name: "Funded & Ready",
-// 			description: "Register an account",
-// 			requirement: 0,
-// 			unlocked: wins >= 0,
-// 		},
-// 		{
-// 			id: "first_5_wins",
-// 			name: "Greenhorn Trader",
-// 			description: "Win 5 matches",
-// 			requirement: 5,
-// 			unlocked: wins >= 5,
-// 		},
-// 		{
-// 			id: "first_10_wins",
-// 			name: "Market Competitor",
-// 			description: "Win 10 matches",
-// 			requirement: 10,
-// 			unlocked: wins >= 10,
-// 		},
-// 		{
-// 			id: "first_42_wins",
-// 			name: "42",
-// 			description: "The answer to everything",
-// 			requirement: 42,
-// 			unlocked: wins >= 42,
-// 		},
-// 		{
-// 			id: "first_500_wins",
-// 			name: "Market Veteran",
-// 			description: "Win 500 matches",
-// 			requirement: 500,
-// 			unlocked: wins >= 500,
-// 		},
-// 		{
-// 			id: "first_1000_wins",
-// 			name: "Trading Champion",
-// 			description: "Win 1,000 matches",
-// 			requirement: 1000,
-// 			unlocked: wins >= 1000,
-// 		},
-// 	];
-// }
 
 // export default async function ProfilePage() {
 // 	const supabase = await createSupabaseServerClient();
@@ -175,33 +126,6 @@
 // 					</div>
 // 				</div>
 
-// 				<div style={{ marginTop: "20px", border: "1px solid gray", padding: "15px" }}>
-// 					<div>Achievements</div>
-
-// 					<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
-// 						{achievements.map((achievement) => (
-// 							<div
-// 								key={achievement.id}
-// 								style={{
-// 									border: "1px solid gray",
-// 									padding: "15px",
-// 									opacity: achievement.unlocked ? 1 : 0.4,
-// 								}}
-// 							>
-// 								<div style={{ fontWeight: "bold" }}>{achievement.name}</div>
-// 								<div style={{ fontSize: "14px", color: "gray" }}>{achievement.description}</div>
-// 								<div style={{ fontSize: "12px", marginTop: "10px" }}>
-// 									{achievement.unlocked ? (
-// 										<span style={{ color: "green" }}>Unlocked</span>
-// 									) : (
-// 										<span style={{ color: "gray" }}>
-// 											{wins}/{achievement.requirement} wins
-// 										</span>
-// 									)}
-// 								</div>
-// 							</div>
-// 						))}
-// 					</div>
 // 				</div>
 // 			</div>
 // 		</SideNav>
@@ -291,8 +215,10 @@ function fireIcon({unlocked}: {unlocked: boolean})
 
 
 // Box 2: Bronze Medal (5 Wins)
-function bronzeMedalIcon({ unlocked }: { unlocked: boolean }) {
-	if (!unlocked) {
+function bronzeMedalIcon({ unlocked }: { unlocked: boolean })
+{
+	if (!unlocked)
+	{
 		return (
 			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
 				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -356,8 +282,10 @@ function bronzeMedalIcon({ unlocked }: { unlocked: boolean }) {
 }
 
 // Box 3: Silver Medal
-function silverMedalIcon({ unlocked }: { unlocked: boolean }) {
-	if (!unlocked) {
+function silverMedalIcon({ unlocked }: { unlocked: boolean })
+{
+	if (!unlocked)
+	{
 		return (
 			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
 				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -423,8 +351,10 @@ function silverMedalIcon({ unlocked }: { unlocked: boolean }) {
 }
 
 // Box 4: Official 42 Geometric Logo (Traced from actual logo — pixel-accurate)
-function fortyTwoIcon({ unlocked }: { unlocked: boolean }) {
-	if (!unlocked) {
+function fortyTwoIcon({ unlocked }: { unlocked: boolean })
+{
+	if (!unlocked)
+	{
 		return (
 			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
 				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -478,6 +408,97 @@ function fortyTwoIcon({ unlocked }: { unlocked: boolean }) {
 		</div>
 	);
 }
+
+// Box 4 : Floating Bitcoin Icon for Achivement 5.
+function bitcoinIcon({ unlocked }: { unlocked: boolean })
+{
+	if (!unlocked)
+	{
+		return (
+			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+			</svg>
+		);
+	}
+
+	// Coin geometry — change these two and everything else recalculates
+	const SIZE = 32;		// coin diameter in px (matches w-8/h-8)
+	const THICKNESS = 7;	// how chunky the rim is — bump this up for an even thicker coin
+	const SEGMENTS = 16;	// rim slices — more = smoother curve, more DOM nodes
+	const RADIUS = SIZE / 2;
+	const angleStep = 360 / SEGMENTS;
+	// chord length of each flat slice, padded slightly so slices overlap and hide seams
+	const segmentWidth = 2 * RADIUS * Math.sin(Math.PI / SEGMENTS) * 1.2;
+
+	const CoinFace = () => (
+		<svg className="w-8 h-8 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" viewBox="0 0 100 100" fill="none">
+			<circle cx="50" cy="50" r="46" fill="url(#bitcoinGoldGradient)" stroke="#fde68a" strokeWidth="3" />
+			<circle cx="50" cy="50" r="46" fill="none" stroke="#78350f" strokeWidth="1.5" opacity="0.5" />
+			<circle cx="50" cy="50" r="39" stroke="#78350f" strokeWidth="1.5" strokeDasharray="3 2.5" opacity="0.55" />
+			<circle cx="50" cy="50" r="34" stroke="#fde68a" strokeWidth="1" strokeDasharray="1 3" opacity="0.4" />
+
+			<path
+				d="M38 22 H57 C65 22 71 27 71 35 C71 41 67 45 61 46 C68 48 73 53 73 60 C73 69 66 76 56 76 H38 V22 Z
+					M47 30 V43 H56 C61 43 63 40 63 36 C63 32 61 30 56 30 H47 Z
+					M47 50 V68 H57 C63 68 65 64 65 59 C65 54 63 50 57 50 H47 Z"
+				fill="#fffbeb"
+			/>
+			<path d="M50 10 V19 M50 79 V88" stroke="#fffbeb" strokeWidth="3.5" strokeLinecap="round" />
+
+			<defs>
+				<linearGradient id="bitcoinGoldGradient" x1="10" y1="5" x2="95" y2="98" gradientUnits="userSpaceOnUse">
+					<stop offset="0%" stopColor="#fef9c3" />
+					<stop offset="35%" stopColor="#f59e0b" />
+					<stop offset="70%" stopColor="#b45309" />
+					<stop offset="100%" stopColor="#78350f" />
+				</linearGradient>
+			</defs>
+		</svg>
+	);
+
+	return (
+		<div className="relative flex items-center justify-center w-9 h-9 animate-float" style={{ perspective: "600px" }}>
+			{/* Glow — now phase-locked to the same 3s cycle as the bounce, peaking at the bottom */}
+			<div className="absolute inset-0 rounded-full bg-amber-500/30 blur-md animate-coin-glow pointer-events-none" />
+
+			{/* The 3D coin — front face, back face, and a rim built from thin slices */}
+			<div
+				className="coin-stage relative animate-coin-revolve z-10"
+				style={{ width: SIZE, height: SIZE }}
+			>
+				{/* FRONT */}
+				<div className="coin-face" style={{ transform: `translateZ(${THICKNESS / 2}px)` }}>
+					<CoinFace />
+				</div>
+
+				{/* BACK — flipped 180° so it lands facing the opposite way, mirrored to read correctly */}
+				<div
+					className="coin-face"
+					style={{ transform: `rotateY(180deg) translateZ(${THICKNESS / 2}px)` }}
+				>
+					<CoinFace />
+				</div>
+
+				{/* RIM — a ring of flat slices standing between the two faces */}
+				{Array.from({ length: SEGMENTS }).map((_, i) => (
+					<div
+						key={i}
+						className="coin-edge-segment"
+						style={{
+							width: segmentWidth,
+							height: THICKNESS,
+							marginLeft: -segmentWidth / 2,
+							marginTop: -THICKNESS / 2,
+							transform: `rotateZ(${i * angleStep}deg) rotateX(90deg) translateZ(${RADIUS}px)`,
+							background: i % 2 === 0 ? "#d97706" : "#92400e", // alternating tone = milled-edge look
+						}}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
 
 
 export default async function ProfilePage()
@@ -844,6 +865,8 @@ export default async function ProfilePage()
 									)}
 								</div>
 							</div>
+
+
 						</div>
 					</div>
 				</div>
