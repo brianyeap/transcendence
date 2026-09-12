@@ -866,6 +866,55 @@ export default async function ProfilePage()
 								</div>
 							</div>
 
+							{/* ACHIEVEMENT BOX 5: BITCOIN (HODL / Crypto Master) */}
+							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+								wins >= 100 // Change trigger condition as needed
+									? "bg-amber-500/[0.04] border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+							}`}>
+								<div className="flex items-center gap-4">
+									{/* AMBER CONTAINER */}
+									<div className={`p-2.5 rounded-lg border ${
+										wins >= 100
+											? "bg-amber-500/10 border-amber-500/30 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)]"
+											: "bg-white/[0.02] border-white/10"
+									}`}>
+										{bitcoinIcon({ unlocked: wins >= 100 })}
+									</div>
+
+									{/* TITLE & DESCRIPTION */}
+									<div className="text-left">
+										<div className="flex items-center gap-2">
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 100 ? "text-white" : "text-gray-400"}`}>
+												Market Veteran
+											</h3>
+											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+												wins >= 100
+													? "border-amber-500/30 text-amber-400 bg-amber-500/10"
+													: "border-gray-700 text-gray-500 bg-gray-800/20"
+											}`}>
+												Crypto
+											</span>
+										</div>
+										<p className="text-xs text-gray-400 mt-0.5">Win 100 matches on Duel !</p>
+									</div>
+								</div>
+
+								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
+								<div className="shrink-0 text-right">
+									{wins >= 100 ? (
+										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
+											Unlocked
+										</span>
+									) : (
+										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
+											Locked
+										</span>
+									)}
+								</div>
+							</div>
+
+
 
 						</div>
 					</div>
