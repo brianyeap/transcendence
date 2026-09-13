@@ -274,3 +274,50 @@ button:disabled,
 	left: 50%;
 	border-radius: 1px;
 }
+
+
+/* Chest Flowing with Coins, and Glowing effect*/
+@keyframes coinShine {
+	0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.1; }
+	50%      { transform: scale(1.2) rotate(180deg); opacity: 1; }
+}
+
+@keyframes coinFall {
+	0%   { transform: translate(-2px, -12px) scale(0.6); opacity: 0; }
+	15%  { opacity: 1; }
+	55%  { transform: translate(3px, 6px) scale(0.45); opacity: 1; }
+	100% { transform: translate(-2px, 30px) scale(0.25); opacity: 0; }
+}
+
+@keyframes chestGlow {
+	0%, 100% { box-shadow: inset 0 0 10px rgba(234,179,8,0.1), 0 0 8px rgba(234,179,8,0.15); }
+	50%      { box-shadow: inset 0 0 14px rgba(234,179,8,0.2), 0 0 16px rgba(234,179,8,0.35); }
+}
+
+.animate-coin-shine-1 { animation: coinShine 2s   infinite ease-in-out; }
+.animate-coin-shine-2 { animation: coinShine 2.6s infinite ease-in-out 0.8s; }
+
+.falling-coin {
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	border-radius: 9999px;
+	background: radial-gradient(circle at 35% 30%, #fef9c3, #facc15 55%, #ca8a04);
+	box-shadow: 0 0 6px rgba(250, 204, 21, 0.8);
+	opacity: 0;
+	pointer-events: none;
+}
+.fc-1 { animation: coinFall 1.7s linear infinite; }
+.fc-2 { animation: coinFall 1.4s linear 0.6s infinite; }
+.fc-3 { animation: coinFall 2s   linear 1.2s infinite; }
+
+.sparkle {
+	position: absolute;
+	color: #fde047;
+	font-size: 10px;
+	line-height: 1;
+	text-shadow: 0 0 6px rgba(253, 224, 71, 0.9);
+	pointer-events: none;
+}
+
+.animate-chest-glow { animation: chestGlow 2.4s ease-in-out infinite; }
