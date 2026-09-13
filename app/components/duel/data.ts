@@ -7,4 +7,5 @@ export const navItems: { label: string; icon: IconName; active?: boolean; page: 
   { label: "Friends", icon: "users", page: "/friends" },
   { label: "Profile", icon: "profile", page: "/profile" },
   { label: "Settings", icon: "settings", page: "/settings" },
+  { label: "HowToPlay", icon: "helpCircle", page: "/instructions" },
 ];

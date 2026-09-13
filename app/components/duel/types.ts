@@ -2,6 +2,7 @@ export type IconName =
   | "bolt"
   | "chevR"
   | "games"
+  | "helpCircle"
   | "history"
   | "logout"
   | "plus"
