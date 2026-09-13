@@ -56,8 +56,6 @@ function getRoomAgeMinutes(createdAt: string) {
   return Math.max(0, Math.round(ageMs / 60000));
 }
 
-// `creatorNames` maps a user id -> that user's username (looked up from the
-// `profiles` table). If a name is missing we fall back to a slice of the id.
 function formatRoom(
   room: MatchRoom,
   currentUserId: string,
@@ -65,7 +63,7 @@ function formatRoom(
 ) {
   const isOwner = room.player_one_user_id === currentUserId;
   const creatorName =
-    creatorNames.get(room.player_one_user_id) ?? room.player_one_user_id.slice(0, 8);
+    creatorNames.get(room.player_one_user_id) ?? room.player_one_user_id.slice(0, 8); // slice of user id if no username found
 
   return {
     id: room.id,
@@ -92,9 +90,6 @@ function getStartingCapital(value: unknown) {
   return capital;
 }
 
-// Clean up the room name the creator typed. We return null (not an error) when
-// it is missing or blank, because the name is optional — formatRoom falls back
-// to "<creator>'s Room" in that case.
 function getRoomName(value: unknown) {
   if (typeof value !== "string") {
     return null;
@@ -105,8 +100,6 @@ function getRoomName(value: unknown) {
   return name.length === 0 ? null : name.slice(0, MAX_NAME_LENGTH);
 }
 
-// Turn the durationSeconds from the request into a valid number of seconds.
-// If it's missing or not one of the allowed choices, fall back to the default.
 function getDurationSeconds(value: unknown) {
   const duration = Number(value);
 
@@ -127,12 +120,12 @@ async function findActiveMatch(
 ) {
   const { data: match } = await supabase
     .from("matches")
-    .select("id, name, status, player_one_user_id, player_two_user_id, ends_at")
-    .or(`player_one_user_id.eq.${userId},player_two_user_id.eq.${userId}`)
-    .in("status", ["countdown", "active"])
-    .order("created_at", { ascending: false })
+    .select("id, name, status, player_one_user_id, player_two_user_id, ends_at") // selecting the columns we need
+    .or(`player_one_user_id.eq.${userId},player_two_user_id.eq.${userId}`) // i can be either player one or player two
+    .in("status", ["countdown", "active"]) // only countodwn and active status
+    .order("created_at", { ascending: false }) // newwest first
     .limit(1)
-    .maybeSingle();
+    .maybeSingle(); // oe item or null
 
   if (!match) {
     return null;
@@ -190,20 +183,14 @@ export async function GET() {
 
   const matchRooms = rooms as MatchRoom[];
 
-  // Look up the username for every room creator in one query, then build a
-  // { userId -> username } map that formatRoom can read from.
-  //
-  // This needs the "read all profiles" policy from migration 0003. Without it
-  // RLS only lets you read your OWN profile row, so every other player's room
-  // would fall back to showing a chunk of their user id.
-  const creatorIds = [...new Set(matchRooms.map((room) => room.player_one_user_id))];
+  const creatorIds = [...new Set(matchRooms.map((room) => room.player_one_user_id))]; // dedupe and array of creator id
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, username")
-    .in("id", creatorIds);
+    .in("id", creatorIds); // return rows whre is in creators id
 
   const creatorNames = new Map<string, string>(
-    (profiles ?? []).map((profile) => [profile.id, profile.username])
+    (profiles ?? []).map((profile) => [profile.id, profile.username]) // ?? is for if it is null use empty array
   );
 
   const sortedRooms = matchRooms
@@ -222,10 +209,6 @@ export async function GET() {
     })
     .map((room) => formatRoom(room, user.id, creatorNames));
 
-  // A match you are already in (countdown or active) never shows up in the list
-  // above, because that list is only rooms still WAITING for a second player.
-  // Without this the lobby has no way back into a game you are in the middle of
-  // — reloading or clicking "Games" would strand you outside your own match.
   const activeMatch = await findActiveMatch(supabase, user.id);
 
   return Response.json({ rooms: sortedRooms, activeMatch });
@@ -271,15 +254,15 @@ export async function POST(request: Request) {
 
   const { count: existingGameCount, error: existingGameError } = await supabase
     .from("matches")
-    .select("id", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true }) // just need the count no row needed
     .or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
-    .neq("status", "completed");
+    .neq("status", "completed"); // not equal to completed so basically everything else
 
   if (existingGameError) {
     return Response.json({ error: existingGameError.message }, { status: 500 });
   }
 
-  if (existingGameCount && existingGameCount > 0) {
+  if (existingGameCount && existingGameCount > 0) { // first iss to check fo rnull
     return Response.json(
       { error: "You already have an active game. End or delete it before creating another." },
       { status: 409 }
@@ -293,10 +276,10 @@ export async function POST(request: Request) {
     status: "waiting",
     symbol,
     starting_capital: startingCapital,
-    duration_seconds: durationSeconds, // remember how long the match should last
+    duration_seconds: durationSeconds,
   };
 
-  const { error: insertError } = await supabase.from("matches").insert(insertPayload);
+  const { error: insertError } = await supabase.from("matches").insert(insertPayload); // creating new match
 
   if (insertError) {
     if (insertError.code === "23505") { // unique_violation code, unique constraint
@@ -325,7 +308,7 @@ export async function POST(request: Request) {
           created_at: createdAt,
         },
         user.id,
-        new Map() // creator is always the current user here, so no lookup needed
+        new Map() // just passing as empty cause format room needs it but we dont have any other users yet
       ),
     },
     { status: 201 } // created status
