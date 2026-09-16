@@ -1002,7 +1002,7 @@ export default async function ProfilePage()
 
 							{/* ACHIEVEMENT BOX 6: TREASURE CHEST (Tycoon / Ultimate Wealth) */}
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 1
+								wins >= 500
 									? "bg-yellow-500/[0.04] border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.15)]"
 									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
 							}`}>
@@ -1013,17 +1013,17 @@ export default async function ProfilePage()
 											? "bg-yellow-500/10 border-yellow-500/30 animate-chest-glow"
 											: "bg-white/[0.02] border-white/10"
 									}`}>
-										{treasureChestIcon({ unlocked: wins >= 1 })}
+										{treasureChestIcon({ unlocked: wins >= 500 })}
 									</div>
 								
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "text-white" : "text-gray-400"}`}>
 												Trading Champion
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 1
+												wins >= 500
 													? "border-yellow-500/30 text-yellow-400 bg-yellow-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
@@ -1031,7 +1031,7 @@ export default async function ProfilePage()
 											</span>
 										</div>
 										<p className="text-xs text-gray-400 mt-0.5">
-											{wins >= 1
+											{wins >= 500
 												? "Win 500 matches on Duel !"
 												: `Win 500 matches on Duel ! (${Math.min(wins, 500)} / 500)`}
 										</p>
