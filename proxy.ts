@@ -1,11 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  });
+export async function proxy(request: NextRequest)
+{
+	let response = NextResponse.next({
+		request,
+	});
 
+<<<<<<< HEAD
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,11 +18,24 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet, headers) { // only called when supabase.auth.getClaims() refreshes the cookie
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+=======
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return request.cookies.getAll();
+			},
+				setAll(cookiesToSet) {
+					cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+>>>>>>> amber-feat/ui
 
-          response = NextResponse.next({
-            request,
-          });
+					response = NextResponse.next({
+					request,
+			});
 
+<<<<<<< HEAD
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);               //copy refreshed cookies onto `response`
           });
@@ -41,3 +56,28 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"], // run it on all path except these
 };
+=======
+				cookiesToSet.forEach(({ name, value, options }) => {
+				response.cookies.set(name, value, options);
+				});
+				},
+			},
+		}
+	);
+
+	const { data: { user }} = await supabase.auth.getUser();
+
+	if (!user && !request.nextUrl.pathname.startsWith("/login"))
+	{
+		const url = request.nextUrl.clone();
+		url.pathname = "/login";
+		return NextResponse.redirect(url);
+	}
+
+	return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+};
+>>>>>>> amber-feat/ui
