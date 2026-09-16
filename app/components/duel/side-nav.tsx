@@ -50,7 +50,7 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 	return (
 		<main className="flex min-h-screen bg-base text-ink">
-			<aside className="hidden w-58 shrink-0 flex-col border-r border-line bg-panel px-3 py-4 lg:flex">
+			<aside className="sticky top-0 hidden h-screen w-58 shrink-0 flex-col border-r border-line bg-panel px-3 py-4 lg:flex">
 				<Link href="/" className="px-2 pb-5 pt-1">
 					<Logo />
 				</Link>

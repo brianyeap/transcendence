@@ -15,9 +15,7 @@ export default async function HowToPlayPage() {
 
   return (
 	<SideNav>
-		<div className="flex min-h-screen flex-col bg-[#090b10] text-[#eef2f8]">
 			<HowToPlayScreen />
-		</div>
 	</SideNav>
   );
 }
