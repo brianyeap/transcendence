@@ -22,6 +22,8 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState<string>(" ");
   const [username, setUsername] = useState<string>(" ");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  // Avatar upload state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -37,7 +39,13 @@ export default function SettingsPage() {
       .find((row) => row.startsWith("locale="))
       ?.split("=")[1] ?? "en";
   };
+  const [statusMessage, setStatusMessage] = useState("");
 
+  // Username edit state
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [usernameInput, setUsernameInput] = useState("");
+
+  // Load the logged-in user's data when the page opens
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,43 +72,64 @@ export default function SettingsPage() {
     };
 
     fetchUser();
+    loadUserData();
   }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  async function loadUserData() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    setUserEmail(user.email ?? "");
+
+    // ─────────────────────────────────────────────
+    // ZEP: reads username + avatar_url from profiles
+    // table, filtered to the logged-in user's row.
+    // ─────────────────────────────────────────────
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, avatar_url")
+      .eq("id", user.id)
+      .single();
+
+    if (profile) {
+      setUsername(profile.username ?? user.email?.split("@")[0] ?? "");
+      setAvatarUrl(profile.avatar_url ?? null);
+    }
+  }
+
+  // Step 1: user picks a photo file
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setUploadError("Please select an image file.");
+      setStatusMessage("Please choose an image file.");
       return;
     }
 
-    setUploadError(null);
+    setStatusMessage("");
 
-    try {
-      const resizedBlob = await resizeImage(file, 256);
-      const localPreviewUrl = URL.createObjectURL(resizedBlob);
-      setPreviewUrl(localPreviewUrl);
-      setPendingBlob(resizedBlob);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to process image";
-      setUploadError(message);
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+    const resized = await resizeImage(file, 256);
+    const localUrl = URL.createObjectURL(resized);
 
-  const handleConfirmUpload = async () => {
+    setPreviewUrl(localUrl);
+    setPendingBlob(resized);
+  }
+
+  // Step 2: user clicks Confirm to actually save the photo
+  async function handleConfirmUpload() {
     if (!pendingBlob) return;
 
-    setUploading(true);
-    setUploadError(null);
+    setStatusMessage("Uploading...");
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const filePath = `${user.id}.jpg`;
+    const filePath = user.id + ".jpg";
 
       const { error: storageError } = await supabase.storage
         .from("avatars")
@@ -109,37 +138,78 @@ export default function SettingsPage() {
           contentType: "image/jpeg",
         });
 
-      if (storageError) throw storageError;
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: urlData.publicUrl })
-        .eq("id", user.id);
-
-      if (updateError) throw updateError;
-
-      setAvatarUrl(urlData.publicUrl);
-      setPreviewUrl(null);
-      setPendingBlob(null);
-
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Upload failed";
-      setUploadError(message);
-    } finally {
-      setUploading(false);
+    if (uploadResult.error) {
+      setStatusMessage("Upload failed. Try again.");
+      return;
     }
-  };
 
-  const handleCancelPreview = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+    // ─────────────────────────────────────────────
+    // ZEP: saves the photo's URL into profiles.avatar_url
+    // for the logged-in user's row.
+    // ─────────────────────────────────────────────
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: urlData.publicUrl })
+      .eq("id", user.id);
+
+    setAvatarUrl(urlData.publicUrl);
     setPreviewUrl(null);
     setPendingBlob(null);
-    setUploadError(null);
-  };
+    setStatusMessage("");
+  }
+
+  function handleCancelPreview() {
+    setPreviewUrl(null);
+    setPendingBlob(null);
+    setStatusMessage("");
+  }
+
+  function handleStartEditUsername() {
+    setUsernameInput(username);
+    setEditingUsername(true);
+  }
+
+  async function handleSaveUsername() {
+    const newName = usernameInput.trim();
+
+    if (newName.length < 3) {
+      setStatusMessage("Username needs at least 3 characters.");
+      return;
+    }
+
+    if (newName === username) {
+      setEditingUsername(false);
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // ─────────────────────────────────────────────
+    // ZEP: updates profiles.username for this user.
+    // Username is UNIQUE in the schema, so this can
+    // fail with error code 23505 if already taken.
+    // ─────────────────────────────────────────────
+    const result = await supabase
+      .from("profiles")
+      .update({ username: newName })
+      .eq("id", user.id);
+
+    if (result.error) {
+      if (result.error.code === "23505") {
+        setStatusMessage("That username is already taken.");
+      } else {
+        setStatusMessage("Could not save username.");
+      }
+      return;
+    }
+
+    setUsername(newName);
+    setEditingUsername(false);
+    setStatusMessage("");
+  }
 
   return (
     <SideNav user={username || userEmail}>
@@ -242,14 +312,28 @@ export default function SettingsPage() {
           <div className="px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <User className="h-4 w-4 text-[#5d6877]" />
-              <div>
+			  <div>
                 <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">{t("username")}</div>
-                <div className="text-sm font-semibold">{username}</div>
-              </div>
+                {editingUsername ? (
+                  <input
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    autoFocus
+                    className="bg-transparent border-b border-[#4d86ff] text-sm font-semibold outline-none"
+                  />
+                ) : (
+                  <div className="text-sm font-semibold">{username}</div>
+                )}
+			  </div>
             </div>
-            <span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0.5">{t("editComingSoon")}</span>
-          </div>
 
+            {editingUsername ? (
+              <button onClick={handleSaveUsername} className="text-[10px] text-[#4d86ff]">Save</button>
+              ) : (
+                <button onClick={handleStartEditUsername} className="text-[10px] text-[#4d86ff]">Edit</button>
+              )}
+			  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </div>
         </div>
 
         {/* Language section */}
@@ -293,6 +377,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Security section */}
+        {statusMessage && (
+          <p className="mt-3 text-xs text-rose-400">{statusMessage}</p>
+        )}
+
         <div className="mt-6 rounded-[7px] border border-white/[.07] bg-[#0f131b] divide-y divide-white/[.05]">
           <div className="px-4 py-3 flex items-center gap-2">
             <Shield className="h-3.5 w-3.5 text-[#4d86ff]" />
