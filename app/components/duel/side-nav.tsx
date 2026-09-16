@@ -1,3 +1,4 @@
+// This component needs to run on the client/browser
 "use client";
 
 import Link from "next/link";
@@ -95,8 +96,15 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 			<section className="flex min-w-0 flex-1 flex-col pb-16 lg:pb-0">{children}</section>
 
-			{/* On a small screen the menu becomes a bar along the bottom instead. */}
-			<nav className="fixed inset-x-0 bottom-0 flex h-16 border-t border-line bg-panel lg:hidden">
+			{/* ====================================================
+				MOBILE BOTTOM NAVIGATION
+				====================================================
+
+				On large screens, the sidebar above is used.
+				On smaller screens, the sidebar is hidden and this
+				navigation bar appears fixed at the bottom. */}
+
+			<nav className="fixed inset-x-0 bottom-0 z-40 flex h-[62px] border-t border-white/[.07] bg-[#0f131b]/95 px-1.5 backdrop-blur lg:hidden">
 				{navItems.map((item) => (
 					<Link
 						key={item.label}

@@ -203,7 +203,7 @@ export default function HistoryPage() {
 
 	useEffect(() => {
 		loadHistory();
-	}, []);
+	}, []);	
 
 	async function loadHistory() {
 
@@ -378,15 +378,19 @@ export default function HistoryPage() {
 		{ key: "DRAW", label: t("filterDraws"), count: stats.draws },
 	];
 
+
 	if (loading) {
 		return (
 			<SideNav>
-				<div className="p-8 text-white">
-					Loading...
+				<div className="flex min-h-screen bg-[#090b11]">
+					<div className="flex-1 flex items-center justify-center p-8 text-white font-medium tracking-wide">
+						<div className="animate-pulse">Loading history logs...</div>
+					</div>
 				</div>
 			</SideNav>
 		);
 	}
+	
 
 	return (
 		<SideNav>
