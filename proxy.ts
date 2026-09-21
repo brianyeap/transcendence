@@ -1,24 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest)
-{
+export async function proxy(request: NextRequest) {
 	let response = NextResponse.next({
 		request,
 	});
 
-<<<<<<< HEAD
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {  // onlyreads sb auth cookies
-          return request.cookies.getAll(); 
-        },
-        setAll(cookiesToSet, headers) { // only called when supabase.auth.getClaims() refreshes the cookie
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-=======
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,49 +13,39 @@ export async function proxy(request: NextRequest)
 			cookies: {
 				getAll() {
 					return request.cookies.getAll();
-			},
-				setAll(cookiesToSet) {
+				},
+				setAll(cookiesToSet, headers) {
 					cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
->>>>>>> amber-feat/ui
 
 					response = NextResponse.next({
-					request,
-			});
+						request,
+					});
 
-<<<<<<< HEAD
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);               //copy refreshed cookies onto `response`
-          });
+					cookiesToSet.forEach(({ name, value, options }) => {
+						response.cookies.set(name, value, options);
+					});
 
-          Object.entries(headers).forEach(([key, value]) => {
-            response.headers.set(key, value);                         //no-cache headers, so a CDN never serves one user's session to another
-          });
-        },
-      },
-    }
-  );
-
-  await supabase.auth.getClaims(); // result thrown away, but this will refresh the cookie
-
-  return response; //  NextResponse.next() type return
-}
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"], // run it on all path except these
-};
-=======
-				cookiesToSet.forEach(({ name, value, options }) => {
-				response.cookies.set(name, value, options);
-				});
+					if (headers) {
+						Object.entries(headers).forEach(([key, value]) => {
+							response.headers.set(key, value);
+						});
+					}
 				},
 			},
 		}
 	);
 
-	const { data: { user }} = await supabase.auth.getUser();
+	const { data: { user } } = await supabase.auth.getUser();
 
-	if (!user && !request.nextUrl.pathname.startsWith("/login"))
-	{
+	const pathname = request.nextUrl.pathname;
+
+	// Allow the OAuth callback to complete before a session exists.
+	// Also allow /login itself to avoid redirect loops.
+	const isPublic =
+		pathname.startsWith("/login") ||
+		pathname.startsWith("/auth/callback");
+
+	if (!user && !isPublic) {
 		const url = request.nextUrl.clone();
 		url.pathname = "/login";
 		return NextResponse.redirect(url);
@@ -78,6 +55,8 @@ export const config = {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+	// Exclude static assets and the auth callback (PKCE code exchange must
+	// run before any session exists — intercepting it causes redirect loops).
+	matcher: ["/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
->>>>>>> amber-feat/ui
+
