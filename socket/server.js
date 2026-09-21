@@ -20,6 +20,9 @@ const path = require("path");
 // Load the same environment variables the Next.js app uses (Supabase URL + keys).
 require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
 
+// Register OTel metrics before anything requires ./metrics
+require("./instrumentation");
+
 const http = require("http");
 const express = require("express");
 const cors = require("cors");
@@ -308,6 +311,8 @@ async function onTick(match) {
       // Both players' capital moves with every price change, so resend it.
       broadcastCapitals(match);
     }
+  } catch (err) { 
+	console.error("onTick error:", err);
   } finally {
     ticking.delete(match.matchId);
   }
