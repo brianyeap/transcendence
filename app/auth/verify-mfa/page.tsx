@@ -44,13 +44,18 @@ function VerifyMfaContent() {
       const { data: aalData } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
-      // If user already satisfied aal2 or does not need it, redirect directly
-      if (aalData?.currentLevel === "aal2" || aalData?.nextLevel !== "aal2") {
+      // If the session is already at aal2 the user has already completed MFA.
+      if (aalData?.currentLevel === "aal2") {
         router.push(safeNext);
         return;
       }
 
-      // Fetch factors
+      // Do NOT use aalData.nextLevel to decide whether MFA is needed.
+      // For OAuth (Google) sign-ins the token response omits user.factors, so
+      // the locally-stored session has an empty factors array and
+      // getAuthenticatorAssuranceLevel() incorrectly reports nextLevel === "aal1",
+      // bypassing the MFA gate. listFactors() always makes a live network
+      // request and returns the correct enrolled factors.
       const { data: factorsData, error: factorsError } =
         await supabase.auth.mfa.listFactors();
 
@@ -65,7 +70,7 @@ function VerifyMfaContent() {
       const totpFactor = factorsData?.totp?.[0];
 
       if (!totpFactor) {
-        // No verified TOTP factor exists
+        // No verified TOTP factor enrolled -- no challenge needed.
         router.push(safeNext);
         return;
       }

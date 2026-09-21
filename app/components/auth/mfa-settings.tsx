@@ -417,7 +417,7 @@ export function MfaSettings() {
                         setVerifyCode(e.target.value.replace(/\D/g, ""))
                       }
                       placeholder="000000"
-                      className="h-10 w-36 rounded-[7px] border border-white/[.07] bg-[#090b10] px-3 font-mono text-base tracking-[0.2em] text-[#eef2f8] outline-none transition focus:border-[#4d86ff]/50"
+                      className="h-10 w-44 rounded-[7px] border border-white/[.12] bg-[#090b10] px-3 text-center font-mono text-lg font-bold tracking-[0.25em] text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff] focus:ring-1 focus:ring-[#4d86ff]/50"
                     />
                     <button
                       type="submit"
