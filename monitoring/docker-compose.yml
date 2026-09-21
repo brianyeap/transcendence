@@ -8,6 +8,8 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
+    networks:
+      - transcendence
 
   grafana:
     image: grafana/grafana:12.3.1
@@ -17,8 +19,6 @@ services:
       - prometheus
     ports:
       - "3001:3000"
-    env_file:
-      - ./.env
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
@@ -26,6 +26,8 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - transcendence
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
@@ -39,6 +41,8 @@ services:
       - "4317:4317" # standard OTLP gRPC port
       - "4318:4318" # OTLP HTTP port
       - "8889:8889" # endpoint where Collector exposes metrics in a Prometheus-compatible format
+    networks:
+      - transcendence
 
 volumes:
   prometheus_data:
