@@ -75,8 +75,9 @@ function MatchPhase({ connection }: { connection: MatchConnection }) {
         <MatchResult match={match} ended={connection.ended} viewerUserId={viewerUserId} />
       );
 
-    case "cancelled":
-      return <MatchCancelled match={match} />;
+	// UNUSED CASE
+    // case "cancelled":
+    //   return <MatchCancelled match={match} />;
 
     case "active":
       return <ActiveMatch connection={connection} match={match} />;
