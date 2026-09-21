@@ -1,28 +1,7 @@
-// ============================================================================
-// Match engine (Socket.IO server)
-// ----------------------------------------------------------------------------
-// This is the "brain" of a match. It runs as its own small Node program on
-// port 4000, next to the Next.js app. For each running match it:
-//   * runs the countdown, then starts trading                     (Phase 2)
-//   * streams the live BTC price to both players every 0.5s       (Phase 2)
-//   * takes buy/sell orders and updates each player's money       (Phase 3)
-//   * when the timer ends, closes positions and picks the winner  (Phase 4)
-//
-// It keeps the "live" numbers in memory while a match is running (fast), and
-// writes them to the Supabase database using the secret service-role key so the
-// data is saved for history.
-//
-// It is deliberately written in a simple, step-by-step style with lots of
-// comments so every line is easy to follow.
-// ============================================================================
-
 const path = require("path");
-// Load the same environment variables the Next.js app uses (Supabase URL + keys).
 require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
 
 const http = require("http");
-const express = require("express");
-const cors = require("cors");
 const { Server } = require("socket.io");
 const { createClient } = require("@supabase/supabase-js");
 // The pure trading maths lives in its own file so it can be tested on its own.
@@ -47,7 +26,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// All the live matches 
 const liveMatches = new Map();
 
 // Helpers
@@ -94,7 +72,7 @@ async function savePlayer(matchId, userId, player) {
       available_balance: player.availableBalance,
       realized_pnl: player.realizedPnl,
       current_side: player.side,
-      position_notional_usdt: player.notional,
+      position_notional_usdt: player.notional, // active postion notional alwasy positive
       average_entry_price: player.avgEntry,
     })
     .eq("match_id", matchId)
@@ -112,7 +90,7 @@ async function saveTrade(matchId, userId, side, amount, price, result, candleSeq
     realized_pnl: result.tradePnl,
     resulting_side: result.next.side,
     resulting_notional: result.next.notional,
-    candle_sequence: candleSequence,
+    candle_sequence: candleSequence,              // candle tick
   });
 }
 
@@ -187,13 +165,11 @@ async function loadPlayers(matchRow) {
   return players;
 }
 
-// matchIds currently inside an async tick, so two ticks never overlap.
 const ticking = new Set();
 
-// Make sure a match is loaded into memory and its clock is ticking.
-// Safe to call many times — it only sets things up once.
+// Make sure a match is loaded into memory and its clock is ticking. (Safe to call many times)
 async function ensureMatchRunning(matchRow) {
-  // Already running? Nothing to do.
+  // IF match alr running
   if (liveMatches.has(matchRow.id)) {
     return liveMatches.get(matchRow.id);
   }
@@ -213,19 +189,15 @@ async function ensureMatchRunning(matchRow) {
     latestPrice: null, // most recent BTC price
     sequence: 0, // how many price ticks we have sent
     candles: [], // the pre-fetched candles we replay during the match
-    // Used only by the no-candles fallback below: the chart needs every candle
-    // to have a later timestamp than the one before it, so we count up from here.
-    fallbackBaseTime: Math.floor(Date.now() / 1000),
+    fallbackBaseTime: Math.floor(Date.now() / 1000), // fallback path if candles never load
     players: players,
     timer: null,
   };
 
+  // seeting match id to mathc obj 
   liveMatches.set(match.matchId, match);
 
-  // Pre-fetch the market data we will replay. We need one candle per tick for
-  // the whole match. Example: a 60s match at one tick every 0.5s = 120 ticks,
-  // so 120 one-minute candles = 2 hours of real history. We fetch now, during
-  // the countdown, so the data is ready by the time trading starts.
+  // so 120 one minute candles = 2 hours of  history
   const durationMs = match.endsAt - match.startsAt;
   const candlesNeeded = Math.ceil(durationMs / TICK_MS);
   fetchCandles(candlesNeeded).then((candles) => {
@@ -247,33 +219,30 @@ async function onTick(match) {
   try {
     const now = Date.now();
 
-    // ---- 1. Countdown phase (before trading starts) ----
+    // 1 Countdown 
     if (now < match.startsAt) {
-      const secondsLeft = Math.ceil((match.startsAt - now) / 1000);
+      const secondsLeft = Math.ceil((match.startsAt - now) / 1000); // in seconds
       io.to(roomName(match.matchId)).emit("match:countdown", { secondsLeft });
       return;
     }
 
-    // ---- 2. The moment trading starts ----
+    // 2 Trading starts
     if (!match.started) {
       match.started = true;
       await supabase.from("matches").update({ status: "active" }).eq("id", match.matchId);
       io.to(roomName(match.matchId)).emit("match:started");
     }
 
-    // ---- 3. The match has ended ----
+    // 3 The match  ended
     if (now >= match.endsAt) {
       await endMatch(match);
       return;
     }
 
-    // ---- 4. Trading is live: replay one candle ----
-    // We step through the pre-fetched candles one per tick. `sequence` is our
-    // 0-based position in the list, so candle 0 is shown first, then candle 1...
+    // 4 Trading is live: replay one candle
     let candle = match.candles[match.sequence];
 
-    // Fallback: if the candles never loaded (e.g. Coinbase was down), use the
-    // live price instead so the match still works.
+    // Fallback: if the candles never loaded then live prices
     if (!candle && match.candles.length === 0) {
       const livePrice = await fetchBtcPrice();
       if (livePrice !== null) {
@@ -284,18 +253,14 @@ async function onTick(match) {
     if (candle) {
       match.latestPrice = candle.close; // trades fill at the candle's close price
       match.sequence += 1;
-      // Save the candle for history, then send the price to both players.
+      // Save the candle for history, then send the price to both players
       await saveCandle(match.matchId, match.sequence, candle);
       io.to(roomName(match.matchId)).emit("match:tick", {
         price: candle.close,
         sequence: match.sequence,
         at: Date.now(),
-        // The whole candle, so the chart can draw real open/high/low/close bars
-        // instead of just a line of closing prices. Candles we replayed from
-        // Coinbase carry their own timestamp; the live-price fallback has none,
-        // so we count up from fallbackBaseTime to keep the chart moving forward.
         candle: {
-          time: candle.time ?? match.fallbackBaseTime + match.sequence,
+          time: candle.time ?? match.fallbackBaseTime + match.sequence, // live candles have a time, but fallback ones don't, so we make one up
           open: candle.open,
           high: candle.high,
           low: candle.low,
@@ -310,33 +275,32 @@ async function onTick(match) {
   }
 }
 
-// End the match: close positions, decide the winner, save, and tell the players.
+// End the match: close positions, decide the winner, save, and tell the players
 async function endMatch(match) {
   if (match.ended) return; // only once
   match.ended = true;
   clearInterval(match.timer);
 
-  // The price we settle at is the last one we streamed.
+  // The price we settle at is the last one we streamed
   const finalPrice = match.latestPrice;
 
-  // Work out each player's final money (closing any open position).
+  // Work out each player's final money (closing any open position)
   const finalCapitals = {};
   for (const userId of Object.keys(match.players)) {
     const player = match.players[userId];
-    // If we somehow never got a price, just use the money they have.
     finalCapitals[userId] =
       finalPrice === null ? player.availableBalance : settlePlayer(player, finalPrice);
   }
 
-  // Decide the winner: whoever has more money. Equal money = a draw.
+  // Decide the winner part
   const userIds = Object.keys(match.players);
   const [a, b] = userIds;
   let winnerUserId = null;
   if (finalCapitals[a] > finalCapitals[b]) winnerUserId = a;
   else if (finalCapitals[b] > finalCapitals[a]) winnerUserId = b;
-  // else it stays null, meaning a draw.
+  // else it stays null, meaning a draw
 
-  // Save each player's final numbers and their win/loss/draw result.
+  // Save each player's final numbers and their result
   for (const userId of userIds) {
     const player = match.players[userId];
     let result;
@@ -382,9 +346,6 @@ async function endMatch(match) {
 }
 
 // Send BOTH players' current capital to everyone in the match room.
-// The match header shows your capital next to your opponent's, and a player
-// cannot work out the opponent's number on their own (they never see the
-// opponent's position), so the engine has to tell them.
 function broadcastCapitals(match) {
   if (match.latestPrice === null) return;
 
@@ -409,17 +370,7 @@ function sendPlayerState(socket, match, userId) {
   });
 }
 
-// ----------------------------------------------------------------------------
-// Startup clean-up
-// ----------------------------------------------------------------------------
-// If this server was down while a match was counting down or running, nobody
-// was there to finish it, so it is stuck forever. A player with a stuck match
-// cannot create or join another one (see /api/rooms/join), which locks them out
-// of the game. So on boot we close any match whose end time has already passed.
-//
-// There is no winner to pick — no trades were taken while we were away — so we
-// only mark it completed and leave winner_user_id as null (a draw).
-// How long an empty room may sit in the lobby before we treat it as abandoned.
+// Cleanup if room sit waiting for one hour it will be closed to prevent players from being stuck with an unfinished match forever
 const ABANDONED_ROOM_HOURS = 1;
 
 async function closeStaleMatches() {
@@ -440,10 +391,7 @@ async function closeStaleMatches() {
     console.log(`closed ${expired.length} match(es) whose time had already run out`);
   }
 
-  // 2. Rooms still waiting for a second player. These never started, so they
-  //    have no ends_at at all and the check above skips them — we go by how
-  //    long they have been sitting there instead. This matters because a player
-  //    with ANY unfinished match cannot create or join another one.
+  // 2. Rooms still waiting for a second player
   const abandonedBefore = new Date(now.getTime() - ABANDONED_ROOM_HOURS * 60 * 60 * 1000);
 
   const { data: abandoned, error: abandonedError } = await supabase
@@ -460,29 +408,13 @@ async function closeStaleMatches() {
   }
 }
 
-// ============================================================================
-// HTTP + Socket.IO setup
-// ============================================================================
-const app = express();
-app.use(cors({ origin: ALLOWED_ORIGINS })); // only allow our frontend
-app.use(express.json());
+// setup socket io
+const server = http.createServer();
+const io = new Server(server, { cors: { origin: ALLOWED_ORIGINS } }); // only allow our frontend
 
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: ALLOWED_ORIGINS } });
 
-// ----------------------------------------------------------------------------
-// Who is this socket? (authentication)
-// ----------------------------------------------------------------------------
-// Every connection has to prove who it is BEFORE it is allowed to do anything.
-// The browser sends its Supabase login token when it connects; we ask Supabase
-// to check that token and tell us which user it belongs to. We then remember
-// that user id on the socket.
-//
-// This is the ONLY place a user id is ever decided. The client used to send its
-// own userId inside each message, which meant anybody could simply claim to be
-// another player - read their balance, or place losing trades in their name.
 io.use(async (socket, next) => {
-  const token = socket.handshake.auth?.token;
+  const token = socket.handshake.auth?.token; // auth token
 
   if (typeof token !== "string" || token.length === 0) {
     return next(new Error("Not signed in."));
@@ -502,15 +434,9 @@ io.use(async (socket, next) => {
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
 
-  // ------------------------------------------------------------------------
-  // A player opens the match page and joins their match.
-  // ------------------------------------------------------------------------
   socket.on("match:join", async ({ matchId }) => {
-    // Who we are was settled when the socket connected (see io.use above), so a
-    // player cannot join a match as somebody else.
     const userId = socket.data.userId;
 
-    // Basic checks on the input.
     if (typeof matchId !== "string") {
       socket.emit("error", { message: "matchId is required." });
       return;
@@ -535,19 +461,16 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Remember who this socket is, and put it in the match's room.
-    socket.data.matchId = matchId;
+    // Put this socket in the match's room
     socket.join(roomName(matchId));
 
-    // If the room is still waiting for the second player, just say so.
+    // If the room is still waiting for the second player, just say so
     if (matchRow.status === "waiting") {
       socket.emit("match:waiting");
       return;
     }
 
-    // If the match is already finished, just send back the saved result. We read
-    // the final numbers from the database instead of re-running the engine, so
-    // reopening or reconnecting to a finished match always shows the outcome.
+    // If the match is finished we send result from db
     if (matchRow.status === "completed") {
       const { data: finalRows } = await supabase
         .from("match_players")
@@ -584,9 +507,7 @@ io.on("connection", (socket) => {
     broadcastCapitals(match);
   });
 
-  // ------------------------------------------------------------------------
-  // A player places a buy/sell (long/short) order.
-  // ------------------------------------------------------------------------
+  // buy and sell orders
   socket.on("trade:submit", async ({ matchId, side, amount }) => {
     // Same rule as match:join - the trader is whoever the token says they are.
     const userId = socket.data.userId;
