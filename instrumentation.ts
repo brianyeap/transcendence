@@ -3,8 +3,15 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 export function register() {
+  const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+
+  if (!endpoint) {
+    console.warn('OTEL_EXPORTER_OTLP_ENDPOINT not set — skipping OTel metrics setup');
+    return;
+  }
+
   const metricExporter = new OTLPMetricExporter({
-    url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics`,
+    url: `${endpoint}/v1/metrics`,
   });
 
   const metricReader = new PeriodicExportingMetricReader({
