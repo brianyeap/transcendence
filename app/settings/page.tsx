@@ -124,12 +124,19 @@ export default function SettingsPage() {
   async function handleConfirmUpload() {
     if (!pendingBlob) return;
 
+    setUploading(true);
+    setUploadError(null);
     setStatusMessage("Uploading...");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setUploadError("Please sign in again before uploading.");
+        setStatusMessage("");
+        return;
+      }
 
-    const filePath = user.id + ".jpg";
+      const filePath = `${user.id}.jpg`;
 
       const { error: storageError } = await supabase.storage
         .from("avatars")
@@ -138,26 +145,37 @@ export default function SettingsPage() {
           contentType: "image/jpeg",
         });
 
-    if (uploadResult.error) {
-      setStatusMessage("Upload failed. Try again.");
-      return;
+      if (storageError) {
+        setUploadError(storageError.message || "Upload failed. Try again.");
+        setStatusMessage("");
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      // ─────────────────────────────────────────────
+      // ZEP: saves the photo's URL into profiles.avatar_url
+      // for the logged-in user's row.
+      // ─────────────────────────────────────────────
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: urlData.publicUrl })
+        .eq("id", user.id);
+
+      if (profileError) {
+        setUploadError(profileError.message || "Could not update your profile photo.");
+        setStatusMessage("");
+        return;
+      }
+
+      setAvatarUrl(urlData.publicUrl);
+      setPreviewUrl(null);
+      setPendingBlob(null);
+      setUploadError(null);
+      setStatusMessage("");
+    } finally {
+      setUploading(false);
     }
-
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-    // ─────────────────────────────────────────────
-    // ZEP: saves the photo's URL into profiles.avatar_url
-    // for the logged-in user's row.
-    // ─────────────────────────────────────────────
-    await supabase
-      .from("profiles")
-      .update({ avatar_url: urlData.publicUrl })
-      .eq("id", user.id);
-
-    setAvatarUrl(urlData.publicUrl);
-    setPreviewUrl(null);
-    setPendingBlob(null);
-    setStatusMessage("");
   }
 
   function handleCancelPreview() {
@@ -332,7 +350,6 @@ export default function SettingsPage() {
               ) : (
                 <button onClick={handleStartEditUsername} className="text-[10px] text-[#4d86ff]">Edit</button>
               )}
-			  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
         </div>
 
