@@ -1,0 +1,20 @@
+{
+  "name": "transcendence-socket",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node engine-math.test.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.222.0",
+    "@opentelemetry/sdk-metrics": "^2.11.0",
+    "@supabase/supabase-js": "^2.107.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.3"
+  }
+}

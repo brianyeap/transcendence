@@ -524,10 +524,10 @@ Allow basic account settings.
 - [ ] Waiting room/countdown page.
 - [ ] Live trading match page.
 - [ ] Match result state or page.
-- [ ] Match history page.
-- [ ] Match history detail page.
-- [ ] Profile page.
-- [ ] Settings page.
+- [/] Match history page.
+- [/] Match history detail page.
+- [/] Profile page.
+- [/] Settings page.
 
 ## Designer Notes
 

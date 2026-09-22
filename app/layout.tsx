@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "./components/toast-provider";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getLocale } from "next-intl/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -18,19 +20,24 @@ export const metadata: Metadata = {
   description: "A competitive BTC/USDT trading game lobby.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <ToastProvider />
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+          <ToastProvider />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
