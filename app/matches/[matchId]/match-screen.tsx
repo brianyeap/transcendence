@@ -9,7 +9,6 @@ import {
 } from "@/lib/match/match-connection";
 import { ConnectionBanner } from "./connection-banner";
 import { CountdownScreen } from "./countdown-screen";
-import { MatchCancelled } from "./match-cancelled";
 import { MatchChart } from "./match-chart";
 import {
   ActionButton,
@@ -74,10 +73,6 @@ function MatchPhase({ connection }: { connection: MatchConnection }) {
       return (
         <MatchResult match={match} ended={connection.ended} viewerUserId={viewerUserId} />
       );
-
-	// UNUSED CASE
-    // case "cancelled":
-    //   return <MatchCancelled match={match} />;
 
     case "active":
       return <ActiveMatch connection={connection} match={match} />;
