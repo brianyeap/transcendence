@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -6,38 +8,64 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SectionLabel } from "../components/duel/section-label";
 import { ActionLink } from "../matches/[matchId]/message-screen";
 
 export function HowToPlayScreen() {
+  const t = useTranslations("HowToPlay");
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 sm:px-7">
-      <Hero />
-      <Flow />
-      <Trading />
-      <ScreenGuide />
-      <Ending />
-      <ReadyToPlay />
+      <Hero t={t} />
+      <Flow t={t} />
+      <Trading t={t} />
+      <ScreenGuide t={t} />
+      <Ending t={t} />
+      <ReadyToPlay t={t} />
     </div>
   );
 }
 
-function Hero() {
+function Hero({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   return (
     <header>
       <h1 className="text-[27px] font-bold tracking-[-.02em] text-[#eef2f8]">
-        How to play
+        {t("title")}
       </h1>
+
       <p className="mt-2 max-w-lg text-[14px] leading-relaxed text-[#9aa6b6]">
-        Two players, one BTC/USDT chart, equal starting capital. Whoever
-        finishes the match with more capital wins.
+        {t("intro")}
       </p>
 
       <dl className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <Fact icon={Users} label="Players" value="2" />
-        <Fact icon={Wallet} label="Starting capital" value="5K - 20K" />
-        <Fact icon={Clock} label="Match length" value="1 min" />
-        <Fact icon={Trophy} label="Wins by" value="Higher capital" />
+        <Fact
+          icon={Users}
+          label={t("facts.players")}
+          value="2"
+        />
+
+        <Fact
+          icon={Wallet}
+          label={t("facts.startingCapital")}
+          value={t("facts.startingCapitalValue")}
+        />
+
+        <Fact
+          icon={Clock}
+          label={t("facts.matchLength")}
+          value={t("facts.matchLengthValue")}
+        />
+
+        <Fact
+          icon={Trophy}
+          label={t("facts.winsBy")}
+          value={t("facts.winsByValue")}
+        />
       </dl>
     </header>
   );
@@ -55,9 +83,11 @@ function Fact({
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-3.5 py-3">
       <Icon className="size-4 text-[#4d86ff]" />
+
       <dd className="mt-2 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
         {value}
       </dd>
+
       <dt className="mt-0.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
         {label}
       </dt>
@@ -65,33 +95,34 @@ function Fact({
   );
 }
 
-function Flow() {
+function Flow({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   const steps = [
     {
-      title: "Create or join a room",
-      detail:
-        "Create a room and you're automatically seated as player one. Join an open room and you're seated as player two. Either way, the match settings (symbol, duration, starting capital) are locked in.",
+      title: t("flow.steps.createJoin.title"),
+      detail: t("flow.steps.createJoin.detail"),
     },
     {
-      title: "Countdown",
-      detail:
-        "Once both seats are filled, a short countdown starts. Nobody can trade yet. This is just enough time to get ready before the chart goes live.",
+      title: t("flow.steps.countdown.title"),
+      detail: t("flow.steps.countdown.detail"),
     },
     {
-      title: "The match goes live",
-      detail:
-        "Both players see the exact same price stream. From here you can place Long or Short trades until the clock runs out.",
+      title: t("flow.steps.live.title"),
+      detail: t("flow.steps.live.detail"),
     },
     {
-      title: "Settlement",
-      detail:
-        "The moment the timer hits zero, any exposure you're still holding is automatically closed at the final price. Nothing carries over.",
+      title: t("flow.steps.settlement.title"),
+      detail: t("flow.steps.settlement.detail"),
     },
   ];
 
   return (
     <section>
-      <SectionLabel>The flow</SectionLabel>
+      <SectionLabel>{t("flow.title")}</SectionLabel>
+
       <ol className="mt-3 flex flex-col gap-2.5">
         {steps.map((step, i) => (
           <li
@@ -101,10 +132,12 @@ function Flow() {
             <span className="grid size-6 shrink-0 place-items-center rounded-full border border-[#4d86ff]/30 font-mono text-[11px] font-semibold text-[#4d86ff]">
               {i + 1}
             </span>
+
             <div>
               <p className="text-[13.5px] font-semibold text-[#eef2f8]">
                 {step.title}
               </p>
+
               <p className="mt-1 text-[12.5px] leading-relaxed text-[#9aa6b6]">
                 {step.detail}
               </p>
@@ -116,43 +149,46 @@ function Flow() {
   );
 }
 
-function Trading() {
+function Trading({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   return (
     <section>
-      <SectionLabel>Placing a trade</SectionLabel>
+      <SectionLabel>{t("trading.title")}</SectionLabel>
+
       <p className="mt-3 text-[13px] leading-relaxed text-[#9aa6b6]">
-        Every trade is a market order. You pick an amount and a direction,
-        and it fills instantly at the current streamed price. There's no
-        limit order, no leverage, and no fees.
+        {t("trading.intro")}
       </p>
 
       <div className="mt-3.5 grid gap-2.5 sm:grid-cols-2">
         <SideCard
           icon={ArrowUpRight}
-          side="Long"
+          side={t("trading.long.label")}
           tone="up"
-          detail="You profit if the price rises above your entry price by the time you offset or the match ends."
+          detail={t("trading.long.detail")}
         />
+
         <SideCard
           icon={ArrowDownRight}
-          side="Short"
+          side={t("trading.short.label")}
           tone="down"
-          detail="You profit if the price falls below your entry price by the time you offset or the match ends."
+          detail={t("trading.short.detail")}
         />
       </div>
 
       <div className="mt-3.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
         <p className="text-[12.5px] font-semibold text-[#eef2f8]">
-          You only ever hold one position
+          {t("trading.positionTitle")}
         </p>
+
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#9aa6b6]">
-          There's no separate &ldquo;close&rdquo; button. An opposite-side
-          trade offsets your existing exposure first, and any leftover amount
-          opens a new position in the other direction.
+          {t("trading.positionDetail")}
         </p>
+
         <p className="mt-2 font-mono text-[12px] text-[#5d6877]">
-          e.g. holding a $50 Short → a $50 Long trade fully closes it. A $80
-          Long would close the $50 Short and open a new $30 Long.
+          {t("trading.positionExample")}
         </p>
       </div>
     </section>
@@ -171,6 +207,7 @@ function SideCard({
   detail: string;
 }) {
   const color = tone === "up" ? "#1fcb83" : "#f6485d";
+
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3.5">
       <span
@@ -180,6 +217,7 @@ function SideCard({
         <Icon className="size-4" />
         {side}
       </span>
+
       <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#9aa6b6]">
         {detail}
       </p>
@@ -187,31 +225,34 @@ function SideCard({
   );
 }
 
-function ScreenGuide() {
+function ScreenGuide({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   const items = [
     {
-      label: "Price & timer",
-      detail: "Top bar — current price and time left in the match.",
+      label: t("screenGuide.priceTimer.label"),
+      detail: t("screenGuide.priceTimer.detail"),
     },
     {
-      label: "Your capital",
-      detail: "Available balance plus whatever's tied up in an open position.",
+      label: t("screenGuide.capital.label"),
+      detail: t("screenGuide.capital.detail"),
     },
     {
-      label: "Exposure panel",
-      detail:
-        "Your current side, entry price, and unrealised profit or loss if you offset right now.",
+      label: t("screenGuide.exposure.label"),
+      detail: t("screenGuide.exposure.detail"),
     },
     {
-      label: "Opponent",
-      detail:
-        "You'll see their capital total live. Their individual trades stay hidden until the match ends.",
+      label: t("screenGuide.opponent.label"),
+      detail: t("screenGuide.opponent.detail"),
     },
   ];
 
   return (
     <section>
-      <SectionLabel>Reading the match screen</SectionLabel>
+      <SectionLabel>{t("screenGuide.title")}</SectionLabel>
+
       <dl className="mt-3 grid gap-2.5 sm:grid-cols-2">
         {items.map((item) => (
           <div
@@ -221,6 +262,7 @@ function ScreenGuide() {
             <dt className="text-[12.5px] font-semibold text-[#eef2f8]">
               {item.label}
             </dt>
+
             <dd className="mt-1 text-[12px] leading-relaxed text-[#9aa6b6]">
               {item.detail}
             </dd>
@@ -231,31 +273,40 @@ function ScreenGuide() {
   );
 }
 
-function Ending() {
+function Ending({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   return (
     <section>
-      <SectionLabel>How a match ends</SectionLabel>
+      <SectionLabel>{t("ending.title")}</SectionLabel>
+
       <p className="mt-3 text-[13px] leading-relaxed text-[#9aa6b6]">
-        When the timer runs out, the server closes any open position at the
-        final price. You never have to remember to close a trade yourself.
-        Whoever ends up with more capital wins. If you're tied exactly, it's
-        a draw. Full trade-by-trade detail is available afterward from the
-        match history.
+        {t("ending.detail")}
       </p>
     </section>
   );
 }
 
-function ReadyToPlay() {
+function ReadyToPlay({
+  t,
+}: {
+  t: ReturnType<typeof useTranslations<"HowToPlay">>;
+}) {
   return (
     <div className="rounded-xl border border-white/[.07] bg-[#0f131b] p-5 text-center">
-      <p className="text-[14px] font-semibold text-[#eef2f8]">Ready?</p>
-      <p className="mt-1 text-[12.5px] text-[#9aa6b6]">
-        Jump into an open room, or start your own.
+      <p className="text-[14px] font-semibold text-[#eef2f8]">
+        {t("ready.title")}
       </p>
+
+      <p className="mt-1 text-[12.5px] text-[#9aa6b6]">
+        {t("ready.detail")}
+      </p>
+
       <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
         <ActionLink href="/" tone="primary" className="sm:w-40">
-          Find a match
+          {t("ready.button")}
         </ActionLink>
       </div>
     </div>

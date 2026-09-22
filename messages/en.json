@@ -212,5 +212,158 @@
     "opponentShort": "Opponent Short",
     "durationValue": "{minutes}m {seconds}s",
     "tradeTooltip": "{username}: {side} {amount} USDT @ ${price}"
+  },
+  "TermsOfServices": {
+    "title": "Terms of Services",
+    "lastUpdated": "Last updated: {date}",
+    "intro": "Please read this before playing. It's short, because the product is simple: virtual capital, no real money, and a couple of ground rules for fair play.",
+    "section1Title": "1. What this is",
+    "section1": "This is a real-time, two-player trading simulation. You trade a simulated BTC/USDT market against another player using virtual capital only. No real money is used, deposited, withdrawn, or traded on this platform at any point. Nothing here is real financial trading, and nothing you do here has any monetary value outside the app.",
+    "section2Title": "2. Your account",
+    "section2": "You need an account to play. You're responsible for keeping your login credentials secure and for anything that happens under your account. Don't share your login with anyone else, and let us know if you think someone's accessed your account without permission.",
+    "section3Title": "3. Acceptable use",
+    "section3Intro": "You agree not to:",
+    "section3Items": {
+      "bots": "Use bots, scripts, or automation to place trades on your behalf",
+      "exploits": "Exploit bugs, race conditions, or unintended behavior for an unfair advantage",
+      "coordinate": "Coordinate with an opponent to manipulate a match's outcome",
+      "access": "Attempt to access another user's account or data",
+      "illegal": "Use the service for anything illegal, harmful, or disruptive to other players"
+    },
+    "section3Footer": "We may suspend or remove an account that violates these terms.",
+    "section4Title": "4. Not financial advice",
+    "section4": "Nothing on this platform (price data, match outcomes, statistics, or anything else) is financial, investment, or trading advice. The market data is a simulation intended for entertainment and practice. Performance here has no bearing on how any real asset would perform, and you should never make real financial decisions based on anything in this app.",
+    "section5Title": "5. Service availability",
+    "section5": "This is an actively developed project. Features, match rules, starting capital, and match durations may change as the product evolves. We don't guarantee the service will always be available, bug-free, or that match history and stats will be preserved indefinitely. We'll try to communicate meaningful changes, but we don't promise advance notice for every one.",
+    "section6Title": "6. Limitation of liability",
+    "section6": "Since no real money or real assets are ever at stake, our liability to you is limited to the fullest extent the law allows. We're not liable for lost match progress, lost stats, downtime, or any indirect or consequential loss arising from your use of the service.",
+    "section7Title": "7. Changes to these terms",
+    "section7": "We may update these terms as the product changes. If we make a material change, we'll update the date at the top of this document. Continuing to use the service after a change means you accept the updated terms.",
+    "section8Title": "8. Contact",
+    "section8": "Questions about these terms? Reach us at",
+    "email": "support@duel.com",
+    "emailNote": "*Note: The email above is not a real email address and is only a placeholder for project purposes. Please do not contact that email."
+  },
+  "PrivacyPolicy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: {date}",
+    "intro": "A short summary of what we collect, why, and who can see it. No real money and no payment details are ever involved.",
+    "section1Title": "1. What we collect",
+    "section1Intro": "When you create an account and play, we store:",
+    "section1Items": {
+      "account": "Your email address and password, handled by our authentication provider (Supabase Auth) — we never see or store your raw password ourselves",
+      "username": "A public username, shown to other players",
+      "matchRecords": "Match records: rooms you've created or joined, match settings, start/end times",
+      "tradingActivity": "Trading activity: your trades within a match — side, amount, entry price, and timing",
+      "matchOutcomes": "Match outcomes and aggregate stats: games played, wins, losses, draws, win percentage"
+    },
+    "section2Title": "2. What we don't collect",
+    "section2": "We don't collect payment details, banking information, or anything related to real money — this platform uses virtual capital only, and no real financial transactions happen through it. We don't run third-party ad tracking.",
+    "section3Title": "3. How we use it",
+    "section3Intro": "We use the data above to:",
+    "section3Items": {
+      "runMatches": "Run matches - matching you with an opponent, streaming market data, computing balances and results",
+      "showStats": "Show your username and stats to other players, and to you",
+      "matchHistory": "Keep match history so you can review past games",
+      "security": "Keep the platform secure and prevent abuse"
+    },
+    "section4Title": "4. Who can see your data",
+    "section4": "Your opponent in a live match sees your username and your live capital total, but not your individual trades until the match ends. After the match, both players' full trade history for that match becomes visible to each other, as part of match history. Your email address is never shown to other players.",
+    "section5Title": "5. How long we keep it",
+    "section5": "We keep your account and match history for as long as your account exists. If you delete your account, we'll remove your personal data, though some anonymized match records may be retained for platform integrity.",
+    "section5Note": "TODO: confirm actual deletion behavior once account deletion is implemented — this section should match what the code actually does, not just what's intended.",
+    "section6Title": "6. Your choices",
+    "section6": "You can update your username and log out at any time from settings. You can contact us to request a copy of your data or to have your account deleted.",
+    "section7Title": "7. Security",
+    "section7": "Authentication and password handling are managed by Supabase Auth. Database access is protected by Row Level Security policies, so you can only read or modify data your account is authorized to access.",
+    "section8Title": "8. Changes to this policy",
+    "section8": "We may update this policy as the product changes. If we make a material change, we'll update the date at the top of this document.",
+    "section9Title": "9. Contact",
+    "section9": "Questions about your data or this policy? Reach us at",
+    "email": "support@duel.com",
+    "emailNote": "*Note: The email above is not a real email address and is only a placeholder for project purposes. Please do not contact that email."
+  },
+  "HowToPlay": {
+    "title": "How to play",
+    "intro": "Two players, one BTC/USDT chart, equal starting capital. Whoever finishes the match with more capital wins.",
+
+    "facts": {
+      "players": "Players",
+      "startingCapital": "Starting capital",
+      "matchLength": "Match length",
+      "winsBy": "Wins by",
+      "startingCapitalValue": "5K - 20K",
+      "matchLengthValue": "1 min",
+      "winsByValue": "Higher capital"
+    },
+
+    "flow": {
+      "title": "The flow",
+      "steps": {
+        "createJoin": {
+          "title": "Create or join a room",
+          "detail": "Create a room and you're automatically seated as player one. Join an open room and you're seated as player two. Either way, the match settings (symbol, duration, starting capital) are locked in."
+        },
+        "countdown": {
+          "title": "Countdown",
+          "detail": "Once both seats are filled, a short countdown starts. Nobody can trade yet. This is just enough time to get ready before the chart goes live."
+        },
+        "live": {
+          "title": "The match goes live",
+          "detail": "Both players see the exact same price stream. From here you can place Long or Short trades until the clock runs out."
+        },
+        "settlement": {
+          "title": "Settlement",
+          "detail": "The moment the timer hits zero, any exposure you're still holding is automatically closed at the final price. Nothing carries over."
+        }
+      }
+    },
+
+    "trading": {
+      "title": "Placing a trade",
+      "intro": "Every trade is a market order. You pick an amount and a direction, and it fills instantly at the current streamed price. There's no limit order, no leverage, and no fees.",
+      "long": {
+        "label": "Long",
+        "detail": "You profit if the price rises above your entry price by the time you offset or the match ends."
+      },
+      "short": {
+        "label": "Short",
+        "detail": "You profit if the price falls below your entry price by the time you offset or the match ends."
+      },
+      "positionTitle": "You only ever hold one position",
+      "positionDetail": "There's no separate “close” button. An opposite-side trade offsets your existing exposure first, and any leftover amount opens a new position in the other direction.",
+      "positionExample": "e.g. holding a $50 Short → a $50 Long trade fully closes it. A $80 Long would close the $50 Short and open a new $30 Long."
+    },
+
+    "screenGuide": {
+      "title": "Reading the match screen",
+      "priceTimer": {
+        "label": "Price & timer",
+        "detail": "Top bar — current price and time left in the match."
+      },
+      "capital": {
+        "label": "Your capital",
+        "detail": "Available balance plus whatever's tied up in an open position."
+      },
+      "exposure": {
+        "label": "Exposure panel",
+        "detail": "Your current side, entry price, and unrealised profit or loss if you offset right now."
+      },
+      "opponent": {
+        "label": "Opponent",
+        "detail": "You'll see their capital total live. Their individual trades stay hidden until the match ends."
+      }
+    },
+
+    "ending": {
+      "title": "How a match ends",
+      "detail": "When the timer runs out, the server closes any open position at the final price. You never have to remember to close a trade yourself. Whoever ends up with more capital wins. If you're tied exactly, it's a draw. Full trade-by-trade detail is available afterward from the match history."
+    },
+
+    "ready": {
+      "title": "Ready?",
+      "detail": "Jump into an open room, or start your own.",
+      "button": "Find a match"
+    }
   }
 }
