@@ -8,6 +8,7 @@
     "friends": "Rakan",
     "profile": "Profil",
     "settings": "Tetapan",
+    "howtoplay": "Cara Bermain",
     "logout": "Log keluar"
   },
   "Lobby": {
@@ -83,7 +84,9 @@
     "editComingSoon": "Kemas kini akan datang",
     "security": "Keselamatan",
     "language": "Bahasa",
-    "chooseLanguage": "Pilih bahasa anda"
+    "chooseLanguage": "Pilih bahasa anda",
+    "termsOfServices": "Terma Perkhidmatan",
+    "privacyPolicy": "Dasar Privasi"
   },
   "Match": {
     "vs": "lwn",
@@ -209,5 +212,158 @@
     "opponentShort": "Lawan Short",
     "durationValue": "{minutes}m {seconds}s",
     "tradeTooltip": "{username}: {side} {amount} USDT @ ${price}"
+  },
+  "TermsOfServices": {
+    "title": "Terma Perkhidmatan",
+    "lastUpdated": "Kemas kini terakhir: {date}",
+    "intro": "Sila baca ini sebelum bermain. Ia ringkas kerana produk ini mudah: modal maya, tiada wang sebenar, dan beberapa peraturan asas untuk memastikan permainan kekal adil.",
+    "section1Title": "1. Mengenai perkhidmatan ini",
+    "section1": "Ini ialah simulasi perdagangan masa nyata yang melibatkan dua pemain. Anda berdagang dalam pasaran BTC/USDT yang disimulasikan menentang pemain lain menggunakan modal maya sahaja. Tiada wang sebenar digunakan, didepositkan, dikeluarkan, atau didagangkan di platform ini pada bila-bila masa. Tiada aktiviti di sini merupakan perdagangan kewangan sebenar, dan tiada apa-apa yang anda lakukan di sini mempunyai nilai kewangan di luar aplikasi ini.",
+    "section2Title": "2. Akaun anda",
+    "section2": "Anda memerlukan akaun untuk bermain. Anda bertanggungjawab untuk memastikan kelayakan log masuk anda kekal selamat serta terhadap segala aktiviti yang berlaku di bawah akaun anda. Jangan kongsikan maklumat log masuk anda dengan sesiapa, dan maklumkan kepada kami jika anda mengesyaki seseorang telah mengakses akaun anda tanpa kebenaran.",
+    "section3Title": "3. Penggunaan yang dibenarkan",
+    "section3Intro": "Anda bersetuju untuk tidak:",
+    "section3Items": {
+    "bots": "Menggunakan bot, skrip, atau automasi untuk membuat dagangan bagi pihak anda",
+    "exploits": "Mengeksploitasi pepijat, keadaan perlumbaan, atau tingkah laku yang tidak disengajakan untuk mendapatkan kelebihan yang tidak adil",
+    "coordinate": "Bekerjasama dengan pihak lawan untuk memanipulasi keputusan sesuatu perlawanan",
+    "access": "Cuba mengakses akaun atau data pengguna lain",
+    "illegal": "Menggunakan perkhidmatan ini untuk sebarang tujuan yang menyalahi undang-undang, berbahaya, atau mengganggu pemain lain"
+    },
+    "section3Footer": "Kami boleh menggantung atau memadam akaun yang melanggar terma ini.",
+    "section4Title": "4. Bukan nasihat kewangan",
+    "section4": "Tiada apa-apa di platform ini, termasuk data harga, keputusan perlawanan, statistik, atau perkara lain, merupakan nasihat kewangan, pelaburan, atau perdagangan. Data pasaran ini ialah simulasi yang bertujuan untuk hiburan dan latihan. Prestasi anda di sini tidak mencerminkan prestasi mana-mana aset sebenar, dan anda tidak sepatutnya membuat sebarang keputusan kewangan sebenar berdasarkan apa-apa maklumat dalam aplikasi ini.",
+    "section5Title": "5. Ketersediaan perkhidmatan",
+    "section5": "Ini ialah projek yang sedang giat dibangunkan. Ciri-ciri, peraturan perlawanan, modal permulaan, dan tempoh perlawanan mungkin berubah apabila produk ini berkembang. Kami tidak menjamin bahawa perkhidmatan ini akan sentiasa tersedia, bebas daripada pepijat, atau bahawa sejarah perlawanan dan statistik akan disimpan selama-lamanya. Kami akan cuba memaklumkan anda tentang perubahan penting, tetapi kami tidak menjanjikan notis awal bagi setiap perubahan.",
+    "section6Title": "6. Had liabiliti",
+    "section6": "Memandangkan tiada wang atau aset sebenar dipertaruhkan pada bila-bila masa, liabiliti kami kepada anda adalah terhad setakat yang dibenarkan oleh undang-undang. Kami tidak bertanggungjawab terhadap kehilangan kemajuan perlawanan, kehilangan statistik, masa henti, atau sebarang kerugian tidak langsung atau berbangkit yang timbul daripada penggunaan perkhidmatan ini.",
+    "section7Title": "7. Perubahan pada terma ini",
+    "section7": "Kami mungkin mengemas kini terma ini apabila produk berubah. Jika kami membuat perubahan penting, kami akan mengemas kini tarikh di bahagian atas dokumen ini. Dengan terus menggunakan perkhidmatan selepas perubahan dibuat, anda bersetuju untuk menerima terma yang telah dikemas kini.",
+    "section8Title": "8. Hubungi kami",
+    "section8": "Ada soalan tentang terma ini? Hubungi kami di",
+    "email": "support@duel.com",
+    "emailNote": "*Nota: E-mel di atas bukan alamat e-mel sebenar dan hanya digunakan sebagai placeholder untuk tujuan projek. Sila jangan hubungi alamat e-mel tersebut."
+  },
+  "PrivacyPolicy": {
+    "title": "Dasar Privasi",
+    "lastUpdated": "Kemas kini terakhir: {date}",
+    "intro": "Ringkasan ringkas tentang data yang kami kumpulkan, sebab kami mengumpulkannya, dan siapa yang boleh melihatnya. Tiada wang sebenar atau maklumat pembayaran terlibat pada bila-bila masa.",
+    "section1Title": "1. Data yang kami kumpulkan",
+    "section1Intro": "Apabila anda membuat akaun dan bermain, kami menyimpan:",
+    "section1Items": {
+      "account": "Alamat e-mel dan kata laluan anda, yang dikendalikan oleh penyedia pengesahan kami (Supabase Auth) — kami tidak pernah melihat atau menyimpan kata laluan mentah anda sendiri",
+      "username": "Nama pengguna awam yang dipaparkan kepada pemain lain",
+      "matchRecords": "Rekod perlawanan: bilik yang anda cipta atau sertai, tetapan perlawanan, masa mula/tamat",
+      "tradingActivity": "Aktiviti dagangan: dagangan anda dalam sesuatu perlawanan — jenis, jumlah, harga kemasukan, dan masa",
+      "matchOutcomes": "Keputusan perlawanan dan statistik keseluruhan: jumlah permainan, kemenangan, kekalahan, seri, peratus kemenangan"
+    },
+    "section2Title": "2. Data yang kami tidak kumpulkan",
+    "section2": "Kami tidak mengumpulkan maklumat pembayaran, maklumat perbankan, atau apa-apa yang berkaitan dengan wang sebenar — platform ini hanya menggunakan modal maya dan tiada transaksi kewangan sebenar berlaku melaluinya. Kami tidak menjalankan penjejakan iklan pihak ketiga.",
+    "section3Title": "3. Cara kami menggunakannya",
+    "section3Intro": "Kami menggunakan data di atas untuk:",
+    "section3Items": {
+      "runMatches": "Menjalankan perlawanan - memadankan anda dengan lawan, menstrim data pasaran, serta mengira baki dan keputusan",
+      "showStats": "Memaparkan nama pengguna dan statistik anda kepada pemain lain serta kepada anda sendiri",
+      "matchHistory": "Menyimpan sejarah perlawanan supaya anda boleh melihat semula permainan yang lalu",
+      "security": "Memastikan platform selamat dan mencegah penyalahgunaan"
+    },
+    "section4Title": "4. Siapa yang boleh melihat data anda",
+    "section4": "Lawan anda dalam perlawanan langsung boleh melihat nama pengguna dan jumlah modal semasa anda, tetapi tidak dapat melihat dagangan individu anda sehingga perlawanan tamat. Selepas perlawanan tamat, sejarah dagangan penuh kedua-dua pemain untuk perlawanan tersebut akan dapat dilihat oleh satu sama lain sebagai sebahagian daripada sejarah perlawanan. Alamat e-mel anda tidak pernah dipaparkan kepada pemain lain.",
+    "section5Title": "5. Berapa lama kami menyimpannya",
+    "section5": "Kami menyimpan akaun dan sejarah perlawanan anda selagi akaun anda masih wujud. Jika anda memadamkan akaun anda, kami akan membuang data peribadi anda, walaupun sesetengah rekod perlawanan yang telah dinyahnamakan mungkin dikekalkan untuk memastikan integriti platform.",
+    "section5Note": "TODO: sahkan tingkah laku pemadaman sebenar selepas fungsi pemadaman akaun dilaksanakan — bahagian ini harus sepadan dengan perkara yang sebenarnya dilakukan oleh kod, bukan sekadar perkara yang dirancang.",
+    "section6Title": "6. Pilihan anda",
+    "section6": "Anda boleh mengemas kini nama pengguna dan log keluar pada bila-bila masa melalui tetapan. Anda boleh menghubungi kami untuk meminta salinan data anda atau meminta akaun anda dipadamkan.",
+    "section7Title": "7. Keselamatan",
+    "section7": "Pengesahan dan pengendalian kata laluan diuruskan oleh Supabase Auth. Akses pangkalan data dilindungi oleh polisi Row Level Security, jadi anda hanya boleh membaca atau mengubah data yang anda diberi kebenaran untuk akses melalui akaun anda.",
+    "section8Title": "8. Perubahan pada dasar ini",
+    "section8": "Kami mungkin mengemas kini dasar ini apabila produk berubah. Jika kami membuat perubahan penting, kami akan mengemas kini tarikh di bahagian atas dokumen ini.",
+    "section9Title": "9. Hubungi kami",
+    "section9": "Ada soalan tentang data anda atau dasar ini? Hubungi kami di",
+    "email": "support@duel.com",
+    "emailNote": "*Nota: Alamat e-mel di atas bukan alamat e-mel sebenar dan hanya digunakan sebagai placeholder untuk tujuan projek. Sila jangan hubungi alamat e-mel tersebut."
+  },
+  "HowToPlay": {
+    "title": "Cara bermain",
+    "intro": "Dua pemain, satu carta BTC/USDT, modal permulaan yang sama. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
+
+    "facts": {
+      "players": "Pemain",
+      "startingCapital": "Modal permulaan",
+      "matchLength": "Tempoh perlawanan",
+      "winsBy": "Kemenangan berdasarkan",
+      "startingCapitalValue": "5K - 20K",
+      "matchLengthValue": "1 min",
+      "winsByValue": "Modal lebih tinggi"
+    },
+
+    "flow": {
+      "title": "Aliran permainan",
+      "steps": {
+        "createJoin": {
+          "title": "Cipta atau sertai bilik",
+          "detail": "Cipta bilik dan anda akan ditempatkan secara automatik sebagai pemain pertama. Sertai bilik yang terbuka dan anda akan ditempatkan sebagai pemain kedua. Dalam kedua-dua keadaan, tetapan perlawanan (simbol, tempoh, modal permulaan) akan dikunci."
+        },
+        "countdown": {
+          "title": "Kiraan detik",
+          "detail": "Apabila kedua-dua tempat telah diisi, kiraan detik pendek akan bermula. Anda belum boleh berdagang. Ini memberi anda masa yang mencukupi untuk bersedia sebelum carta bermula."
+        },
+        "live": {
+          "title": "Perlawanan bermula",
+          "detail": "Kedua-dua pemain akan melihat aliran harga yang sama. Dari sini, anda boleh membuat dagangan Long atau Short sehingga masa tamat."
+        },
+        "settlement": {
+          "title": "Penyelesaian",
+          "detail": "Sebaik sahaja pemasa mencapai sifar, sebarang posisi yang masih anda pegang akan ditutup secara automatik pada harga akhir. Tiada apa-apa yang dibawa ke perlawanan seterusnya."
+        }
+      }
+    },
+
+    "trading": {
+      "title": "Membuat dagangan",
+      "intro": "Setiap dagangan ialah pesanan pasaran. Anda memilih jumlah dan arah, dan dagangan akan dilaksanakan serta-merta pada harga semasa yang diterima. Tiada pesanan had, tiada leverage, dan tiada yuran.",
+      "long": {
+        "label": "Long",
+        "detail": "Anda mendapat keuntungan jika harga meningkat melebihi harga kemasukan anda apabila anda menutup posisi atau apabila perlawanan tamat."
+      },
+      "short": {
+        "label": "Short",
+        "detail": "Anda mendapat keuntungan jika harga menurun di bawah harga kemasukan anda apabila anda menutup posisi atau apabila perlawanan tamat."
+      },
+      "positionTitle": "Anda hanya boleh memegang satu posisi",
+      "positionDetail": "Tiada butang “tutup” yang berasingan. Dagangan dalam arah bertentangan akan terlebih dahulu mengimbangi posisi sedia ada, dan jumlah yang masih berbaki akan membuka posisi baharu dalam arah yang bertentangan.",
+      "positionExample": "Contohnya, memegang Short bernilai $50 → dagangan Long bernilai $50 akan menutupnya sepenuhnya. Long bernilai $80 akan menutup Short bernilai $50 dan membuka Long baharu bernilai $30."
+    },
+
+    "screenGuide": {
+      "title": "Memahami skrin perlawanan",
+      "priceTimer": {
+        "label": "Harga & pemasa",
+        "detail": "Bar atas — harga semasa dan masa yang tinggal dalam perlawanan."
+      },
+      "capital": {
+        "label": "Modal anda",
+        "detail": "Baki yang tersedia ditambah jumlah yang sedang digunakan dalam posisi terbuka."
+      },
+      "exposure": {
+        "label": "Panel posisi",
+        "detail": "Arah posisi semasa anda, harga kemasukan, serta keuntungan atau kerugian belum direalisasikan jika anda menutup posisi sekarang."
+      },
+      "opponent": {
+        "label": "Lawan",
+        "detail": "Anda akan melihat jumlah modal mereka secara langsung. Dagangan individu mereka kekal tersembunyi sehingga perlawanan tamat."
+      }
+    },
+
+    "ending": {
+      "title": "Bagaimana perlawanan berakhir",
+      "detail": "Apabila masa tamat, pelayan akan menutup sebarang posisi terbuka pada harga akhir. Anda tidak perlu mengingati untuk menutup dagangan sendiri. Pemain yang mempunyai modal lebih tinggi pada akhirnya akan menang. Jika jumlah modal anda sama tepat, perlawanan berakhir seri. Butiran penuh setiap dagangan boleh dilihat selepas itu melalui sejarah perlawanan."
+    },
+
+    "ready": {
+      "title": "Sudah bersedia?",
+      "detail": "Sertai bilik yang terbuka, atau cipta bilik anda sendiri.",
+      "button": "Cari perlawanan"
+    }
   }
 }
