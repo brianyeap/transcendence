@@ -7,9 +7,10 @@ import { LogoutButton } from "../components/auth/logout-button";
 import { Avatar } from "../components/duel/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/avatar-upload";
-import { User, Mail, Shield, Camera, Languages } from "lucide-react";
+import { User, Mail, Shield, Camera, Languages, FileText, Scale, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MfaSettings } from "../components/auth/mfa-settings";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -403,6 +404,32 @@ export default function SettingsPage() {
             <Shield className="h-3.5 w-3.5 text-[#4d86ff]" />
             <span className="text-[11px] uppercase tracking-widest text-[#5d6877] font-semibold">{t("security")}</span>
           </div>
+
+		  <Link
+			href="/terms-services"
+			target="_blank"
+			rel="noopener noreferrer"
+			className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
+		  >
+			<div className="flex items-center gap-3">
+				<FileText className="h-4 w-4 text-[#5d6877]" />
+				<span className="text-sm font-semibold">{t("termsOfServices")}</span>
+			</div>
+			<ChevronRight className="h-4 w-4 text-[#5d6877]" />
+		  </Link>
+
+		  <Link
+			href="/privacy-policy"
+			target="_blank"
+			rel="noopener noreferrer"
+			className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
+		  >
+			<div className="flex items-center gap-3">
+				<Shield className="h-4 w-4 text-[#5d6877]" />
+				<span className="text-sm font-semibold">{t("privacyPolicy")}</span>
+			</div>
+			<ChevronRight className="h-4 w-4 text-[#5d6877]" />
+		  </Link>
 
           {/* MFA Management Flow */}
           <MfaSettings />
