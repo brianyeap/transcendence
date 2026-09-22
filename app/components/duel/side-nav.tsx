@@ -49,9 +49,9 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 	const displayName = user ?? fetchedName;
 
 	return (
-		<main className="flex min-h-screen bg-base text-ink">
-			<aside className="sticky top-0 hidden h-screen w-58 shrink-0 flex-col border-r border-line bg-panel px-3 py-4 lg:flex">
-				<Link href="/" className="px-2 pb-5 pt-1">
+		<main className="flex min-h-screen bg-[#090b10] text-[#eef2f8]">
+			<aside className="hidden w-[232px] shrink-0 flex-col border-r border-white/[.07] bg-[#0f131b] px-3.5 py-4 lg:flex lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+				<Link href="/" className="px-2 pb-5 pt-1 text-left">
 					<Logo />
 				</Link>
 

@@ -1,0 +1,7 @@
+      1 ├── @types/react-dom@19.2.3 -> ./node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.16/node_modules/@types/react-dom
+      1 ├── @types/react@19.2.16 -> ./node_modules/.pnpm/@types+react@19.2.16/node_modules/@types/react
+      1 ├── UNMET DEPENDENCY react-hot-toast@^2.6.0
+      1 ├── lucide-react@1.17.0 -> ./node_modules/.pnpm/lucide-react@1.17.0_react@19.2.4/node_modules/lucide-react
+      1 ├── next@16.2.7 -> ./node_modules/.pnpm/next@16.2.7_@babel+core@7.29.7_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next
+      1 ├── react-dom@19.2.4 -> ./node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom
+      1 ├── react@19.2.4 -> ./node_modules/.pnpm/react@19.2.4/node_modules/react
