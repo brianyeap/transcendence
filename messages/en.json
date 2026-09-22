@@ -84,7 +84,9 @@
     "editComingSoon": "Edit coming soon",
     "security": "Security",
     "language": "Language",
-    "chooseLanguage": "Choose your language"
+    "chooseLanguage": "Choose your language",
+	"termsOfServices": "Terms of Services",
+	"privacyPolicy": "Privacy Policy"
   },
   "Match": {
     "vs": "vs",
