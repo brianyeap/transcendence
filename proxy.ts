@@ -1,8 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest)
-{
+export async function proxy(request: NextRequest) {
 	let response = NextResponse.next({
 		request,
 	});
@@ -14,26 +13,39 @@ export async function proxy(request: NextRequest)
 			cookies: {
 				getAll() {
 					return request.cookies.getAll();
-			},
-				setAll(cookiesToSet) {
+				},
+				setAll(cookiesToSet, headers) {
 					cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
 					response = NextResponse.next({
-					request,
-			});
+						request,
+					});
 
-				cookiesToSet.forEach(({ name, value, options }) => {
-				response.cookies.set(name, value, options);
-				});
+					cookiesToSet.forEach(({ name, value, options }) => {
+						response.cookies.set(name, value, options);
+					});
+
+					if (headers) {
+						Object.entries(headers).forEach(([key, value]) => {
+							response.headers.set(key, value);
+						});
+					}
 				},
 			},
 		}
 	);
 
-	const { data: { user }} = await supabase.auth.getUser();
+	const { data: { user } } = await supabase.auth.getUser();
 
-	if (!user && !request.nextUrl.pathname.startsWith("/login"))
-	{
+	const pathname = request.nextUrl.pathname;
+
+	// Allow the OAuth callback to complete before a session exists.
+	// Also allow /login itself to avoid redirect loops.
+	const isPublic =
+		pathname.startsWith("/login") ||
+		pathname.startsWith("/auth/callback");
+
+	if (!user && !isPublic) {
 		const url = request.nextUrl.clone();
 		url.pathname = "/login";
 		return NextResponse.redirect(url);
@@ -43,5 +55,8 @@ export async function proxy(request: NextRequest)
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+	// Exclude static assets and the auth callback (PKCE code exchange must
+	// run before any session exists — intercepting it causes redirect loops).
+	matcher: ["/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
+
