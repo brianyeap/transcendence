@@ -6,7 +6,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { SectionLabel } from "../matches/[matchId]/section-label";
+import { SectionLabel } from "../components/duel/section-label";
 import { ActionLink } from "../matches/[matchId]/message-screen";
 
 export function HowToPlayScreen() {
