@@ -1,18 +1,16 @@
 @import "tailwindcss";
 
-:root
-{
+:root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@theme inline
-{
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
 /* Every colour in the app is named here, so no component contains a raw
    hex code. Change a colour once and it changes everywhere. */
 @theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
   --color-base: #090b10;   /* page bg color */
   --color-panel: #0f131b;  /* cards and side nav */
   --color-raised: #151b25; /* on hover colors */
@@ -26,21 +24,25 @@
   --color-brand: #4d86ff;  /* buttons, the active nav item */
   --color-win: #1fcb83;    /* profit, online */
   --color-loss: #f6485d;   /* loss, delete */
-}
 
-/*  layout.tsx loads the two fonts and puts their variables on <html>.
-    This block is what actually hooks them up to Tailwind, so `font-sans`
-    and `font-mono` resolve to them. Without it the fonts still download
-    but nothing uses them. */
-@theme inline {
+  /* layout.tsx loads the two fonts and puts their variables on <html>.
+     This block is what actually hooks them up to Tailwind, so `font-sans`
+     and `font-mono` resolve to them. */
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 body {
   background: var(--color-base);
   color: var(--color-ink);
-  font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 button,
@@ -50,17 +52,14 @@ a[href] {
 }
 
 button:disabled,
-[aria-disabled="true"]
-{
+[aria-disabled="true"] {
   cursor: not-allowed;
 }
 
-::selection
-{
+::selection {
   background: rgba(77, 134, 255, 0.22);
   color: var(--color-ink);
 }
-
 
 @keyframes emberFloat
 {
