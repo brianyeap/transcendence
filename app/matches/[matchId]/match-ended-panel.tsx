@@ -3,6 +3,7 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
 import { MatchResultCard } from "./match-result-card";
+import { AddFriendButton } from "./add-friend-button";
 import type { Match, MatchEnded } from "@/lib/match/types";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -54,6 +55,9 @@ export function MatchEndedPanel({
     return () => document.removeEventListener("keydown", trapTab);
   }, []);
 
+  const viewerIsPlayerOne = match.playerOne.userId === viewerUserId;
+  const opponent = viewerIsPlayerOne ? match.playerTwo : match.playerOne;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div
@@ -62,6 +66,15 @@ export function MatchEndedPanel({
         className="max-h-full w-full max-w-lg overflow-y-auto rounded-xl border border-white/[.07] bg-[#0f131b] p-6 shadow-2xl outline-none sm:p-7"
       >
         <MatchResultCard result={ended} match={match} viewerUserId={viewerUserId} />
+
+        {/* Only offer this when we actually know who the opponent was. */}
+        {opponent === null ? null : (
+          <AddFriendButton
+            viewerUserId={viewerUserId}
+            opponentUserId={opponent.userId}
+            opponentName={opponent.username}
+          />
+        )}
       </div>
     </div>
   );
