@@ -7,6 +7,7 @@ import { Logo } from "../components/duel/logo";
 import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
+import Link from "next/link";
 
 function LoginForm() {
   const router = useRouter();
@@ -159,6 +160,18 @@ function LoginForm() {
           <Button type="submit" disabled={loading} className="w-full py-3">
             {loading ? "Loading..." : isRegister ? "Create account" : "Log in"}
           </Button>
+
+		  <p className="mt-3 text-left text-xs text-muted">
+            By continuing, you agree to our{" "}
+            <Link href="/terms-services" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           {/* google login */}
           <div className="my-5 flex items-center gap-3">
