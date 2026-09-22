@@ -58,11 +58,21 @@ export function OrderPanel({
   const busy = pendingTrade || pendingSide !== null;
   const locked = disabled || busy || player === null;
 
+  // What the player can actually spend on each side. These are different numbers
+  // whenever a position is open, because an order in the opposite direction closes
+  // that position on its way through.
+  const maxLong = maxForSide(player, "long");
+  const maxShort = maxForSide(player, "short");
+
+  // Presets scale off the larger of the two, so 100% always offers a usable order.
+  // If it is too big for the other side, that button explains why.
+  const maxOrder = Math.max(maxLong, maxShort);
+
   const amount = parseAmount(raw);
   const error = validate(raw, amount, player);
   const canSubmit = !locked && amount !== null && error === null;
   const canSubmitSide = (side: Side) =>
-    canSubmit && amount !== null && amount <= maxForSide(player, side);
+    canSubmit && amount !== null && amount <= (side === "long" ? maxLong : maxShort);
 
   const totalCapital =
     player === null ? 0 : player.availableBalance + player.reservedBalance;
@@ -342,11 +352,29 @@ function parseAmount(raw: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+// The largest order the player can place on `side` right now.
+//
+// Same direction as their position (or no position at all): only the free money
+// can pay for it.
+//
+// Opposite direction: the order CLOSES the position before it opens anything, and
+// closing hands back the money reserved in that position plus its profit/loss. So
+// such an order can spend three things:
+//   the free money  +  the position it closes  +  what closing releases
+// which is the exact point where one order closes the old side and flips fully to
+// the new one. This is why "free money 0" never means "you cannot trade".
 function maxForSide(player: PlayerState | null, side: Side): number {
   if (player === null) return 0;
-  const offsettable =
-    player.netSide !== "flat" && player.netSide !== side ? player.netAmount : 0;
-  return player.availableBalance + offsettable;
+
+  if (player.netSide === "flat" || player.netSide === side) {
+    return player.availableBalance;
+  }
+
+  // The profit/loss here is rounded to the nearest cent for display. When that
+  // rounds UP, this total lands a fraction above what the server will really
+  // accept, and a 100% order gets rejected. Keep a cent back so it never does.
+  const released = player.netAmount + player.unrealisedPnl;
+  return Math.max(0, player.availableBalance + player.netAmount + released - 0.01);
 }
 
 function validate(raw: string, amount: number | null, player: PlayerState | null): string | null {
@@ -356,7 +384,7 @@ function validate(raw: string, amount: number | null, player: PlayerState | null
   if (player !== null) {
     const ceiling = Math.max(maxForSide(player, "long"), maxForSide(player, "short"));
     if (amount > ceiling) {
-      return `More than you can bet or offset — at most ${fmtUSD(Math.floor(ceiling))}.`;
+      return `More than you can trade — at most ${fmtUSD(Math.floor(ceiling))}.`;
     }
   }
   return null;

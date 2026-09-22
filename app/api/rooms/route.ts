@@ -1,11 +1,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
-// All matches are 1 minute (60 seconds) for now.
-const ALLOWED_DURATION = new Set([60]);
-const DEFAULT_DURATION = 60;
-const DEFAULT_SYMBOL = "BTCUSDT";
-// Longest room name we accept, so one player can't stretch the lobby card.
+const ALLOWED_DURATION = new Set([MATCH_DURATION_SECONDS]);
+
+// max room name
 const MAX_NAME_LENGTH = 40;
 
 type CreateRoomRequest = {
@@ -21,7 +20,7 @@ type DeleteRoomRequest = {
 
 type MatchRoom = {
   id: string;
-  name: string | null; // what the creator typed; null on older rooms
+  name: string | null;
   player_one_user_id: string;
   player_two_user_id: string | null;
   status: string;
@@ -33,18 +32,18 @@ type MatchRoom = {
   created_at: string;
 };
 
-function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // only need starts_at and ends_at no need to pass the whole room object
+function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // only need starts_at and ends_at no need to pass the wholeobj
   if (!room.starts_at || !room.ends_at) {
-    return 120;  // default duration 
+    return MATCH_DURATION_SECONDS;
   }
 
   const startsAt = new Date(room.starts_at).getTime();
   const endsAt = new Date(room.ends_at).getTime();
   const durationSeconds = Math.round((endsAt - startsAt) / 1000); // convert milliseconds to seconds
 
-  return Number.isFinite(durationSeconds) && durationSeconds > 0 // check if time i num and dur > 0
+  return Number.isFinite(durationSeconds) && durationSeconds > 0
     ? durationSeconds
-    : 120;
+    : MATCH_DURATION_SECONDS;
 }
 
 function getRoomAgeMinutes(createdAt: string) {
@@ -70,10 +69,7 @@ function formatRoom(
 
   return {
     id: room.id,
-    // The card shows this as the title and "by <creator>" underneath, so we use
-    // the name the creator typed. Rooms made before names existed (and anyone
-    // who left the field blank) fall back to the old creator-based title.
-    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`),
+    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`), // fallback if no name (legacy rooms)
     creator: isOwner ? "you" : creatorName,
     players: room.player_two_user_id ? 2 : 1,
     capacity: 2,
@@ -115,10 +111,58 @@ function getDurationSeconds(value: unknown) {
   const duration = Number(value);
 
   if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
-    return DEFAULT_DURATION;
+    return MATCH_DURATION_SECONDS;
   }
 
   return duration;
+}
+
+// Find the match this user is currently playing, if any. "Playing" means the
+// second player has joined and the engine has taken over: the room is counting
+// down or trading is live. Waiting rooms are excluded — those are already in the
+// open-rooms list.
+async function findActiveMatch(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string
+) {
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, name, status, player_one_user_id, player_two_user_id, ends_at")
+    .or(`player_one_user_id.eq.${userId},player_two_user_id.eq.${userId}`)
+    .in("status", ["countdown", "active"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!match) {
+    return null;
+  }
+
+  // Who you are up against, so the banner can say "vs <name>".
+  const opponentId =
+    match.player_one_user_id === userId
+      ? match.player_two_user_id
+      : match.player_one_user_id;
+
+  let opponent = "your opponent";
+
+  if (opponentId) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", opponentId)
+      .maybeSingle();
+
+    opponent = profile?.username ?? opponentId.slice(0, 8);
+  }
+
+  return {
+    id: match.id,
+    name: match.name?.trim() || "Your match",
+    status: match.status,
+    opponent,
+    endsAt: match.ends_at,
+  };
 }
 
 export async function GET() {
@@ -178,7 +222,13 @@ export async function GET() {
     })
     .map((room) => formatRoom(room, user.id, creatorNames));
 
-  return Response.json({ rooms: sortedRooms });
+  // A match you are already in (countdown or active) never shows up in the list
+  // above, because that list is only rooms still WAITING for a second player.
+  // Without this the lobby has no way back into a game you are in the middle of
+  // — reloading or clicking "Games" would strand you outside your own match.
+  const activeMatch = await findActiveMatch(supabase, user.id);
+
+  return Response.json({ rooms: sortedRooms, activeMatch });
 }
 
 export async function POST(request: Request) {
@@ -257,13 +307,7 @@ export async function POST(request: Request) {
     }
 
     return Response.json(
-      {
-        error: insertError.message,
-        parsed: {
-          request: body,
-          insert: insertPayload,
-        },
-      },
+      { error: "Could not create the room." },
       { status: 500 }
     );
   }
@@ -313,19 +357,6 @@ export async function DELETE(request: Request) {
 
   const roomId = body.roomId.trim();
 
-  const { data: debugRoom, error: debugError } = await supabase
-    .from("matches")
-    .select("id, player_one_user_id, status")
-    .eq("id", roomId)
-    .maybeSingle(); // null if not found, single if found
-
-  console.log("[DELETE /api/rooms] debug", {
-    roomId,
-    userId: user.id,
-    debugRoom,
-    debugError: debugError?.message,
-  });
-
   const { count, error: deleteError } = await supabase
     .from("matches")
     .delete({ count: "exact" }) // return the number of rows deleted
@@ -339,10 +370,7 @@ export async function DELETE(request: Request) {
 
   if (!count || count === 0) {
     return Response.json(
-      {
-        error: "Room not found or you do not have permission to delete it.",
-        debug: { roomId, userId: user.id, foundRoom: debugRoom },
-      },
+      { error: "Room not found or you do not have permission to delete it." },
       { status: 404 }
     );
   }
