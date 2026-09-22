@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
-import { SectionLabel } from "./section-label";
+import { SectionLabel } from "../../components/duel/section-label";
 import { LeaveMatch } from "./leave-match";
 import { useRemainingSeconds } from "@/lib/match/use-remaining-seconds";
 import type { Match, PlayerState } from "@/lib/match/types";

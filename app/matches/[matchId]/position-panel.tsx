@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowUpRight, CircleSlash2 } from "lucide-react";
 import { fmtUSD } from "../../components/duel/format";
 import { pnlTone, signedUSD } from "./format";
-import { SectionLabel } from "./section-label";
+import { SectionLabel } from "../../components/duel/section-label";
 import type { PlayerState } from "@/lib/match/types";
 
 export function PositionPanel({
