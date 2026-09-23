@@ -25,8 +25,12 @@ function formatMoney(value: number): string {
 	return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatDuration(starts_at: string, ends_at: string): string {
-	const seconds = Math.round((new Date(ends_at).getTime() - new Date(starts_at).getTime()) / 1000);
+function formatDuration(starts_at?: string | null, ends_at?: string | null): string {
+	if (!starts_at || !ends_at) return "—";
+	const start = new Date(starts_at).getTime();
+	const end = new Date(ends_at).getTime();
+	if (Number.isNaN(start) || Number.isNaN(end)) return "—";
+	const seconds = Math.max(0, Math.round((end - start) / 1000));
 	const minutes = Math.floor(seconds / 60);
 	const remainingSeconds = seconds % 60;
 	return `${minutes}m ${remainingSeconds}s`;
@@ -38,8 +42,11 @@ function dateLocaleFromAppLocale(locale: string): string {
 	return "en-GB";
 }
 
-function formatDateTime(dateString: string, locale: string): string {
-	return new Date(dateString).toLocaleDateString(dateLocaleFromAppLocale(locale), {
+function formatDateTime(dateString: string | null | undefined, locale: string): string {
+	if (!dateString) return "—";
+	const date = new Date(dateString);
+	if (Number.isNaN(date.getTime())) return "—";
+	return date.toLocaleDateString(dateLocaleFromAppLocale(locale), {
 		day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
 	});
 }
@@ -173,7 +180,12 @@ function getRelativeTime(dateString: string, t: any): string {
 	if (diffDays < 7) return t("daysAgo", { count: diffDays }); if (diffDays < 30) return t("weeksAgo", { count: Math.floor(diffDays / 7) });
 	if (diffDays < 365) return t("monthsAgo", { count: Math.floor(diffDays / 30) }); return t("yearsAgo", { count: Math.floor(diffDays / 365) });
 }
-function formatPct(value: number, base: number): string { const pct = (value / base) * 100; return `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`; }
+function formatPct(value: number, base: number): string {
+	if (!base || !Number.isFinite(base) || !Number.isFinite(value)) return "—";
+	const pct = (value / base) * 100;
+	if (!Number.isFinite(pct)) return "—";
+	return `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`;
+}
 
 function CumulativeChart({ data }: { data: { value: number; result: string }[] }) {
 	if (data.length === 0) return null;
@@ -225,8 +237,9 @@ export default function HistoryPage() {
 	const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
 	const [matchDetails, setMatchDetails] = useState<any>(null);
 	const [loadingDetails, setLoadingDetails] = useState(false);
+	const [detailsError, setDetailsError] = useState<string | null>(null);
 
-	useEffect(() => { loadHistory(); }, []);	
+	useEffect(() => { loadHistory(); }, []);
 
 	async function loadHistory() {
 		setLoading(true);
@@ -256,38 +269,60 @@ export default function HistoryPage() {
 	async function loadMatchDetails(matchId: string) {
 		setLoadingDetails(true);
 		setMatchDetails(null);
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		setDetailsError(null);
+		try {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) { setDetailsError("auth"); return; }
 
-		const { data: matchData } = await supabase.from("matches").select("*").eq("id", matchId).single();
-		const { data: playersData } = await supabase.from("match_players").select("*").eq("match_id", matchId);
-		const { data: tradesData } = await supabase.from("trades").select("*").eq("match_id", matchId).order("executed_at", { ascending: true });
-		const { data: candlesData } = await supabase.from("match_candles").select("*").eq("match_id", matchId).order("sequence", { ascending: true });
-		
-		const userIds = [matchData?.player_one_user_id, matchData?.player_two_user_id].filter(Boolean) as string[];
-		const { data: profilesData } = await supabase.from("profiles").select("id, username").in("id", userIds);
-		const usernameMap = new Map(profilesData?.map((p) => [p.id, p.username]) ?? []);
+			const { data: matchData, error: matchError } = await supabase.from("matches").select("*").eq("id", matchId).single();
+			if (matchError || !matchData) { setDetailsError("noData"); return; }
 
-		// Process data exactly like the old matchId page
-		const playersList = [matchData?.player_one_user_id, matchData?.player_two_user_id].filter(Boolean).map(pid => {
-			const pData = playersData?.find((p) => p.user_id === pid);
-			return { user_id: pid, username: usernameMap.get(pid) ?? "Unknown", final_capital: Number(pData?.final_capital ?? matchData?.starting_capital), realized_pnl: Number(pData?.realized_pnl ?? 0), is_current_user: pid === user.id };
-		});
+			const { data: playersData } = await supabase.from("match_players").select("*").eq("match_id", matchId);
+			const { data: tradesData } = await supabase.from("trades").select("*").eq("match_id", matchId).order("executed_at", { ascending: true });
+			const { data: candlesData } = await supabase.from("match_candles").select("*").eq("match_id", matchId).order("sequence", { ascending: true });
 
-		const currentPlayer = playersList.find(p => p.is_current_user) || playersList[0];
-		const opponent = playersList.find(p => !p.is_current_user) || playersList[1];
+			const userIds = [matchData.player_one_user_id, matchData.player_two_user_id].filter(Boolean) as string[];
+			const { data: profilesData } = await supabase.from("profiles").select("id, username").in("id", userIds);
+			const usernameMap = new Map(profilesData?.map((p) => [p.id, p.username]) ?? []);
 
-		const trades = (tradesData ?? []).map(tr => ({ ...tr, amount_usdt: Number(tr.amount_usdt), execution_price: Number(tr.execution_price), username: usernameMap.get(tr.user_id) ?? "Unknown" }));
-		const candles = (candlesData ?? []).map(c => ({ ...c, open: Number(c.open), high: Number(c.high), low: Number(c.low), close: Number(c.close) }));
+			// Build a lookup by user id so we never rely on array ordering.
+			const buildPlayer = (pid: string) => {
+				const pData = playersData?.find((p) => p.user_id === pid);
+				return {
+					user_id: pid,
+					username: usernameMap.get(pid) ?? "Unknown",
+					final_capital: Number(pData?.final_capital ?? matchData.starting_capital ?? 0),
+					realized_pnl: Number(pData?.realized_pnl ?? 0),
+					is_current_user: pid === user.id,
+				};
+			};
 
-		setMatchDetails({ match: matchData, currentPlayer, opponent, trades, candles, currentUserId: user.id });
-		setLoadingDetails(false);
+			// Resolve the two players by their real IDs, not by array position.
+			const myId = user.id;
+			const opponentId = [matchData.player_one_user_id, matchData.player_two_user_id]
+				.find((pid) => pid && pid !== myId) ?? null;
+
+			const currentPlayer = [matchData.player_one_user_id, matchData.player_two_user_id].includes(myId)
+				? buildPlayer(myId)
+				: null;
+			const opponent = opponentId ? buildPlayer(opponentId) : null;
+
+			const trades = (tradesData ?? []).map(tr => ({ ...tr, amount_usdt: Number(tr.amount_usdt), execution_price: Number(tr.execution_price), username: usernameMap.get(tr.user_id) ?? "Unknown" }));
+			const candles = (candlesData ?? []).map(c => ({ ...c, open: Number(c.open), high: Number(c.high), low: Number(c.low), close: Number(c.close) }));
+
+			setMatchDetails({ match: matchData, currentPlayer, opponent, trades, candles, currentUserId: user.id });
+		} catch {
+			setDetailsError("noData");
+		} finally {
+			setLoadingDetails(false);
+		}
 	}
 
 	const handleMatchClick = (matchId: string) => {
 		if (expandedMatchId === matchId) {
 			setExpandedMatchId(null);
 			setMatchDetails(null);
+			setDetailsError(null);
 		} else {
 			setExpandedMatchId(matchId);
 			loadMatchDetails(matchId);
@@ -309,6 +344,11 @@ export default function HistoryPage() {
 
 	const cumulativeData = useMemo(() => { let cumulative = 0; return [...matchHistory].reverse().map((match) => { cumulative += match.realized_pnl; return { value: cumulative, result: match.result }; }); }, [matchHistory]);
 	const filteredMatches = filter === "ALL" ? matchHistory : matchHistory.filter((m) => m.result === filter);
+
+	// Only treat the detail view as active once we actually have loaded, valid data.
+	const showMatchDetails = Boolean(
+		expandedMatchId && matchDetails && matchDetails.currentPlayer && matchDetails.opponent && matchDetails.match
+	);
 
 	const filters: { key: "ALL" | "WIN" | "LOSS" | "DRAW"; label: string; count: number }[] = [
 		{ key: "ALL", label: t("filterAll"), count: matchHistory.length }, { key: "WIN", label: t("filterWins"), count: stats.wins },
@@ -347,19 +387,20 @@ export default function HistoryPage() {
 							<div className="flex items-center gap-2">
 								<TrendingUp className="w-4 h-4 text-blue-400" />
 								<span className="text-sm font-semibold">
-									{expandedMatchId && matchDetails ? tDetail("matchChart") : t("cumulativePnl")}
+									{showMatchDetails ? tDetail("matchChart") : t("cumulativePnl")}
 								</span>
 							</div>
-							<div className={`text-sm font-bold ${expandedMatchId && matchDetails ? getPnLColor(matchDetails.currentPlayer.realized_pnl) : (stats.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400")}`}>
-								{expandedMatchId && matchDetails ? formatMoney(matchDetails.currentPlayer.realized_pnl) : formatMoney(stats.totalPnl)}
+							<div className={`text-sm font-bold ${showMatchDetails ? getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0) : (stats.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400")}`}>
+								{showMatchDetails ? formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0) : formatMoney(stats.totalPnl)}
 							</div>
 						</div>
 
-						{expandedMatchId && matchDetails ? (
+						{showMatchDetails ? (
 							matchDetails.candles.length > 0 ? (
 								<CandlestickChart candles={matchDetails.candles} trades={matchDetails.trades} currentUserId={matchDetails.currentUserId} t={tDetail} />
 							) : (
-								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex items-center justify-center">
+								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex flex-col items-center justify-center gap-2">
+									<Activity className="w-6 h-6 text-[#5d6877]" />
 									<p className="text-sm text-[#5d6877]">{tDetail("noCandleData")}</p>
 								</div>
 							)
@@ -413,40 +454,48 @@ export default function HistoryPage() {
 										</div>
 									</div>
 
-									{/* EXPANDED DETAILS DROPDOWN */}
-									{expandedMatchId === match.id && (
-										<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-5 animate-in slide-in-from-top-2 duration-200">
-											{loadingDetails ? (
-												<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>
-											) : matchDetails ? (
-												<div className="space-y-6">
-													{/* Player Breakdown */}
-													<div className="flex items-center justify-center gap-8">
-														<div className="text-right">
-															<div className="text-sm font-semibold">{matchDetails.currentPlayer.username} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
-															<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.currentPlayer.realized_pnl)}`}>${matchDetails.currentPlayer.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-															<div className={`text-xs font-mono ${getPnLColor(matchDetails.currentPlayer.realized_pnl)}`}>{formatMoney(matchDetails.currentPlayer.realized_pnl)}</div>
-														</div>
-														<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
-														<div className="text-left">
-															<div className="text-sm font-semibold">{matchDetails.opponent.username}</div>
-															<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.opponent.realized_pnl)}`}>${matchDetails.opponent.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-															<div className={`text-xs font-mono ${getPnLColor(matchDetails.opponent.realized_pnl)}`}>{formatMoney(matchDetails.opponent.realized_pnl)}</div>
-														</div>
-													</div>
-
-													{/* Metadata Cards */}
-													<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-														<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
-														<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
-														<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at)}</div></div>
-														<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
-													</div>
-
-												</div>
-											) : null}
+											{/* EXPANDED DETAILS DROPDOWN */}
+											{expandedMatchId === match.id && (
+												<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-5 animate-in slide-in-from-top-2 duration-200">
+													{loadingDetails ? (
+														<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>
+													) : detailsError || !matchDetails ? (
+														<div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+															<div className="w-11 h-11 rounded-full bg-white/[.03] border border-white/[.07] flex items-center justify-center">
+																<Activity className="w-5 h-5 text-[#5d6877]" />
+															</div>
+															<p className="text-sm font-medium text-[#8a95a8]">{tDetail("noMatchData")}</p>
+															<p className="text-xs text-[#5d6877]">{tDetail("noMatchDataHint")}</p>
+									</div>
+													) : (
+														<div className="space-y-6">
+															{/* Player Breakdown */}
+															<div className="flex items-center justify-center gap-8">
+																<div className="text-right">
+																	<div className="text-sm font-semibold">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
+																	<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+											<div className={`text-xs font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
+																</div>
+																<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
+										<div className="text-left">
+											<div className="text-sm font-semibold">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
+											<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+											<div className={`text-xs font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
 										</div>
-									)}
+									</div>
+
+															{/* Metadata Cards */}
+															<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
+										<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
+																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at)}</div></div>
+																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
+															</div>
+
+														</div>
+													)}
+												</div>
+											)}
 								</div>
 							))
 						)}
