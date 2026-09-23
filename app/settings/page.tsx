@@ -137,7 +137,7 @@ export default function SettingsPage() {
         return;
       }
 
-      const filePath = `${user.id}.jpg`;
+      const filePath = `${user.id}/avatar.jpg`;
 
       const { error: storageError } = await supabase.storage
         .from("avatars")
@@ -331,7 +331,7 @@ export default function SettingsPage() {
           <div className="px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <User className="h-4 w-4 text-[#5d6877]" />
-			  <div>
+              <div>
                 <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">{t("username")}</div>
                 {editingUsername ? (
                   <input
@@ -343,14 +343,14 @@ export default function SettingsPage() {
                 ) : (
                   <div className="text-sm font-semibold">{username}</div>
                 )}
-			  </div>
+              </div>
             </div>
 
             {editingUsername ? (
               <button onClick={handleSaveUsername} className="text-[10px] text-[#4d86ff]">Save</button>
-              ) : (
-                <button onClick={handleStartEditUsername} className="text-[10px] text-[#4d86ff]">Edit</button>
-              )}
+            ) : (
+              <button onClick={handleStartEditUsername} className="text-[10px] text-[#4d86ff]">Edit</button>
+            )}
           </div>
         </div>
 
@@ -405,31 +405,31 @@ export default function SettingsPage() {
             <span className="text-[11px] uppercase tracking-widest text-[#5d6877] font-semibold">{t("security")}</span>
           </div>
 
-		  <Link
-			href="/terms-services"
-			target="_blank"
-			rel="noopener noreferrer"
-			className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
-		  >
-			<div className="flex items-center gap-3">
-				<FileText className="h-4 w-4 text-[#5d6877]" />
-				<span className="text-sm font-semibold">{t("termsOfServices")}</span>
-			</div>
-			<ChevronRight className="h-4 w-4 text-[#5d6877]" />
-		  </Link>
+          <Link
+            href="/terms-services"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <FileText className="h-4 w-4 text-[#5d6877]" />
+              <span className="text-sm font-semibold">{t("termsOfServices")}</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[#5d6877]" />
+          </Link>
 
-		  <Link
-			href="/privacy-policy"
-			target="_blank"
-			rel="noopener noreferrer"
-			className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
-		  >
-			<div className="flex items-center gap-3">
-				<Shield className="h-4 w-4 text-[#5d6877]" />
-				<span className="text-sm font-semibold">{t("privacyPolicy")}</span>
-			</div>
-			<ChevronRight className="h-4 w-4 text-[#5d6877]" />
-		  </Link>
+          <Link
+            href="/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-4 flex items-center justify-between hover:bg-white/[.02] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Shield className="h-4 w-4 text-[#5d6877]" />
+              <span className="text-sm font-semibold">{t("privacyPolicy")}</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[#5d6877]" />
+          </Link>
 
           {/* MFA Management Flow */}
           <MfaSettings />
