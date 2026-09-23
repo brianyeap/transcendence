@@ -193,6 +193,8 @@
     "matchChart": "对决走势图",
     "intervals": "{count} 个周期 · {symbol}",
     "noCandleData": "此场对决无K线数据",
+    "noMatchData": "此场对决暂无详细信息",
+    "noMatchDataHint": "我们找不到这场对决的任何数据，可能仍在处理中。",
     "tradeLog": "交易日志",
     "tradesCount": "{count} 笔交易",
     "headerPlayer": "玩家",
