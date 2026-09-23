@@ -19,7 +19,7 @@ import {
 	Loader2,
 } from "lucide-react";
 
-// --- Helper Functions (Ported from matchId page) ---
+// --- Helper Functions ---
 function formatMoney(value: number): string {
 	const sign = value > 0 ? "+" : "";
 	return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -57,7 +57,7 @@ function getPnLColor(value: number): string {
 	return "text-gray-400";
 }
 
-// --- Ported Candlestick Chart Component ---
+// --- Candlestick Chart Component ---
 function CandlestickChart({ candles, trades, currentUserId, t }: any) {
 	if (!candles || candles.length === 0) return null;
 
@@ -161,7 +161,7 @@ function CandlestickChart({ candles, trades, currentUserId, t }: any) {
 	);
 }
 
-// --- Reusable UI Components ---
+// --- Reusable UI Helpers ---
 function getResultColor(result: string) { return result === "WIN" ? "text-emerald-400" : result === "LOSS" ? "text-rose-400" : "text-gray-400"; }
 function getResultGlow(result: string) {
 	if (result === "WIN") return "shadow-[inset_3px_0_0_0_#34d399] hover:shadow-[inset_3px_0_0_0_#34d399,0_0_20px_-5px_rgba(52,211,153,0.3)]";
@@ -225,19 +225,19 @@ function StatCard({ label, value, sub, icon, accent = "blue" }: StatCardProps) {
 // --- Main Page Component ---
 export default function HistoryPage() {
 	const supabase = createSupabaseBrowserClient();
-	const t = useTranslations("History"); // Note: Ensure your History.json has the keys from HistoryDetail.json
+	const t = useTranslations("History");
 	const tDetail = useTranslations("HistoryDetail");
 	const locale = useLocale();
 
 	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [filter, setFilter] = useState<"ALL" | "WIN" | "LOSS" | "DRAW">("ALL");
-	
-	// New states for the accordion / lazy loading
-	const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
-	const [matchDetails, setMatchDetails] = useState<any>(null);
-	const [loadingDetails, setLoadingDetails] = useState(false);
-	const [detailsError, setDetailsError] = useState<string | null>(null);
+
+	// Multi-match expansion support via Set and dictionary maps
+	const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
+	const [matchDetailsMap, setMatchDetailsMap] = useState<Record<string, any>>({});
+	const [loadingDetailsMap, setLoadingDetailsMap] = useState<Record<string, boolean>>({});
+	const [detailsErrorMap, setDetailsErrorMap] = useState<Record<string, string | null>>({});
 
 	useEffect(() => { loadHistory(); }, []);
 
@@ -265,17 +265,25 @@ export default function HistoryPage() {
 		setLoading(false);
 	}
 
-	// Lazy load function for the expanded match
+	// Lazy load function for individual match details by ID
 	async function loadMatchDetails(matchId: string) {
-		setLoadingDetails(true);
-		setMatchDetails(null);
-		setDetailsError(null);
+		if (matchDetailsMap[matchId] || loadingDetailsMap[matchId]) return;
+
+		setLoadingDetailsMap((prev) => ({ ...prev, [matchId]: true }));
+		setDetailsErrorMap((prev) => ({ ...prev, [matchId]: null }));
+
 		try {
 			const { data: { user } } = await supabase.auth.getUser();
-			if (!user) { setDetailsError("auth"); return; }
+			if (!user) {
+				setDetailsErrorMap((prev) => ({ ...prev, [matchId]: "auth" }));
+				return;
+			}
 
 			const { data: matchData, error: matchError } = await supabase.from("matches").select("*").eq("id", matchId).single();
-			if (matchError || !matchData) { setDetailsError("noData"); return; }
+			if (matchError || !matchData) {
+				setDetailsErrorMap((prev) => ({ ...prev, [matchId]: "noData" }));
+				return;
+			}
 
 			const { data: playersData } = await supabase.from("match_players").select("*").eq("match_id", matchId);
 			const { data: tradesData } = await supabase.from("trades").select("*").eq("match_id", matchId).order("executed_at", { ascending: true });
@@ -285,7 +293,6 @@ export default function HistoryPage() {
 			const { data: profilesData } = await supabase.from("profiles").select("id, username").in("id", userIds);
 			const usernameMap = new Map(profilesData?.map((p) => [p.id, p.username]) ?? []);
 
-			// Build a lookup by user id so we never rely on array ordering.
 			const buildPlayer = (pid: string) => {
 				const pData = playersData?.find((p) => p.user_id === pid);
 				return {
@@ -297,36 +304,48 @@ export default function HistoryPage() {
 				};
 			};
 
-			// Resolve the two players by their real IDs, not by array position.
 			const myId = user.id;
-			const opponentId = [matchData.player_one_user_id, matchData.player_two_user_id]
-				.find((pid) => pid && pid !== myId) ?? null;
+			const opponentId = [matchData.player_one_user_id, matchData.player_two_user_id].find((pid) => pid && pid !== myId) ?? null;
 
-			const currentPlayer = [matchData.player_one_user_id, matchData.player_two_user_id].includes(myId)
-				? buildPlayer(myId)
-				: null;
+			const currentPlayer = [matchData.player_one_user_id, matchData.player_two_user_id].includes(myId) ? buildPlayer(myId) : null;
 			const opponent = opponentId ? buildPlayer(opponentId) : null;
 
-			const trades = (tradesData ?? []).map(tr => ({ ...tr, amount_usdt: Number(tr.amount_usdt), execution_price: Number(tr.execution_price), username: usernameMap.get(tr.user_id) ?? "Unknown" }));
-			const candles = (candlesData ?? []).map(c => ({ ...c, open: Number(c.open), high: Number(c.high), low: Number(c.low), close: Number(c.close) }));
+			const trades = (tradesData ?? []).map((tr) => ({
+				...tr,
+				amount_usdt: Number(tr.amount_usdt),
+				execution_price: Number(tr.execution_price),
+				username: usernameMap.get(tr.user_id) ?? "Unknown",
+			}));
+			const candles = (candlesData ?? []).map((c) => ({
+				...c,
+				open: Number(c.open),
+				high: Number(c.high),
+				low: Number(c.low),
+				close: Number(c.close),
+			}));
 
-			setMatchDetails({ match: matchData, currentPlayer, opponent, trades, candles, currentUserId: user.id });
+			setMatchDetailsMap((prev) => ({
+				...prev,
+				[matchId]: { match: matchData, currentPlayer, opponent, trades, candles, currentUserId: user.id },
+			}));
 		} catch {
-			setDetailsError("noData");
+			setDetailsErrorMap((prev) => ({ ...prev, [matchId]: "noData" }));
 		} finally {
-			setLoadingDetails(false);
+			setLoadingDetailsMap((prev) => ({ ...prev, [matchId]: false }));
 		}
 	}
 
 	const handleMatchClick = (matchId: string) => {
-		if (expandedMatchId === matchId) {
-			setExpandedMatchId(null);
-			setMatchDetails(null);
-			setDetailsError(null);
-		} else {
-			setExpandedMatchId(matchId);
-			loadMatchDetails(matchId);
-		}
+		setExpandedMatchIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(matchId)) {
+				next.delete(matchId);
+			} else {
+				next.add(matchId);
+				loadMatchDetails(matchId);
+			}
+			return next;
+		});
 	};
 
 	const stats = useMemo(() => {
@@ -344,11 +363,6 @@ export default function HistoryPage() {
 
 	const cumulativeData = useMemo(() => { let cumulative = 0; return [...matchHistory].reverse().map((match) => { cumulative += match.realized_pnl; return { value: cumulative, result: match.result }; }); }, [matchHistory]);
 	const filteredMatches = filter === "ALL" ? matchHistory : matchHistory.filter((m) => m.result === filter);
-
-	// Only treat the detail view as active once we actually have loaded, valid data.
-	const showMatchDetails = Boolean(
-		expandedMatchId && matchDetails && matchDetails.currentPlayer && matchDetails.opponent && matchDetails.match
-	);
 
 	const filters: { key: "ALL" | "WIN" | "LOSS" | "DRAW"; label: string; count: number }[] = [
 		{ key: "ALL", label: t("filterAll"), count: matchHistory.length }, { key: "WIN", label: t("filterWins"), count: stats.wins },
@@ -381,32 +395,18 @@ export default function HistoryPage() {
 						<StatCard label={t("bestTrade")} value={formatMoney(stats.bestTrade)} sub={t("worstTradeSub", { worst: formatMoney(stats.worstTrade) })} icon={<Trophy className="w-3.5 h-3.5" />} accent="blue" />
 					</div>
 
-					{/* CHART SWAP LOGIC */}
+					{/* PINNED CUMULATIVE PNL CHART */}
 					<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6">
 						<div className="flex items-center justify-between mb-4">
 							<div className="flex items-center gap-2">
 								<TrendingUp className="w-4 h-4 text-blue-400" />
-								<span className="text-sm font-semibold">
-									{showMatchDetails ? tDetail("matchChart") : t("cumulativePnl")}
-								</span>
+								<span className="text-sm font-semibold">{t("cumulativePnl")}</span>
 							</div>
-							<div className={`text-sm font-bold ${showMatchDetails ? getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0) : (stats.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400")}`}>
-								{showMatchDetails ? formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0) : formatMoney(stats.totalPnl)}
+							<div className={`text-sm font-bold ${stats.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+								{formatMoney(stats.totalPnl)}
 							</div>
 						</div>
-
-						{showMatchDetails ? (
-							matchDetails.candles.length > 0 ? (
-								<CandlestickChart candles={matchDetails.candles} trades={matchDetails.trades} currentUserId={matchDetails.currentUserId} t={tDetail} />
-							) : (
-								<div className="h-48 rounded-md bg-white/[.02] border border-white/[.04] flex flex-col items-center justify-center gap-2">
-									<Activity className="w-6 h-6 text-[#5d6877]" />
-									<p className="text-sm text-[#5d6877]">{tDetail("noCandleData")}</p>
-								</div>
-							)
-						) : (
-							<CumulativeChart data={cumulativeData} />
-						)}
+						<CumulativeChart data={cumulativeData} />
 					</div>
 
 					<div className="flex items-center gap-1 mb-4 p-1 rounded-lg bg-[#0f131b] border border-white/[.07] w-fit">
@@ -421,83 +421,114 @@ export default function HistoryPage() {
 						{filteredMatches.length === 0 ? (
 							<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-12 text-center"><Swords className="w-8 h-8 text-[#5d6877] mx-auto mb-3" /><p className="text-sm text-[#5d6877]">{t("noMatchesFilter")}</p></div>
 						) : (
-							filteredMatches.map((match) => (
-								<div key={match.id} className="block w-full">
-									{/* Main Match Row */}
-									<div
-										onClick={() => handleMatchClick(match.id)}
-										className={`group relative rounded-[10px] border border-white/[.07] bg-[#0f131b] p-4 transition-all duration-200 hover:border-white/[.14] hover:-translate-y-[1px] cursor-pointer ${getResultGlow(match.result)} ${expandedMatchId === match.id ? 'rounded-b-none border-b-0' : ''}`}
-									>
-										<div className="flex items-center justify-between gap-4">
-											<div className="flex items-center gap-3 min-w-0">
-												<div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${getResultBadgeStyle(match.result)}`}>
-													{match.result === "WIN" ? <TrendingUp className="w-4 h-4" /> : match.result === "LOSS" ? <TrendingDown className="w-4 h-4" /> : <span>—</span>}
+							filteredMatches.map((match) => {
+								const isExpanded = expandedMatchIds.has(match.id);
+								const matchDetails = matchDetailsMap[match.id];
+								const loadingDetails = loadingDetailsMap[match.id];
+								const detailsError = detailsErrorMap[match.id];
+
+								return (
+									<div key={match.id} className="block w-full">
+										{/* Main Match Row */}
+										<div
+											onClick={() => handleMatchClick(match.id)}
+											className={`group relative rounded-[10px] border border-white/[.07] bg-[#0f131b] p-4 transition-all duration-200 hover:border-white/[.14] hover:-translate-y-[1px] cursor-pointer ${getResultGlow(match.result)} ${isExpanded ? 'rounded-b-none border-b-0' : ''}`}
+										>
+											<div className="flex items-center justify-between gap-4">
+												<div className="flex items-center gap-3 min-w-0">
+													<div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${getResultBadgeStyle(match.result)}`}>
+														{match.result === "WIN" ? <TrendingUp className="w-4 h-4" /> : match.result === "LOSS" ? <TrendingDown className="w-4 h-4" /> : <span>—</span>}
+													</div>
+													<div className="min-w-0">
+														<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent}</span></div>
+														<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877]"><span className="font-mono">{match.symbol}</span><span className="opacity-40">•</span><span>{getRelativeTime(match.starts_at, t)}</span></div>
+													</div>
 												</div>
-												<div className="min-w-0">
-													<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent}</span></div>
-													<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877]"><span className="font-mono">{match.symbol}</span><span className="opacity-40">•</span><span>{getRelativeTime(match.starts_at, t)}</span></div>
+												<div className="flex items-center gap-6">
+													<div className="hidden md:flex items-center gap-6">
+														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-sm font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
+														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-sm font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div><div className={`text-[10px] font-mono ${getResultColor(match.result)} opacity-70`}>{formatPct(match.realized_pnl, match.starting_capital)}</div></div>
+														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-sm font-semibold mt-0.5 flex items-center gap-1 justify-end"><Clock className="w-3 h-3 text-[#5d6877]" />{formatDuration(match.starts_at, match.ends_at)}</div></div>
+													</div>
+													{isExpanded ? <ChevronDown className="w-4 h-4 text-[#5d6877] transition-all shrink-0" /> : <ChevronRight className="w-4 h-4 text-[#5d6877] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />}
 												</div>
 											</div>
-											<div className="flex items-center gap-6">
-												<div className="hidden md:flex items-center gap-6">
-													<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-sm font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
-													<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-sm font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div><div className={`text-[10px] font-mono ${getResultColor(match.result)} opacity-70`}>{formatPct(match.realized_pnl, match.starting_capital)}</div></div>
-													<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-sm font-semibold mt-0.5 flex items-center gap-1 justify-end"><Clock className="w-3 h-3 text-[#5d6877]" />{formatDuration(match.starts_at, match.ends_at)}</div></div>
-												</div>
-												{expandedMatchId === match.id ? <ChevronDown className="w-4 h-4 text-[#5d6877] transition-all shrink-0" /> : <ChevronRight className="w-4 h-4 text-[#5d6877] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />}
+											<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
+												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-xs font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
+												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div></div>
+												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at)}</div></div>
 											</div>
 										</div>
-										<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
-											<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-xs font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
-											<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div></div>
-											<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at)}</div></div>
-										</div>
-									</div>
 
-											{/* EXPANDED DETAILS DROPDOWN */}
-											{expandedMatchId === match.id && (
-												<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-5 animate-in slide-in-from-top-2 duration-200">
-													{loadingDetails ? (
-														<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>
-													) : detailsError || !matchDetails ? (
-														<div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-															<div className="w-11 h-11 rounded-full bg-white/[.03] border border-white/[.07] flex items-center justify-center">
-																<Activity className="w-5 h-5 text-[#5d6877]" />
-															</div>
-															<p className="text-sm font-medium text-[#8a95a8]">{tDetail("noMatchData")}</p>
-															<p className="text-xs text-[#5d6877]">{tDetail("noMatchDataHint")}</p>
-									</div>
-													) : (
-														<div className="space-y-6">
-															{/* Player Breakdown */}
-															<div className="flex items-center justify-center gap-8">
-																<div className="text-right">
-																	<div className="text-sm font-semibold">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
-																	<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-											<div className={`text-xs font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
-																</div>
-																<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
-										<div className="text-left">
-											<div className="text-sm font-semibold">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
-											<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-											<div className={`text-xs font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
-										</div>
-									</div>
-
-															{/* Metadata Cards */}
-															<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
-										<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
-																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at)}</div></div>
-																<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
-															</div>
-
+										{/* EXPANDED DETAILS & MATCH CHART DROPDOWN */}
+										{isExpanded && (
+											<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-5 animate-in slide-in-from-top-2 duration-200">
+												{loadingDetails ? (
+													<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>
+												) : detailsError || !matchDetails ? (
+													<div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+														<div className="w-11 h-11 rounded-full bg-white/[.03] border border-white/[.07] flex items-center justify-center">
+															<Activity className="w-5 h-5 text-[#5d6877]" />
 														</div>
-													)}
-												</div>
-											)}
-								</div>
-							))
+														<p className="text-sm font-medium text-[#8a95a8]">{tDetail("noMatchData")}</p>
+														<p className="text-xs text-[#5d6877]">{tDetail("noMatchDataHint")}</p>
+													</div>
+												) : (
+													<div className="space-y-6">
+														{/* Player Breakdown */}
+														<div className="flex items-center justify-center gap-8">
+															<div className="text-right">
+																<div className="text-sm font-semibold">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
+																<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className={`text-xs font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
+															</div>
+															<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
+															<div className="text-left">
+																<div className="text-sm font-semibold">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
+																<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className={`text-xs font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
+															</div>
+														</div>
+
+														{/* Metadata Cards */}
+														<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
+														</div>
+
+														{/* Candlestick Chart Rendered Directly Below Metadata */}
+														<div className="pt-2 border-t border-white/[.05]">
+															<div className="flex items-center gap-2 mb-3">
+																<Activity className="w-4 h-4 text-blue-400" />
+																<span className="text-xs font-semibold uppercase tracking-wider text-[#8a95a8]">
+																	{tDetail("matchChart")}
+																</span>
+															</div>
+
+															{matchDetails.candles && matchDetails.candles.length > 0 ? (
+																<CandlestickChart
+																	candles={matchDetails.candles}
+																	trades={matchDetails.trades}
+																	currentUserId={matchDetails.currentUserId}
+																	t={tDetail}
+																/>
+															) : (
+																<div className="h-32 rounded-md bg-white/[.02] border border-white/[.04] flex flex-col items-center justify-center gap-2">
+																	<Activity className="w-5 h-5 text-[#5d6877]" />
+																	<p className="text-xs text-[#5d6877]">{tDetail("noCandleData")}</p>
+																</div>
+															)}
+														</div>
+
+													</div>
+												)}
+											</div>
+										)}
+									</div>
+								);
+							})
 						)}
 					</div>
 				</div>
