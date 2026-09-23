@@ -193,6 +193,8 @@
     "matchChart": "Carta Perlawanan",
     "intervals": "{count} selang · {symbol}",
     "noCandleData": "Tiada data lilin tersedia untuk perlawanan ini",
+    "noMatchData": "Tiada butiran tersedia untuk perlawanan ini",
+    "noMatchDataHint": "Kami tidak menemui sebarang data untuk perlawanan ini. Ia mungkin masih diproses.",
     "tradeLog": "Log Dagangan",
     "tradesCount": "{count} dagangan",
     "headerPlayer": "Pemain",
