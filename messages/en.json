@@ -193,6 +193,8 @@
     "matchChart": "Match Chart",
     "intervals": "{count} intervals · {symbol}",
     "noCandleData": "No candle data available for this match",
+    "noMatchData": "No details available for this match",
+    "noMatchDataHint": "We couldn't find any data for this duel. It may still be processing.",
     "tradeLog": "Trade Log",
     "tradesCount": "{count} trades",
     "headerPlayer": "Player",
