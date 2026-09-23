@@ -1,125 +1,3 @@
-
-
-
-// export default async function ProfilePage() {
-// 	const supabase = await createSupabaseServerClient();
-// 	const { data: { user } } = await supabase.auth.getUser();
-
-// 	const { data: matches } = await supabase
-// 		.from("matches")
-// 		.select(`winner_user_id, player_one_user_id, player_two_user_id, status`)
-// 		.or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
-// 		.eq("status", "completed");
-
-// 	let wins = 0;
-// 	let losses = 0;
-// 	let draws = 0;
-
-// 	for (const match of matches ?? []) {
-// 		if (!match.winner_user_id) {
-// 			draws++;
-// 		} else if (match.winner_user_id === user.id) {
-// 			wins++;
-// 		} else {
-// 			losses++;
-// 		}
-// 	}
-
-// 	const gamesPlayed = wins + losses + draws;
-// 	const winPercentage = gamesPlayed === 0 ? 0 : Number(((wins / gamesPlayed) * 100).toFixed(1));
-// 	const achievements = getAchievements(wins);
-
-// 	const { data: profile } = await supabase
-// 		.from("profiles")
-// 		.select("username")
-// 		.eq("id", user.id)
-// 		.single();
-
-// 	const userStats = {
-// 		username: profile?.username ?? "Unknown",
-// 		gamesPlayed,
-// 		wins,
-// 		losses,
-// 		draws,
-// 		winPercentage,
-// 	};
-
-// 	const riskRating = getRiskRating(userStats.wins, userStats.losses);
-
-// 	return (
-// 		<SideNav user={userStats.username}>
-// 			<div style={{ padding: "20px", color: "white" }}>
-// 				<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-// 					<Avatar name={userStats.username} size="lg" />
-// 					<div>
-// 						<h1 style={{ fontSize: "24px", fontWeight: "bold" }}>{userStats.username}</h1>
-// 						<p style={{ fontSize: "14px", color: "gray" }}>
-// 							Risk Rating: <b>{riskRating}</b>
-// 						</p>
-// 					</div>
-// 				</div>
-
-// 				<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-// 					<div style={{ border: "1px solid gray", padding: "20px" }}>
-// 						<div>Games played</div>
-// 						<div style={{ fontSize: "20px", fontWeight: "bold" }}>{userStats.gamesPlayed}</div>
-// 					</div>
-
-// 					<div style={{ border: "1px solid gray", padding: "20px" }}>
-// 						<div>Win %</div>
-// 						<div style={{ fontSize: "20px", fontWeight: "bold" }}>{userStats.winPercentage}%</div>
-// 					</div>
-// 				</div>
-
-// 				<div style={{ marginTop: "20px", border: "1px solid gray", padding: "15px" }}>
-// 					<div>Match Outcome Distribution</div>
-
-// 					<div style={{ height: "30px", width: "100%", display: "flex", marginTop: "10px" }}>
-// 						<div
-// 							style={{
-// 								width: `${(userStats.wins / userStats.gamesPlayed) * 100}%`,
-// 								background: "green",
-// 							}}
-// 						></div>
-// 						<div
-// 							style={{
-// 								width: `${(userStats.losses / userStats.gamesPlayed) * 100}%`,
-// 								background: "red",
-// 							}}
-// 						></div>
-// 						<div
-// 							style={{
-// 								width: `${(userStats.draws / userStats.gamesPlayed) * 100}%`,
-// 								background: "gray",
-// 							}}
-// 						></div>
-// 					</div>
-
-// 					<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
-// 						<div style={{ border: "1px solid gray", padding: "10px" }}>
-// 							<div>Wins</div>
-// 							<div style={{ fontSize: "18px", color: "green" }}>{userStats.wins}</div>
-// 						</div>
-
-// 						<div style={{ border: "1px solid gray", padding: "10px" }}>
-// 							<div>Losses</div>
-// 							<div style={{ fontSize: "18px", color: "red" }}>{userStats.losses}</div>
-// 						</div>
-
-// 						<div style={{ border: "1px solid gray", padding: "10px" }}>
-// 							<div>Draws</div>
-// 							<div style={{ fontSize: "18px", color: "gray" }}>{userStats.draws}</div>
-// 						</div>
-// 					</div>
-// 				</div>
-
-// 				</div>
-// 			</div>
-// 		</SideNav>
-// 	);
-// }
-
-
 {/* Date : 3/9/2026 .
 	- The modification of the Profile page starts here, I realized that this page is too simple and there are many tools online which I
 	I can use to my advantage, for example Daisy UI is a website that provides the code for components found in most web-pages now days.
@@ -738,17 +616,20 @@ export default async function ProfilePage()
 						<div className="grid grid-cols-2 gap-4 w-full">
 
 							{/* Achievement Box 1[Special Fire] */}
-							<div className={`"h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
+							{/* FIX: stray leading quote removed from the className template (it was invalidating "h-20") */}
+							{/* FIX: card wrapper no longer applies opacity-40/grayscale to the whole box — that
+							     dimming now lives only on the icon container below, so it can't interact with the title. */}
+							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
 								wins >= 1
 									? "bg-orange-500/[0.03] border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* FIRE ICON CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
 										wins >= 1
 											? "bg-orange-500/10 border-orange-500/30"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
 
 										{/* Calling the custom fireIcon function */}
@@ -756,12 +637,16 @@ export default async function ProfilePage()
 								</div>
 
 								{/* Tittle & Description */}
+								{/* FIX (the actual fix, confirmed by the inline-style test): "!" forces Tailwind to
+								     emit this color rule with !important, which is the only thing that beat whatever
+								     global CSS rule (likely a DaisyUI base h3 color or a global reset) was overriding
+								     every plain utility class we tried before. */}
 								<div className="text-left">
 									<div className="flex items-center gap-2">
-										<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "text-white" : "text-gray-400"}`}>
+										<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 											First Victory
 										</h3>
-										<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${ 
+										<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 											wins >= 1
 												? "bg-orange-500/30 text-orange-400 bg-orange-500/10"
 												:"border-gray-700 text-gray-500 bg-gray-800/20"
@@ -786,28 +671,28 @@ export default async function ProfilePage()
 								)}
 							</div>
 						</div>
-							
+
 
 
 						{/* ACHIEVEMENT BOX 2: Greenhorn Trader (5 Wins - Bronze) */}
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
 								wins >= 5
 									? "bg-amber-600/[0.03] border-amber-600/30 shadow-[0_0_15px_rgba(217,119,6,0.1)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* BRONZE MEDAL CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
 										wins >= 5
 											? "bg-amber-600/10 border-amber-600/30"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
 										{bronzeMedalIcon({ unlocked: wins >= 5 })}
 									</div>
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 5 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 5 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 												Greenhorn Trader
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
@@ -838,28 +723,28 @@ export default async function ProfilePage()
 
 							{/* ACHIEVEMENT BOX 3: Market Competitor (10 Wins - Silver) */}
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 500 // Change to wins >= 10 when done testing
+								wins >= 10
 									? "bg-slate-500/[0.03] border-slate-500/30 shadow-[0_0_15px_rgba(148,163,184,0.1)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* SILVER MEDAL CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
-										wins >= 500
+										wins >= 10
 											? "bg-slate-500/10 border-slate-500/30"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
-										{silverMedalIcon({ unlocked: wins >= 500 })}
+										{silverMedalIcon({ unlocked: wins >= 10 })}
 									</div>
 
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 10 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 												Market Competitor
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 500
+												wins >= 10
 													? "border-slate-500/30 text-slate-300 bg-slate-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
@@ -872,13 +757,13 @@ export default async function ProfilePage()
 
 								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
 								<div className="shrink-0 text-right">
-									{wins >= 500 ? (
+									{wins >= 10 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 rounded-md">
 											Unlocked
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{500 - wins} Wins Left
+											{10 - wins} Wins Left
 										</span>
 									)}
 								</div>
@@ -889,14 +774,14 @@ export default async function ProfilePage()
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
 								wins >= 42 // Change to wins >= 42 when done testing
 									? "bg-emerald-500/[0.04] border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* 42 BADGE CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
 										wins >= 42
 											? "bg-emerald-500/10 border-emerald-500/30 shadow-[inset_0_0_10px_rgba(16,185,129,0.1)]"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
 										{fortyTwoIcon({ unlocked: wins >= 42 })}
 									</div>
@@ -904,11 +789,11 @@ export default async function ProfilePage()
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 42 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 42 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 												42 Trader
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >=42
+												wins >= 42
 													? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
@@ -937,14 +822,14 @@ export default async function ProfilePage()
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
 								wins >= 100 // Change trigger condition as needed
 									? "bg-amber-500/[0.04] border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* AMBER CONTAINER */}
 									<div className={`p-2.5 rounded-lg border ${
 										wins >= 100
 											? "bg-amber-500/10 border-amber-500/30 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)]"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
 										{bitcoinIcon({ unlocked: wins >= 100 })}
 									</div>
@@ -952,7 +837,7 @@ export default async function ProfilePage()
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 100 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 100 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 												Market Veteran
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
@@ -985,22 +870,22 @@ export default async function ProfilePage()
 							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
 								wins >= 500
 									? "bg-yellow-500/[0.04] border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.15)]"
-									: "bg-white/[0.01] border-white/5 opacity-40 grayscale"
+									: "bg-white/[0.01] border-white/5"
 							}`}>
 								<div className="flex items-center gap-4">
 									{/* YELLOW / GOLD CONTAINER */}
 									<div className={`relative overflow-visible p-2.5 rounded-lg border ${
 										wins >= 500
 											? "bg-yellow-500/10 border-yellow-500/30 animate-chest-glow"
-											: "bg-white/[0.02] border-white/10"
+											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
 									}`}>
 										{treasureChestIcon({ unlocked: wins >= 500 })}
 									</div>
-								
+
 									{/* TITLE & DESCRIPTION */}
 									<div className="text-left">
 										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "text-white" : "text-gray-400"}`}>
+											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
 												Trading Champion
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
