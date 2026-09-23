@@ -1,22 +1,9 @@
-// import { SideNav } from "../components/duel/side-nav";
-// import { Avatar } from "../components/duel/avatar";
-// import { redirect } from "next/navigation";
-// import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-// function getRiskRating(wins: number, losses: number): string {
-// 	if (wins > losses) return "Pro";
-// 	if (wins === losses) return "Amateur";
-// 	return "Beginner";
-// }
 
 
 // export default async function ProfilePage() {
 // 	const supabase = await createSupabaseServerClient();
 // 	const { data: { user } } = await supabase.auth.getUser();
-
-// 	if (!user) {
-// 		redirect("/login");
-// 	}
 
 // 	const { data: matches } = await supabase
 // 		.from("matches")
