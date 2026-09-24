@@ -72,7 +72,7 @@ function PlayerSlot({ player }: { player: Player | null }) {
 
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/[.07] bg-[#151b25] p-3.5">
-      <Avatar name={player.username} size="sm" />
+      <Avatar name={player.username} imageUrl={player.avatar_url} size="sm" />
       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{player.username}</span>
       <span className="size-2 rounded-full bg-[#1fcb83] shadow-[0_0_10px_#1fcb83]" />
     </div>

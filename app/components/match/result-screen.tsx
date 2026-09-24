@@ -71,7 +71,7 @@ export function ResultScreen({ room }: { room: RoomState }) {
                     : "border-white/[.07] bg-[#151b25]"
                 }`}
               >
-                <Avatar name={player.username} size="sm" />
+                <Avatar name={player.username} imageUrl={player.avatar_url} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {player.username}

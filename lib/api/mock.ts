@@ -25,8 +25,17 @@ import type {
 import { elapsedSeconds, priceAtElapsed } from "./pricing";
 
 /** The "current user" while mocking. In the real app this is the Supabase user. */
-export const MOCK_ME: Player = { userId: "mock-me", username: "you" };
-const MOCK_OPP: Player = { userId: "mock-opp", username: "bot_opponent" };
+export const MOCK_ME: Player = { 
+  userId: "mock-me", 
+  username: "you", 
+  avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=you"
+};
+
+const MOCK_OPP: Player = { 
+  userId: "mock-opp", 
+  username: "bot_opponent", 
+  avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=bot"
+};
 
 const COUNTDOWN_MS = 10_000; // 10s countdown, matches the PRD
 const OPP_JOIN_MS = 4_000; // pretend an opponent joins 4s after you open a waiting room

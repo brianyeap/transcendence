@@ -37,7 +37,7 @@ export function PlayerSlot({
 
   return (
     <div className="flex flex-1 items-center gap-3 rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
-      <Avatar name={player.username} size="md" />
+      <Avatar name={player.username} imageUrl={player.avatar_url} size="md" />
       <div className="min-w-0">
         <p className="flex items-baseline gap-2 text-[14px] font-semibold text-[#eef2f8]">
           <span className="truncate">{player.username}</span>
