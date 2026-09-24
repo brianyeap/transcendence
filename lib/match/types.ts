@@ -21,6 +21,7 @@ export type Candle = {
 export type PlayerRef = {
   userId: string;
   username: string;
+  avatar_url?: string | null;
 };
 
 export type Match = {

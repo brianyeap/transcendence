@@ -61,20 +61,21 @@ function getRoomAgeMinutes(createdAt: string) {
 function formatRoom(
   room: MatchRoom,
   currentUserId: string,
-  creatorNames: Map<string, string>
+  creatorProfiles: Map<string, { username: string; avatar_url: string | null }>
 ) {
   const isOwner = room.player_one_user_id === currentUserId;
-  const creatorName =
-    creatorNames.get(room.player_one_user_id) ?? room.player_one_user_id.slice(0, 8);
+  const profile = creatorProfiles.get(room.player_one_user_id);
+  const creatorName = profile?.username ?? room.player_one_user_id.slice(0, 8);
+  const creatorAvatar = profile?.avatar_url ?? null; // 👈 Extract avatar
 
   return {
     id: room.id,
-    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`), // fallback if no name (legacy rooms)
+    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`),
     creator: isOwner ? "you" : creatorName,
+    creator_avatar_url: creatorAvatar, // 👈 ADD THIS LINE
     players: room.player_two_user_id ? 2 : 1,
     capacity: 2,
     ageMin: getRoomAgeMinutes(room.created_at),
-    // Prefer the saved duration; fall back to deriving it from the timestamps.
     duration: room.duration_seconds ?? getRoomDuration(room),
     capital: Number(room.starting_capital),
     symbol: "BTC/USDT",
@@ -199,12 +200,15 @@ export async function GET() {
   const creatorIds = [...new Set(matchRooms.map((room) => room.player_one_user_id))];
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, username")
+    .select("id, username, avatar_url")
     .in("id", creatorIds);
 
-  const creatorNames = new Map<string, string>(
-    (profiles ?? []).map((profile) => [profile.id, profile.username])
-  );
+    const creatorProfiles = new Map<string, { username: string; avatar_url: string | null }>(
+      (profiles ?? []).map((profile) => [
+        profile.id,
+        { username: profile.username, avatar_url: profile.avatar_url }
+      ])
+    );
 
   const sortedRooms = matchRooms
     .toSorted((roomA, roomB) => { // sorted func will handlw which to compare i jst have to return - or +
@@ -220,7 +224,7 @@ export async function GET() {
         new Date(roomA.created_at).getTime()
       );
     })
-    .map((room) => formatRoom(room, user.id, creatorNames));
+    .map((room) => formatRoom(room, user.id, creatorProfiles));
 
   // A match you are already in (countdown or active) never shows up in the list
   // above, because that list is only rooms still WAITING for a second player.

@@ -21,6 +21,7 @@ export type PositionSide = "long" | "short" | "flat";
 export type Player = {
   userId: string;
   username: string;
+  avatar_url?: string | null;
 };
 
 export type CreateRoomInput = {
@@ -80,6 +81,7 @@ export type Scores = {
 export type PlayerResult = {
   userId: string;
   username: string;
+  avatar_url?: string | null;
   finalCapital: number;
   netPnl: number;
   result: "win" | "loss" | "draw";
