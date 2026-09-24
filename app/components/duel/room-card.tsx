@@ -30,7 +30,7 @@ export function RoomCard({
     >
       {/* Top: who made the room and how long ago */}
       <div className="flex items-center gap-3">
-        <Avatar name={room.creator} size="lg" />
+        <Avatar name={room.creator} imageUrl={room.creator_avatar_url} size="lg" />
         <div className="min-w-0">
           <h3 className="truncate font-semibold">{room.name}</h3>
           <p className="text-xs text-muted">

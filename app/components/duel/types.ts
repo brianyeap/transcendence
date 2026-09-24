@@ -17,6 +17,7 @@ export type Room = {
   id: string;
   name: string;
   creator: string;
+  creator_avatar_url?: string | null;
   players: number;
   capacity: number;
   ageMin: number;

@@ -188,7 +188,7 @@ export function LiveMatchScreen({ room }: { room: RoomState }) {
         </Link>
 
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <Avatar name={me?.username ?? "you"} size="sm" />
+          <Avatar name={me?.username ?? "you"} imageUrl={me?.avatar_url} size="sm" />
           <span className="truncate text-sm font-semibold">{me?.username ?? "you"}</span>
           <span className="rounded bg-[#151b25] px-2 py-0.5 font-mono text-[11px] font-bold text-[#3a434f]">
             VS
@@ -236,6 +236,7 @@ export function LiveMatchScreen({ room }: { room: RoomState }) {
         <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-[340px] lg:overflow-y-auto">
           <OpponentPanel
             username={opponent?.username ?? "—"}
+            avatarUrl={opponent?.avatar_url}
             capital={scores?.opponent ?? null}
             mine={scores?.me ?? null}
           />
@@ -290,10 +291,12 @@ function Metric({
 
 function OpponentPanel({
   username,
+  avatarUrl,
   capital,
   mine,
 }: {
   username: string;
+  avatarUrl?: string | null;
   capital: number | null;
   mine: number | null;
 }) {
@@ -305,7 +308,7 @@ function OpponentPanel({
         Opponent
       </p>
       <div className="flex items-center gap-3">
-        <Avatar name={username} size="sm" />
+        <Avatar name={username} imageUrl={avatarUrl} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{username}</p>
           <p className="font-mono text-xs text-[#9aa6b6]">

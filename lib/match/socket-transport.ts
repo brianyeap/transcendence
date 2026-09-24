@@ -190,15 +190,19 @@ export function createSocketTransport(): MatchTransport {
         );
         const { data: profileRows } = await supabase
           .from("profiles")
-          .select("id, username")
+          .select("id, username, avatar_url") // 👈 ADDED avatar_url
           .in("id", playerIds);
 
-        const nameById = new Map<string, string>();
+        // Store both username and avatar_url for each player
+        const profileById = new Map<string, { username: string; avatar_url: string | null }>();
         for (const row of profileRows ?? []) {
-          nameById.set(row.id, row.username);
+          profileById.set(row.id, { 
+            username: row.username, 
+            avatar_url: row.avatar_url 
+          });
         }
         // Falling back to a slice of the id matches what the lobby does.
-        const nameOf = (id: string) => nameById.get(id) ?? id.slice(0, 8);
+        const nameOf = (id: string) => profileById.get(id)?.username ?? id.slice(0, 8);
 
         // Candles already streamed (so a reload doesn't lose the chart).
         const { data: candleRows } = await supabase
@@ -266,6 +270,12 @@ export function createSocketTransport(): MatchTransport {
         // Until the engine sends real numbers, assume the opponent is untouched.
         opponentCapital = startingCapital;
 
+        // Safely get profile data, falling back to a slice of the ID if missing
+        const p1Profile = profileById.get(matchRow.player_one_user_id);
+        const p2Profile = matchRow.player_two_user_id 
+          ? profileById.get(matchRow.player_two_user_id) 
+          : null;
+
         const match: Match = {
           id: matchRow.id,
           status: toMatchStatus(matchRow.status),
@@ -275,12 +285,14 @@ export function createSocketTransport(): MatchTransport {
           endsAt: matchRow.ends_at,
           playerOne: {
             userId: matchRow.player_one_user_id,
-            username: nameOf(matchRow.player_one_user_id),
+            username: p1Profile?.username ?? matchRow.player_one_user_id.slice(0, 8),
+            avatar_url: p1Profile?.avatar_url ?? null, // 👈 ADDED
           },
           playerTwo: matchRow.player_two_user_id
             ? {
                 userId: matchRow.player_two_user_id,
-                username: nameOf(matchRow.player_two_user_id),
+                username: p2Profile?.username ?? matchRow.player_two_user_id.slice(0, 8),
+                avatar_url: p2Profile?.avatar_url ?? null, // 👈 ADDED
               }
             : null,
         };

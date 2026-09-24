@@ -44,12 +44,12 @@ function MatchupBlock({ match }: { match: Match }) {
     <div className="min-w-[170px]">
       <SectionLabel>Match</SectionLabel>
       <div className="mt-1.5 flex items-center gap-2">
-        <Avatar name={match.playerOne.username} size="sm" />
+          <Avatar name={match.playerOne.username} imageUrl={match.playerOne.avatar_url} size="sm" />
         <span className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
           vs
         </span>
         {match.playerTwo ? (
-          <Avatar name={match.playerTwo.username} size="sm" />
+          <Avatar name={match.playerTwo.username} imageUrl={match.playerTwo.avatar_url} size="sm" />
         ) : (
           <span className="grid size-8 shrink-0 place-items-center rounded-[30%] border border-dashed border-white/[.12] text-xs text-[#3a434f]">
             ?
