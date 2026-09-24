@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
-import { SideNav } from "../components/duel/side-nav";
+import { SideNav } from "../../components/duel/side-nav";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
 import {
