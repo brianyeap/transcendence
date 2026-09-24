@@ -15,7 +15,6 @@ export type Candle = {
   high: number;
   low: number;
   close: number;
-  preMatch: boolean;
 };
 
 export type PlayerRef = {
