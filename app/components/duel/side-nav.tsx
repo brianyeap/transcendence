@@ -15,6 +15,7 @@ import { useOnlinePing } from "./use-online-ping";
 
 export function SideNav({ children, user }: { children: React.ReactNode; user?: string }) {
 	const [fetchedName, setFetchedName] = useState("");
+	const [fetchedAvatar, setFetchedAvatar] = useState<string | null>(null);
 	const pathname = usePathname();
 	const t = useTranslations("SideNav");
 
@@ -22,26 +23,28 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 	useOnlinePing();
 
 	useEffect(() => {
-		if (user) return;
-
 		const supabase = createSupabaseBrowserClient();
 		let cancelled = false;
 
-		async function loadName() {
-			const { data: { user: authUser } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } })); // catch results ot null
+		async function loadProfile() {
+			const { data: { user: authUser } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
 			if (!authUser) return;
 
+			// We ALWAYS fetch this now, so we can get the avatar_url
 			const { data: profile } = await supabase
 				.from("profiles")
-				.select("username") // i only need username
+				.select("username, avatar_url")
 				.eq("id", authUser.id)
-				.maybeSingle();  // null or data
+				.maybeSingle();
 
-			// The component may have unmounted while we were waiting.
-			if (!cancelled) setFetchedName(profile?.username || "Trader");
+			if (!cancelled) {
+				// Use the DB username, or fall back to the prop, or "Trader"
+				setFetchedName(profile?.username || user || "Trader");
+				setFetchedAvatar(profile?.avatar_url || null);
+			}
 		}
 
-		loadName();
+		loadProfile();
 		return () => { cancelled = true; };
 	}, [user]);
 
@@ -87,7 +90,7 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 				<div className="mt-auto">
 					<div className="my-3 h-px bg-line" />
 					<div className="flex items-center gap-3 px-2 py-2">
-						<Avatar name={displayName} />
+						<Avatar name={displayName} imageUrl={fetchedAvatar} /> 
 						<span className="truncate text-sm font-semibold">{displayName}</span>
 					</div>
 					<LogoutButton />
