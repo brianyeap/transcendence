@@ -494,14 +494,7 @@ io.on("connection", (socket) => {
     // then send this player their current state.
     const match = await ensureMatchRunning(matchRow);
 
-    // If a price already exists, send it so the newcomer's screen isn't empty.
-    if (match.latestPrice !== null) {
-      socket.emit("match:tick", {
-        price: match.latestPrice,
-        sequence: match.sequence,
-        at: Date.now(),
-      });
-    }
+    // No need to send a price here: the page already loaded the saved candles from Supabase
     sendPlayerState(socket, match, userId);
     // Give the newcomer both capitals straight away so the header isn't blank.
     broadcastCapitals(match);

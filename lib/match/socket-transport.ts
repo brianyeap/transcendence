@@ -1,21 +1,3 @@
-// ============================================================================
-// socket-transport.ts — the real data source behind the match screen.
-// ----------------------------------------------------------------------------
-// The match UI talks to a `MatchTransport` (see transport.ts). This one is
-// backed by the two real sources we already have:
-//
-//   * Supabase  — the things that don't change during a match, plus anything we
-//                 need to catch up on after a reload: who is playing, the
-//                 starting capital, the clock, past candles and past trades.
-//   * Socket.IO — everything live: price ticks, your position, fills, the end
-//                 of the match. This is socket/server.js on port 4000.
-//
-// One extra job happens here: the engine only tells us a player's position
-// (side / amount / entry price). Numbers that move with the price — unrealised
-// PnL and total capital — are worked out on this side, on every tick, using the
-// same formulas as socket/engine-math.js.
-// ============================================================================
-
 import { io, type Socket } from "socket.io-client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MatchSubscription, MatchTransport, MatchTransportHandlers } from "./transport";
@@ -31,7 +13,7 @@ import type {
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 
-// A player's raw position, exactly as the engine keeps and sends it.
+// A player's raw position
 type EnginePosition = {
   availableBalance: number;
   realizedPnl: number;
@@ -40,12 +22,7 @@ type EnginePosition = {
   avgEntry: number | null;
 };
 
-// ----------------------------------------------------------------------------
-// Money maths — the browser copy of socket/engine-math.js.
-// The engine is still the authority: these only fill in the numbers that move
-// between ticks, so the screen doesn't need a server round-trip to update.
-// ----------------------------------------------------------------------------
-
+// round to 2 decimal
 function round2(value: number) {
   return Math.round(value * 100) / 100;
 }
@@ -56,6 +33,7 @@ function unrealisedPnl(position: EnginePosition, price: number | null) {
     return 0;
   }
 
+  // percentage of the move
   const move =
     position.side === "long"
       ? (price - position.avgEntry) / position.avgEntry
@@ -69,7 +47,7 @@ function equity(position: EnginePosition, price: number | null) {
   return round2(position.availableBalance + position.notional + unrealisedPnl(position, price));
 }
 
-// Turn the raw position into the shape the UI panels read.
+// Turn the raw position into the obj the UI panels read.
 function toPlayerState(
   position: EnginePosition,
   price: number | null,
@@ -88,21 +66,17 @@ function toPlayerState(
   };
 }
 
-// ----------------------------------------------------------------------------
-// Small helpers
-// ----------------------------------------------------------------------------
+// helpers----------------------------------------------------------------------
 
 // The chart needs candles in time order with no repeated timestamps.
 function tidyCandles(candles: Candle[]): Candle[] {
-  const byTime = new Map<number, Candle>();
+  const byTime = new Map<number, Candle>();  //map set to key and value pair
   for (const candle of candles) {
-    byTime.set(candle.time, candle); // a later candle for the same time wins
+    byTime.set(candle.time, candle);
   }
   return [...byTime.values()].sort((a, b) => a.time - b.time);
 }
 
-// The database keeps 'waiting' | 'countdown' | 'active' | 'completed' |
-// 'cancelled', which is exactly what the UI uses — we only check the value.
 function toMatchStatus(value: unknown): MatchStatus {
   const allowed: MatchStatus[] = ["waiting", "countdown", "active", "completed", "cancelled"];
   return allowed.includes(value as MatchStatus) ? (value as MatchStatus) : "waiting";
@@ -121,19 +95,17 @@ function freshPosition(startingCapital: number): EnginePosition {
 
 export function createSocketTransport(): MatchTransport {
   return {
-    connect(matchId, handlers: Partial<MatchTransportHandlers>) {
-      // --- everything this connection remembers ---------------------------
-      let closed = false; // set by close(), so late replies are ignored
+    connect(matchId, handlers: Partial<MatchTransportHandlers>) {  // handleer are calbacks like on tick , on snapshot and etc, partial measn they can chooose to put any transport or not
+      // tis is the Mmmory for this  connection 
+      let closed = false; // if the UI has closed the connection, don't do anything more
       let socket: Socket | null = null;
-      let viewerId: string | null = null;
-      // The engine verifies this token to work out who we are, so we keep it
-      // here and hand it over when the socket connects.
+      let viewerId: string | null = null; // the user id
       let accessToken: string | null = null;
       let opponentId: string | null = null;
       let position: EnginePosition | null = null;
       let latestPrice: number | null = null;
       let opponentCapital = 0;
-      let fillCount = 0; // used to give each fill its own id
+      let fillCount = 0; // how many trades has been filled
 
       // Push a freshly recalculated player state to the UI.
       function pushPlayerState() {
@@ -141,9 +113,7 @@ export function createSocketTransport(): MatchTransport {
         handlers.onPlayerState?.(toPlayerState(position, latestPrice, opponentCapital));
       }
 
-      // ------------------------------------------------------------------
-      // Step 1: build the opening picture from Supabase.
-      // ------------------------------------------------------------------
+      // supabase stuff
       async function loadSnapshot() {
         const supabase = createSupabaseBrowserClient();
 
@@ -158,8 +128,6 @@ export function createSocketTransport(): MatchTransport {
         }
         viewerId = user.id;
 
-        // getUser() above proves who we are; getSession() gives us the token
-        // itself, which is what the match engine needs to check.
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -175,7 +143,7 @@ export function createSocketTransport(): MatchTransport {
           .maybeSingle();
 
         if (closed || !matchRow) {
-          if (!closed) handlers.onConnectionChange?.(false);
+          if (!closed) handlers.onConnectionChange?.(false); // change connection to false
           return;
         }
 
@@ -184,7 +152,6 @@ export function createSocketTransport(): MatchTransport {
             ? matchRow.player_two_user_id
             : matchRow.player_one_user_id;
 
-        // Usernames for both players (profiles are readable by any logged-in user).
         const playerIds = [matchRow.player_one_user_id, matchRow.player_two_user_id].filter(
           (id): id is string => typeof id === "string"
         );
@@ -198,7 +165,7 @@ export function createSocketTransport(): MatchTransport {
           nameById.set(row.id, row.username);
         }
         // Falling back to a slice of the id matches what the lobby does.
-        const nameOf = (id: string) => nameById.get(id) ?? id.slice(0, 8);
+        const nameOf = (id: string) => nameById.get(id) ?? id.slice(0, 8); // slice the id to get first 8kg
 
         // Candles already streamed (so a reload doesn't lose the chart).
         const { data: candleRows } = await supabase
@@ -214,12 +181,9 @@ export function createSocketTransport(): MatchTransport {
             high: Number(row.high),
             low: Number(row.low),
             close: Number(row.close),
-            preMatch: false, // every candle we stream is part of the match
           }))
         );
 
-        // Your own fills so far. The policy lets us read the whole match, so we
-        // ask for our own rows only — you don't get to see the opponent's hand.
         const { data: tradeRows } = await supabase
           .from("trades")
           .select("id, side, amount_usdt, execution_price, realized_pnl, resulting_side, resulting_notional, executed_at")
@@ -227,7 +191,7 @@ export function createSocketTransport(): MatchTransport {
           .eq("user_id", user.id)
           .order("executed_at", { ascending: true });
 
-        const trades: TradeFill[] = (tradeRows ?? []).map((row) => ({
+        const trades: TradeFill[] = (tradeRows ?? []).map((row) => ({ // if return null use empty aray
           id: row.id,
           side: row.side as Side,
           amount: Number(row.amount_usdt),
@@ -240,8 +204,7 @@ export function createSocketTransport(): MatchTransport {
 
         const startingCapital = Number(matchRow.starting_capital);
 
-        // Your money and position. The row only exists once the engine has run,
-        // so before that we show a fresh player holding the starting capital.
+        // Your money and position. The row only exists once the engine has run
         const { data: playerRow } = await supabase
           .from("match_players")
           .select("available_balance, realized_pnl, current_side, position_notional_usdt, average_entry_price")
@@ -263,7 +226,7 @@ export function createSocketTransport(): MatchTransport {
           : freshPosition(startingCapital);
 
         latestPrice = candles[candles.length - 1]?.close ?? null;
-        // Until the engine sends real numbers, assume the opponent is untouched.
+        // Until the engine sends real numbers, assume the opponent is untouched
         opponentCapital = startingCapital;
 
         const match: Match = {
@@ -299,66 +262,48 @@ export function createSocketTransport(): MatchTransport {
         openSocket();
       }
 
-      // ------------------------------------------------------------------
-      // Step 2: go live over Socket.IO.
-      // ------------------------------------------------------------------
+      // Go live from socket.io
       function openSocket() {
         if (closed || socket !== null) return;
 
         socket = io(SOCKET_URL, {
-          // Sent on every connect AND reconnect, so the engine can verify us.
+          // this callback is sent on every connect and reconnect, so the engine can verify us, sends the access token to the engine for verification
           auth: (cb) => cb({ token: accessToken }),
         });
 
         socket.on("connect", () => {
           handlers.onConnectionChange?.(true);
-          // Tell the engine which match we are, so it puts us in the room.
           socket?.emit("match:join", { matchId });
         });
 
         socket.on("disconnect", () => handlers.onConnectionChange?.(false));
         socket.on("connect_error", () => handlers.onConnectionChange?.(false));
 
-        // --- lifecycle ---
+        // match stuff
         socket.on("match:waiting", () => handlers.onStatusChange?.("waiting"));
         socket.on("match:countdown", () => handlers.onStatusChange?.("countdown"));
         socket.on("match:started", () => {
           handlers.onStatusChange?.("active");
-          //  Player one opens the match page while the room is still empty, so
-          //  the snapshot was built before player two existed. Now that the
-          //  match is live the row has them, so read it again - that fills in
-          //  the opponent's name, their capital, and the add-friend button.
-          if (opponentId === null) loadSnapshot();
+          if (opponentId === null) loadSnapshot(); // load the data incase second user joined 
         });
 
-        // --- price ---
+        // price
         socket.on("match:tick", (tick: {
           price: number;
           at: number;
           sequence: number;
-          candle?: { time: number; open: number; high: number; low: number; close: number };
+          candle: { time: number; open: number; high: number; low: number; close: number };
         }) => {
           latestPrice = tick.price;
 
-          // Older engines sent the price only; treat that as a flat candle so
-          // the chart still has something to draw.
-          const candle: Candle = tick.candle
-            ? { ...tick.candle, preMatch: false }
-            : {
-                time: Math.floor(tick.at / 1000),
-                open: tick.price,
-                high: tick.price,
-                low: tick.price,
-                close: tick.price,
-                preMatch: false,
-              };
+          // The engine sends a full candle with every tick
+          const candle: Candle = tick.candle;
 
-          handlers.onTick?.({ candle, price: tick.price, serverTime: tick.at });
-          // The position is worth something different now.
+          handlers.onTick?.({ candle, price: tick.price, serverTime: tick.at }); // send the tick to the UI
+          // The position is worth something different now so this updates 
           pushPlayerState();
         });
 
-        // --- both players' capital, recomputed by the engine each tick ---
         socket.on("match:capitals", ({ capitals }: { capitals: Record<string, number> }) => {
           if (opponentId !== null && typeof capitals[opponentId] === "number") {
             opponentCapital = capitals[opponentId];

@@ -32,26 +32,18 @@ const HAIRLINE = "rgba(255,255,255,.05)";
 const BORDER = "rgba(255,255,255,.07)";
 
 function toPoint(candle: Candle): CandlestickData<Time> {
-  const rising = candle.close >= candle.open;
-  const shell = {
+  // Green if the price went up during this candle, red if it went down
+  const color = candle.close >= candle.open ? UP : DOWN;
+  return {
     time: candle.time as UTCTimestamp,
     open: candle.open,
     high: candle.high,
     low: candle.low,
     close: candle.close,
+    color,
+    borderColor: color,
+    wickColor: color,
   };
-
-  if (candle.preMatch) {
-    return {
-      ...shell,
-      color: rising ? TEXT_DIMMEST : RAISED,
-      borderColor: TEXT_DIM,
-      wickColor: TEXT_DIMMEST,
-    };
-  }
-
-  const live = rising ? UP : DOWN;
-  return { ...shell, color: live, borderColor: live, wickColor: live };
 }
 
 function dividerMarker(time: number): SeriesMarker<Time> {
@@ -128,8 +120,7 @@ function chartSummary(
   }
 
   const latest = lastCandle ?? candles[candles.length - 1];
-  const matchCandles = candles.reduce((count, candle) => (candle.preMatch ? count : count + 1), 0);
-  const preMatch = candles.length - matchCandles;
+  const matchCandles = candles.length;
 
   const move =
     latest.close > latest.open
@@ -150,9 +141,7 @@ function chartSummary(
 
   return `Candlestick price chart. Latest price ${price(latest.close)}, ${move} within the current candle, between a low of ${price(
     latest.low
-  )} and a high of ${price(latest.high)}. ${elapsed} ${preMatch} earlier candle${
-    preMatch === 1 ? "" : "s"
-  } of pre-match history are shown for context. ${marked}`;
+  )} and a high of ${price(latest.high)}. ${elapsed} ${marked}`;
 }
 
 function price(value: number): string {
@@ -183,10 +172,8 @@ export function MatchChart({
   const firstTimeRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
 
-  const dividerTime = useMemo(() => {
-    const divider = candles.find((candle) => !candle.preMatch);
-    return divider === undefined ? null : divider.time;
-  }, [candles]);
+  // Every candle is part of the match, so the "Match start" arrow goes on the first one
+  const dividerTime = candles[0]?.time ?? null;
 
   const candlePhase = useMemo(() => {
     const first = candles[0];
