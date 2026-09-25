@@ -31,11 +31,13 @@ function fireIcon({unlocked}: {unlocked: boolean})
 {
 	if(!unlocked)
 	{
-		return (<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-			<path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-		</svg>);
+		return (
+			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
+				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+			</svg>
+		);
 	}
-	
+
 	return (
 		<div className="relative flex items-center justify-center w-8 h-8">
 			{/* Animated glowy thinggy particles */}
@@ -504,7 +506,7 @@ export default async function ProfilePage()
 			<main className="relative min-h-screen w-full bg-[#0a0c10] text-white overflow-hidden pb-20">
 
 				{/* AMBIENT BODY GLOW EFFECT */}
-				{/* 
+				{/*
 					- pointer-events-none: stops the glow overlay from blocking mouse clicks on buttons
 					- absolute left-1/2 -translate-x-1/2: centers the glow circle horizontally in the main panel
 					- top-5 & blur-[100px]: positions the indigo haze right behind the banner and avatar
@@ -553,7 +555,7 @@ export default async function ProfilePage()
 							{displayUsername}
 						</h1>
 					</div>
-					
+
 					{/* ID & RISK RATING BADGES */}
 					<div className="mt-4 flex items-center gap-3">
 						<span className="rounded-full border border-white/[0.03] px-3 py-1 text-xs font-mono text-gray-400">
@@ -570,7 +572,7 @@ export default async function ProfilePage()
 							{riskRating} Trader
 						</span>
 					</div>
-					
+
 					{/* PERFORMANCE STATS GRID & WIN/LOSS/DRAW BAR */}
 					<div className="w-full mt-10 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
 						<div className="flex justify-between items-center mb-4">
@@ -860,7 +862,7 @@ export default async function ProfilePage()
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											Locked
+											{100 - wins} Wins Left
 										</span>
 									)}
 								</div>
