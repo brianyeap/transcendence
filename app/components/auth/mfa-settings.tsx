@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -25,6 +26,7 @@ interface TotpFactor {
 }
 
 export function MfaSettings() {
+  const t = useTranslations("MfaSettings");
   const [factors, setFactors] = useState<TotpFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -52,18 +54,18 @@ export function MfaSettings() {
         await supabase.auth.mfa.listFactors();
 
       if (factorsError) {
-        setError(factorsError.message || "Failed to load security factors.");
+        setError(factorsError.message || t("failedToLoadSecurityFactors"));
         return;
       }
 
       const verifiedTotp = (data?.totp as unknown as TotpFactor[]) || [];
       setFactors(verifiedTotp);
     } catch {
-      setError("Network error while checking 2FA status.");
+      setError(t("networkErrorChecking2FA"));
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, t]);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,7 +78,7 @@ export function MfaSettings() {
         if (!isMounted) return;
 
         if (factorsError) {
-          setError(factorsError.message || "Failed to load security factors.");
+          setError(factorsError.message || t("failedToLoadSecurityFactors"));
           return;
         }
 
@@ -84,7 +86,7 @@ export function MfaSettings() {
         setFactors(verifiedTotp);
       } catch {
         if (isMounted) {
-          setError("Network error while checking 2FA status.");
+          setError(t("networkErrorChecking2FA"));
         }
       } finally {
         if (isMounted) {
@@ -98,7 +100,7 @@ export function MfaSettings() {
     return () => {
       isMounted = false;
     };
-  }, [supabase]);
+  }, [supabase, t]);
 
   async function startEnrollment() {
     setError(null);
@@ -123,7 +125,7 @@ export function MfaSettings() {
       });
 
       if (enrollError || !data) {
-        setError(enrollError?.message || "Failed to start 2FA enrollment.");
+        setError(enrollError?.message || t("failedToStartEnrollment"));
         setActionLoading(false);
         return;
       }
@@ -141,7 +143,7 @@ export function MfaSettings() {
       setVerifyCode("");
       setIsEnrolling(true);
     } catch {
-      setError("Network error encountered during enrollment. Please try again.");
+      setError(t("networkErrorEnrollment"));
     } finally {
       setActionLoading(false);
     }
@@ -173,12 +175,12 @@ export function MfaSettings() {
     const cleanCode = verifyCode.trim().replace(/\s+/g, "");
 
     if (!pendingFactorId) {
-      setError("No pending enrollment found.");
+      setError(t("noPendingEnrollment"));
       return;
     }
 
     if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
-      setError("Please enter a valid 6-digit code from your authenticator app.");
+      setError(t("invalidSixDigitCode"));
       return;
     }
 
@@ -192,9 +194,9 @@ export function MfaSettings() {
 
       if (challengeError || !challengeData) {
         if (challengeError?.message?.toLowerCase().includes("network")) {
-          setError("Network error while creating challenge. Please check your connection.");
+          setError(t("networkErrorChallenge"));
         } else {
-          setError(challengeError?.message || "Failed to create verification challenge.");
+          setError(challengeError?.message || t("failedToCreateChallenge"));
         }
         setActionLoading(false);
         return;
@@ -210,13 +212,13 @@ export function MfaSettings() {
       if (verifyError) {
         const msg = verifyError.message?.toLowerCase() || "";
         if (msg.includes("expired")) {
-          setError("The challenge expired. Please try entering the current code again.");
+          setError(t("challengeExpired"));
         } else if (msg.includes("invalid") || msg.includes("code")) {
-          setError("Invalid code. Please ensure your device clock is synced and enter the latest code.");
+          setError(t("invalidCode"));
         } else if (msg.includes("network")) {
-          setError("Network error while verifying code. Please try again.");
+          setError(t("networkErrorVerify"));
         } else {
-          setError(verifyError.message || "Failed to verify authenticator code.");
+          setError(verifyError.message || t("failedToVerify"));
         }
         setActionLoading(false);
         return;
@@ -228,11 +230,11 @@ export function MfaSettings() {
       setQrCodeUrl(null);
       setManualSecret(null);
       setVerifyCode("");
-      setSuccess("Two-factor authentication has been enabled successfully.");
+      setSuccess(t("twoFactorEnabled"));
 
       await loadFactors();
     } catch {
-      setError("An unexpected network error occurred. Please try again.");
+      setError(t("unexpectedNetworkError"));
     } finally {
       setActionLoading(false);
     }
@@ -251,23 +253,21 @@ export function MfaSettings() {
       if (unenrollError) {
         const msg = unenrollError.message?.toLowerCase() || "";
         if (msg.includes("aal2")) {
-          setError(
-            "Removing 2FA requires recent verification (AAL2). Please re-login with 2FA and try again."
-          );
+          setError(t("aal2Required"));
         } else if (msg.includes("network")) {
-          setError("Network connection issue while removing 2FA.");
+          setError(t("networkErrorRemoving"));
         } else {
-          setError(unenrollError.message || "Failed to remove 2FA factor.");
+          setError(unenrollError.message || t("failedToRemove"));
         }
         setActionLoading(false);
         return;
       }
 
       setUnenrollFactorId(null);
-      setSuccess("Two-factor authentication has been removed.");
+      setSuccess(t("twoFactorRemoved"));
       await loadFactors();
     } catch {
-      setError("An unexpected network error occurred while removing 2FA.");
+      setError(t("unexpectedNetworkErrorRemoving"));
     } finally {
       setActionLoading(false);
     }
@@ -321,7 +321,7 @@ export function MfaSettings() {
       {loading ? (
         <div className="flex items-center gap-2 py-3 text-xs text-[#5d6877]">
           <RefreshCw className="size-3.5 animate-spin text-[#4d86ff]" />
-          Loading security settings...
+          {t("loadingSecuritySettings")}
         </div>
       ) : isEnrolling ? (
         /* Enrollment Form */
@@ -330,7 +330,7 @@ export function MfaSettings() {
             <div className="flex items-center gap-2">
               <KeyRound className="size-4 text-[#4d86ff]" />
               <h3 className="text-sm font-semibold text-[#eef2f8]">
-                Set Up Two-Factor Authentication
+                {t("setupTwoFactor")}
               </h3>
             </div>
             <button
@@ -339,7 +339,7 @@ export function MfaSettings() {
               disabled={actionLoading}
               className="text-xs text-[#5d6877] hover:text-[#eef2f8]"
             >
-              Cancel
+              {t("cancel")}
             </button>
           </div>
 
@@ -350,12 +350,12 @@ export function MfaSettings() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={qrCodeUrl}
-                  alt="2FA QR Code"
+                  alt={t("qrCodeAlt")}
                   className="size-36 select-none"
                 />
               ) : (
                 <div className="flex size-36 items-center justify-center text-xs text-black/50">
-                  Generating QR...
+                  {t("generatingQr")}
                 </div>
               )}
             </div>
@@ -364,16 +364,16 @@ export function MfaSettings() {
             <div className="space-y-4 text-xs">
               <div>
                 <p className="font-semibold text-[#9aa6b6]">
-                  1. Scan with your authenticator app
+                  {t("scanWithAuthenticator")}
                 </p>
                 <p className="mt-0.5 text-[#5d6877]">
-                  Use Google Authenticator, Authy, 1Password, or any standard TOTP app.
+                  {t("authenticatorApps")}
                 </p>
               </div>
 
               <div>
                 <p className="font-semibold text-[#9aa6b6]">
-                  2. Or enter the secret key manually
+                  {t("enterSecretManually")}
                 </p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <code className="rounded bg-[#090b10] px-2.5 py-1.5 font-mono text-[11px] text-[#4d86ff] select-all">
@@ -387,12 +387,12 @@ export function MfaSettings() {
                     {copied ? (
                       <>
                         <Check className="size-3 text-emerald-400" />
-                        <span className="text-emerald-400">Copied</span>
+                        <span className="text-emerald-400">{t("copied")}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="size-3" />
-                        <span>Copy</span>
+                        <span>{t("copy")}</span>
                       </>
                     )}
                   </button>
@@ -403,7 +403,7 @@ export function MfaSettings() {
               <form onSubmit={handleVerifyEnrollment} className="pt-2">
                 <label className="block">
                   <span className="font-semibold text-[#9aa6b6]">
-                    3. Enter the 6-digit confirmation code
+                    {t("enterConfirmationCode")}
                   </span>
                   <div className="mt-1.5 flex gap-2">
                     <input
@@ -427,10 +427,10 @@ export function MfaSettings() {
                       {actionLoading ? (
                         <span className="flex items-center gap-1.5">
                           <RefreshCw className="size-3.5 animate-spin" />
-                          Verifying...
+                          {t("verifying")}
                         </span>
                       ) : (
-                        "Verify & Activate"
+                        t("verifyActivate")
                       )}
                     </button>
                   </div>
@@ -451,11 +451,11 @@ export function MfaSettings() {
               )}
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">
-                  Two-Factor Authentication (TOTP)
+                  {t("twoFactorAuthentication")}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">
-                    {isMfaActive ? "Enabled" : "Not Enabled"}
+                    {isMfaActive ? t("enabled") : t("notEnabled")}
                   </span>
                   <span
                     className={`text-[10px] rounded px-1.5 py-0.5 font-medium ${
@@ -464,7 +464,7 @@ export function MfaSettings() {
                         : "bg-white/[.05] text-[#5d6877]"
                     }`}
                   >
-                    {isMfaActive ? "Protected" : "Recommended"}
+                    {isMfaActive ? t("protected") : t("recommended")}
                   </span>
                 </div>
               </div>
@@ -479,7 +479,7 @@ export function MfaSettings() {
                   className="flex items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-white/[.02] px-3 py-1.5 text-xs font-medium text-[#f6485d] transition hover:bg-[#f6485d]/10 disabled:opacity-50"
                 >
                   <Trash2 className="size-3.5" />
-                  Disable 2FA
+                  {t("disable2FA")}
                 </button>
               ) : (
                 <button
@@ -491,7 +491,7 @@ export function MfaSettings() {
                   {actionLoading ? (
                     <RefreshCw className="size-3.5 animate-spin" />
                   ) : null}
-                  Enable 2FA
+                  {t("enable2FA")}
                 </button>
               )}
             </div>
@@ -505,11 +505,13 @@ export function MfaSettings() {
                   <div className="flex items-center gap-2">
                     <span className="size-1.5 rounded-full bg-emerald-400" />
                     <span className="font-mono text-[11px] text-[#9aa6b6]">
-                      {factor.friendly_name || "Authenticator App"}
+                      {factor.friendly_name || t("authenticatorApp")}
                     </span>
                   </div>
                   <span className="text-[10px]">
-                    Enrolled {new Date(factor.created_at).toLocaleDateString()}
+                    {t("enrolled", {
+                      date: new Date(factor.created_at).toLocaleDateString(),
+                    })}
                   </span>
                 </div>
               ))}
@@ -524,10 +526,12 @@ export function MfaSettings() {
           <div className="w-full max-w-[360px] rounded-[10px] border border-white/[.08] bg-[#0f131b] p-5 shadow-2xl">
             <div className="flex items-center gap-2.5 text-[#f6485d]">
               <AlertCircle className="size-5" />
-              <h4 className="text-sm font-bold">Disable Two-Factor Authentication?</h4>
+              <h4 className="text-sm font-bold">
+                {t("disableTwoFactorQuestion")}
+              </h4>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-[#9aa6b6]">
-              Disabling 2FA reduces your account security. You will only need your Google login or password to access the lobby and trading matches.
+              {t("disableWarning")}
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
@@ -536,7 +540,7 @@ export function MfaSettings() {
                 onClick={() => setUnenrollFactorId(null)}
                 className="rounded-[6px] border border-white/[.07] px-3 py-1.5 text-xs text-[#9aa6b6] hover:bg-white/[.04] hover:text-[#eef2f8]"
               >
-                Keep Enabled
+                {t("keepEnabled")}
               </button>
               <button
                 type="button"
@@ -547,7 +551,7 @@ export function MfaSettings() {
                 {actionLoading ? (
                   <RefreshCw className="size-3.5 animate-spin" />
                 ) : null}
-                Yes, Disable
+                {t("yesDisable")}
               </button>
             </div>
           </div>
