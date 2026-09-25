@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { SideNav } from "../components/duel/side-nav";
 import { Avatar } from "../components/duel/avatar";
 import { Button } from "../components/duel/button";
@@ -29,21 +30,25 @@ type Friend = {
 };
 
 //  Turn a gap in seconds into short text like "12s ago" or "3m ago".
-function agoText(seconds: number): string {
-	if (seconds < 60) return `${seconds}s ago`;
+function agoText(
+	seconds: number,
+	t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+	if (seconds < 60) return t("secondsAgo", { seconds });
 
 	const minutes = Math.floor(seconds / 60);
 
-	if (minutes < 60) return `${minutes}m ago`;
+	if (minutes < 60) return t("minutesAgo", { minutes });
 
 	const hours = Math.floor(minutes / 60);
 
-	if (hours < 24) return `${hours}h ago`;
+	if (hours < 24) return t("hoursAgo", { hours });
 
-	return `${Math.floor(hours / 24)}d ago`;
+	return t("daysAgo", { days: Math.floor(hours / 24) });
 }
 
 export default function FriendsPage() {
+	const t = useTranslations("Friends");
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const [loading, setLoading] = useState(true);
 
@@ -114,26 +119,26 @@ export default function FriendsPage() {
 		<SideNav>
 			<div className="p-6 md:p-8 text-ink max-w-3xl mx-auto w-full">
 				<div className="mb-6">
-					<h1 className="text-2xl font-bold">Friends</h1>
+					<h1 className="text-2xl font-bold">{t("title")}</h1>
 					<p className="text-sm text-dim mt-1">
-						Add players from the match result screen. Status updates every 5 seconds.
+						{t("description")}
 					</p>
 				</div>
 
 				{loading ? (
-					<p className="text-sm text-dim">Loading friends...</p>
+					<p className="text-sm text-dim">{t("loading")}</p>
 				) : (
 					<div className="flex flex-col gap-8">
 						{/* Requests other players sent us - only shown if there are any. */}
 						{incoming.length > 0 && (
 							<section>
-								<h2 className="text-sm font-semibold text-dim mb-3">Friend requests</h2>
+								<h2 className="text-sm font-semibold text-dim mb-3">{t("friendRequests")}</h2>
 								<div className="flex flex-col gap-2.5">
 									{incoming.map((friend) => (
 										<RequestRow key={friend.id} friend={friend}>
-											<Button onClick={() => accept(friend)}>Accept</Button>
+											<Button onClick={() => accept(friend)}>{t("accept")}</Button>
 											<Button variant="quiet" onClick={() => remove(friend)}>
-												Decline
+												{t("decline")}
 											</Button>
 										</RequestRow>
 									))}
@@ -147,7 +152,7 @@ export default function FriendsPage() {
 								<div className="rounded-lg border bg-panel p-12 text-center">
 									<Users className="w-8 h-8 text-dim mx-auto mb-3" />
 									<p className="text-sm text-dim">
-										No friends yet. Finish a match and add your opponent.
+										{t("noFriends")}
 									</p>
 								</div>
 							) : (
@@ -166,12 +171,12 @@ export default function FriendsPage() {
 						{/* Requests we sent that are still waiting - only shown if there are any. */}
 						{sent.length > 0 && (
 							<section>
-								<h2 className="text-sm font-semibold text-dim mb-3">Sent requests</h2>
+								<h2 className="text-sm font-semibold text-dim mb-3">{t("sentRequests")}</h2>
 								<div className="flex flex-col gap-2.5">
 									{sent.map((friend) => (
 										<RequestRow key={friend.id} friend={friend}>
 											<Button variant="quiet" onClick={() => remove(friend)}>
-												Cancel
+												{t("cancel")}
 											</Button>
 										</RequestRow>
 									))}
@@ -187,12 +192,13 @@ export default function FriendsPage() {
 
 //  One line in the list: avatar, name, the online dot and a Remove button.
 function FriendRow({ friend, onRemove }: { friend: Friend; onRemove: () => void }) {
+	const t = useTranslations("Friends");
 	const seconds = friend.seconds_since_seen;
 	const online = seconds !== null && seconds < ONLINE_WINDOW_SECONDS;
 
 	//  Ask first, so one misclick doesn't lose a friend.
 	function confirmRemove() {
-		if (window.confirm(`Remove ${friend.username} from your friends?`)) onRemove();
+		if (window.confirm(t("removeConfirmation", { username: friend.username }))) onRemove();
 	}
 
 	return (
@@ -203,10 +209,10 @@ function FriendRow({ friend, onRemove }: { friend: Friend; onRemove: () => void 
 				<div className="text-sm font-semibold truncate">{friend.username}</div>
 				<div className="text-xs text-dim mt-0.5">
 					{online
-						? "Online now"
+						? t("onlineNow")
 						: seconds === null
-							? "Never seen online"
-							: `Last online ${agoText(seconds)}`}
+							? t("neverSeenOnline")
+							: t("lastOnline", { time: agoText(seconds, t) })}
 				</div>
 			</div>
 
@@ -217,12 +223,12 @@ function FriendRow({ friend, onRemove }: { friend: Friend; onRemove: () => void 
 					className={`size-2 rounded-full ${online ? "animate-pulse bg-win" : "bg-faint"}`}
 				/>
 				<span className={online ? "text-win" : "text-dim"}>
-					{online ? "Online" : "Offline"}
+					{online ? t("online") : t("offline")}
 				</span>
 			</span>
 
 			<Button variant="danger" onClick={confirmRemove}>
-				Remove
+				{t("remove")}
 			</Button>
 		</div>
 	);
