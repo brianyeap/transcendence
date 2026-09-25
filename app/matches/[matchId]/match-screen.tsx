@@ -7,6 +7,7 @@ import {
   type ConnectionStatus,
   type MatchConnection,
 } from "@/lib/match/match-connection";
+import { useOnlinePing } from "@/app/components/duel/use-online-ping";
 import { ConnectionBanner } from "./connection-banner";
 import { CountdownScreen } from "./countdown-screen";
 import { MatchChart } from "./match-chart";
@@ -25,6 +26,9 @@ import { RecentTrades } from "./recent-trades";
 import { WaitingRoom } from "./waiting-room";
 
 export function MatchScreen({ matchId }: { matchId: string }) {
+  // The match page has no SideNav, so ping here to stay "online" for friends.
+  useOnlinePing();
+
   return (
     <MatchTransportProvider>
       <MatchScreenInner matchId={matchId} />
