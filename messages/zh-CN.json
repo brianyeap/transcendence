@@ -544,7 +544,10 @@
   },
   "AddFriendButton": {
     "friendAdded": "{opponent} 已在您的好友列表中",
-    "adding": "正在添加...",
+    "requestSent": "好友请求已发送给 {opponent}",
+    "accepting": "正在接受...",
+    "acceptRequest": "接受 {opponent} 的好友请求",
+    "sending": "正在发送...",
     "addFriend": "添加 {opponent} 为好友"
   },
   "LeaveMatch": {
