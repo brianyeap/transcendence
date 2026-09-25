@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Clock, UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/app/components/duel/button";
 
@@ -40,6 +41,8 @@ export function AddFriendButton({
 	opponentUserId: string;
 	opponentName: string;
 }) {
+	const t = useTranslations("AddFriendButton");
+
 	const [state, setState] = useState<FriendState>("none");
 	const [busy, setBusy] = useState(false);     //  true while a request is running
 
@@ -95,7 +98,7 @@ export function AddFriendButton({
 		return (
 			<p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-dim">
 				<Clock className="size-4" aria-hidden />
-				Friend request sent to {opponentName}
+				{t("requestSent", { opponent: opponentName })}
 			</p>
 		);
 	}
@@ -104,7 +107,7 @@ export function AddFriendButton({
 		return (
 			<Button onClick={acceptRequest} disabled={busy} className="mt-4 w-full">
 				<Check className="size-4" aria-hidden />
-				{busy ? "Accepting..." : `Accept ${opponentName}'s friend request`}
+				{busy ? t("accepting") : t("acceptRequest", { opponent: opponentName })}
 			</Button>
 		);
 	}
@@ -112,7 +115,7 @@ export function AddFriendButton({
 	return (
 		<Button variant="quiet" onClick={sendRequest} disabled={busy} className="mt-4 w-full">
 			<UserPlus className="size-4" aria-hidden />
-			{busy ? "Sending..." : `Add ${opponentName} as friend`}
+			{busy ? t("sending") : t("addFriend", { opponent: opponentName })}
 		</Button>
 	);
 }

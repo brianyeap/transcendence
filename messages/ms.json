@@ -544,7 +544,10 @@
   },
   "AddFriendButton": {
     "friendAdded": "{opponent} telah ditambahkan ke senarai rakan anda",
-    "adding": "Menambah...",
+    "requestSent": "Permintaan rakan dihantar kepada {opponent}",
+    "accepting": "Sedang menerima...",
+    "acceptRequest": "Terima permintaan rakan daripada {opponent}",
+    "sending": "Sedang menghantar...",
     "addFriend": "Tambah {opponent} sebagai rakan"
   },
   "LeaveMatch": {
