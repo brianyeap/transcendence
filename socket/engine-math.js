@@ -1,3 +1,4 @@
+
 // ============================================================================
 // engine-math.js — the pure money maths for a match.
 // ----------------------------------------------------------------------------
@@ -47,71 +48,71 @@ function applyTrade(player, side, amount, price) {
   const openingSameDirection = positionSide === "flat" || positionSide === side;
 
   if (openingSameDirection) {
-    // ---- Adding to (or opening) a position in the same direction ----
-    // We need enough free money to cover the whole order.
-    if (amount > availableBalance) {
-      return { ok: false, reason: "Not enough balance." };
-    }
+	// ---- Adding to (or opening) a position in the same direction ----
+	// We need enough free money to cover the whole order.
+	if (amount > availableBalance) {
+	  return { ok: false, reason: "Not enough balance." };
+	}
 
-    // Weighted average of the old and new entry prices.
-    if (positionSide === "flat") {
-      avgEntry = price;
-    } else {
-      avgEntry = (notional * avgEntry + amount * price) / (notional + amount);
-    }
+	// Weighted average of the old and new entry prices.
+	if (positionSide === "flat") {
+	  avgEntry = price;
+	} else {
+	  avgEntry = (notional * avgEntry + amount * price) / (notional + amount);
+	}
 
-    availableBalance -= amount;
-    notional += amount;
-    positionSide = side;
+	availableBalance -= amount;
+	notional += amount;
+	positionSide = side;
   } else {
-    // ---- Opposite direction: close the old position, then maybe flip ----
-    const offset = Math.min(amount, notional); // how much of the old position we close
+	// ---- Opposite direction: close the old position, then maybe flip ----
+	const offset = Math.min(amount, notional); // how much of the old position we close
 
-    // Profit/loss on the part we are closing.
-    if (positionSide === "long") {
-      tradePnl = offset * ((price - avgEntry) / avgEntry);
-    } else {
-      // positionSide === "short"
-      tradePnl = offset * ((avgEntry - price) / avgEntry);
-    }
+	// Profit/loss on the part we are closing.
+	if (positionSide === "long") {
+	  tradePnl = offset * ((price - avgEntry) / avgEntry);
+	} else {
+	  // positionSide === "short"
+	  tradePnl = offset * ((avgEntry - price) / avgEntry);
+	}
 
-    const released = offset + tradePnl; // the reserved money comes back, plus the pnl
-    const remaining = amount - offset; // any amount left over opens a new position
+	const released = offset + tradePnl; // the reserved money comes back, plus the pnl
+	const remaining = amount - offset; // any amount left over opens a new position
 
-    // If there is a leftover amount, we must be able to afford opening it.
-    // (The released money is available to help pay for it.)
-    if (remaining > 0 && remaining > availableBalance + released) {
-      return { ok: false, reason: "Not enough balance." };
-    }
+	// If there is a leftover amount, we must be able to afford opening it.
+	// (The released money is available to help pay for it.)
+	if (remaining > 0 && remaining > availableBalance + released) {
+	  return { ok: false, reason: "Not enough balance." };
+	}
 
-    // Apply the close.
-    availableBalance += released;
-    realizedPnl += tradePnl;
-    notional -= offset;
+	// Apply the close.
+	availableBalance += released;
+	realizedPnl += tradePnl;
+	notional -= offset;
 
-    if (notional <= 0) {
-      // Position fully closed.
-      notional = 0;
-      positionSide = "flat";
-      avgEntry = null;
-    }
+	if (notional <= 0) {
+	  // Position fully closed.
+	  notional = 0;
+	  positionSide = "flat";
+	  avgEntry = null;
+	}
 
-    // Apply the flip (open a new position on the order's side with the leftover).
-    if (remaining > 0) {
-      positionSide = side;
-      notional = remaining;
-      avgEntry = price;
-      availableBalance -= remaining;
-    }
+	// Apply the flip (open a new position on the order's side with the leftover).
+	if (remaining > 0) {
+	  positionSide = side;
+	  notional = remaining;
+	  avgEntry = price;
+	  availableBalance -= remaining;
+	}
   }
 
   // Tidy the numbers and hand back the new state.
   const next = {
-    availableBalance: round2(availableBalance),
-    realizedPnl: round2(realizedPnl),
-    side: positionSide,
-    notional: round2(notional),
-    avgEntry: avgEntry, // keep full precision on the entry price
+	availableBalance: round2(availableBalance),
+	realizedPnl: round2(realizedPnl),
+	side: positionSide,
+	notional: round2(notional),
+	avgEntry: avgEntry, // keep full precision on the entry price
   };
 
   return { ok: true, next, tradePnl: round2(tradePnl) };
@@ -123,14 +124,14 @@ function settlePlayer(player, finalPrice) {
   let availableBalance = player.availableBalance;
 
   if (player.side !== "flat" && player.notional > 0) {
-    let pnl;
-    if (player.side === "long") {
-      pnl = player.notional * ((finalPrice - player.avgEntry) / player.avgEntry);
-    } else {
-      pnl = player.notional * ((player.avgEntry - finalPrice) / player.avgEntry);
-    }
-    availableBalance += player.notional + pnl; // give back the reserved money + pnl
-    player.realizedPnl = round2(player.realizedPnl + pnl);
+	let pnl;
+	if (player.side === "long") {
+	  pnl = player.notional * ((finalPrice - player.avgEntry) / player.avgEntry);
+	} else {
+	  pnl = player.notional * ((player.avgEntry - finalPrice) / player.avgEntry);
+	}
+	availableBalance += player.notional + pnl; // give back the reserved money + pnl
+	player.realizedPnl = round2(player.realizedPnl + pnl);
   }
 
   // The position is now closed.
@@ -147,14 +148,14 @@ function settlePlayer(player, finalPrice) {
 // Returns 0 when the player has no position.
 function unrealisedPnl(player, price) {
   if (player.side === "flat" || player.notional <= 0 || player.avgEntry === null) {
-    return 0;
+	return 0;
   }
 
   // How far the price moved in the player's favour, as a fraction.
   const move =
-    player.side === "long"
-      ? (price - player.avgEntry) / player.avgEntry
-      : (player.avgEntry - price) / player.avgEntry;
+	player.side === "long"
+	  ? (price - player.avgEntry) / player.avgEntry
+	  : (player.avgEntry - price) / player.avgEntry;
 
   return round2(player.notional * move);
 }
