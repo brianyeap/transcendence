@@ -19,8 +19,8 @@ export function fmtSigned(value: number) {
   return `${sign}${fmtPrice(Math.abs(value))}`;
 } // -12.4 to "-$12.40", 12.4 to "+$12.40"
 
-export function timeAgo(minutes: number) {
-  if (minutes < 1) return "just now";
-  const date = new Date(Date.now() - minutes * 60 * 1000);
-  return formatDistanceToNow(date, { addSuffix: true });
-}
+// export function timeAgo(minutes: number) {
+//   if (minutes < 1) return "just now";
+//   const date = new Date(Date.now() - minutes * 60 * 1000);
+//   return formatDistanceToNow(date, { addSuffix: true });
+// }

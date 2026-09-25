@@ -2,8 +2,8 @@ import type { Room } from "./types";
 import { Avatar } from "./avatar";
 import { Button } from "./button";
 import { Icon } from "./duel-icon";
-import { fmtClock, fmtUSD, timeAgo } from "./format";
-import { useTranslations } from "next-intl";
+import { fmtClock, fmtUSD } from "./format";
+import { useTranslations, useFormatter } from "next-intl";
 
 export function RoomCard({
   room,
@@ -22,6 +22,7 @@ export function RoomCard({
 }) {
   const isOwner = room.ownedByCurrentUser;
   const t = useTranslations("RoomCard");
+  const format = useFormatter();
 
   return (
     <div
@@ -34,7 +35,11 @@ export function RoomCard({
         <div className="min-w-0">
           <h3 className="truncate font-semibold">{room.name}</h3>
           <p className="text-xs text-muted">
-            {t("by")} {isOwner ? t("you") : room.creator} · {timeAgo(room.ageMin)}
+            {t("by")} {isOwner ? t("you") : room.creator} ·{" "}
+            {format.relativeTime(
+              new Date(Date.now() - room.ageMin * 60_000),
+              { now: new Date() }
+            )}
           </p>
         </div>
       </div>
