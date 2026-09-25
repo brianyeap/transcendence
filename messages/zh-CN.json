@@ -119,26 +119,47 @@
     "achievementsLabel": "成就",
     "unlocked": "已解锁",
     "winsProgress": "{wins}/{requirement} 场胜场",
+    "unknownUser": "未知",
+    "performanceStats": "战绩统计",
+    "winRateSuffix": "% 胜率",
+    "traderTier": "{tier}交易员",
+    "winsLeft": "{count, plural, =1 {还差 # 场胜利} other {还差 # 场胜利}}",
+    "tiers": {
+      "novice": "新手",
+      "bronze": "青铜",
+      "silver": "白银",
+      "special": "特别",
+      "crypto": "加密",
+      "legendary": "传奇"
+    },
     "achievements": {
       "create_an_account": {
         "name": "准备就绪",
         "description": "注册账户"
       },
+      "first_1_win": {
+        "name": "首场胜利",
+        "description": "赢得你的第一场对决！"
+      },
       "first_5_wins": {
         "name": "交易新手",
-        "description": "赢得 5 场对决"
+        "description": "在对决中赢得 5 场比赛！"
       },
       "first_10_wins": {
         "name": "市场竞争者",
-        "description": "赢得 10 场对决"
+        "description": "在对决中赢得 10 场比赛！"
       },
       "first_42_wins": {
-        "name": "42",
-        "description": "终极答案"
+        "name": "42 交易员",
+        "description": "终极答案！"
+      },
+      "first_100_wins": {
+        "name": "市场老将",
+        "description": "在对决中赢得 100 场比赛！"
       },
       "first_500_wins": {
-        "name": "市场老将",
-        "description": "赢得 500 场对决"
+        "name": "交易冠军",
+        "description": "在对决中赢得 500 场比赛！"
       },
       "first_1000_wins": {
         "name": "交易冠军",
