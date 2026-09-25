@@ -231,7 +231,8 @@
     "daysAgo": "{count}h yang lalu",
     "weeksAgo": "{count}mg yang lalu",
     "monthsAgo": "{count}bln yang lalu",
-    "yearsAgo": "{count}thn yang lalu"
+    "yearsAgo": "{count}thn yang lalu",
+	"loadingHistory": "Memuatkan log sejarah..."
   },
   "HistoryDetail": {
     "backToHistory": "Kembali ke Sejarah",
@@ -595,5 +596,27 @@
     "tryAgain": "Cuba lagi",
     "backToGames": "Kembali ke permainan",
     "matchUnavailableDetail": "Perlawanan ini mungkin tidak wujud, anda mungkin bukan salah seorang pemainnya, atau sambungan ke pelayan perlawanan mungkin terputus."
+  },
+  "Friends": {
+    "title": "Rakan",
+    "description": "Tambah pemain dari skrin keputusan perlawanan. Status dikemas kini setiap 5 saat.",
+    "loading": "Memuatkan rakan...",
+    "friendRequests": "Permintaan rakan",
+    "accept": "Terima",
+    "decline": "Tolak",
+    "noFriends": "Belum ada rakan. Tamatkan perlawanan dan tambah lawan anda.",
+    "sentRequests": "Permintaan dihantar",
+    "cancel": "Batal",
+    "removeConfirmation": "Buang {username} daripada senarai rakan anda?",
+    "onlineNow": "Dalam talian sekarang",
+    "neverSeenOnline": "Belum pernah dilihat dalam talian",
+    "lastOnline": "Kali terakhir dalam talian {time}",
+    "online": "Dalam talian",
+    "offline": "Luar talian",
+    "remove": "Buang",
+    "secondsAgo": "{seconds}s yang lalu",
+    "minutesAgo": "{minutes}m yang lalu",
+    "hoursAgo": "{hours}j yang lalu",
+    "daysAgo": "{days}h yang lalu"
   }
 }
