@@ -119,26 +119,47 @@
     "achievementsLabel": "Pencapaian",
     "unlocked": "Dibuka",
     "winsProgress": "{wins}/{requirement} kemenangan",
+    "unknownUser": "Tidak Diketahui",
+    "performanceStats": "Statistik Prestasi",
+    "winRateSuffix": "% Kadar Kemenangan",
+    "traderTier": "Pedagang {tier}",
+    "winsLeft": "{count, plural, =1 {# Kemenangan Lagi} other {# Kemenangan Lagi}}",
+    "tiers": {
+      "novice": "Novis",
+      "bronze": "Gangsa",
+      "silver": "Perak",
+      "special": "Istimewa",
+      "crypto": "Kripto",
+      "legendary": "Legenda"
+    },
     "achievements": {
       "create_an_account": {
         "name": "Bersedia & Cukup Dana",
         "description": "Daftar akaun"
       },
+      "first_1_win": {
+        "name": "Kemenangan Pertama",
+        "description": "Menang perlawanan Duel pertama anda !"
+      },
       "first_5_wins": {
         "name": "Pedagang Baru",
-        "description": "Menang 5 perlawanan"
+        "description": "Menang 5 perlawanan di Duel !"
       },
       "first_10_wins": {
         "name": "Pesaing Pasaran",
-        "description": "Menang 10 perlawanan"
+        "description": "Menang 10 perlawanan di Duel !"
       },
       "first_42_wins": {
-        "name": "42",
-        "description": "Jawapan untuk segala-galanya"
+        "name": "42 Pedagang",
+        "description": "Jawapan untuk segala-galanya !"
+      },
+      "first_100_wins": {
+        "name": "Pedagang Veteran",
+        "description": "Menang 100 perlawanan di Duel !"
       },
       "first_500_wins": {
-        "name": "Pedagang Veteran",
-        "description": "Menang 500 perlawanan"
+        "name": "Juara Perdagangan",
+        "description": "Menang 500 perlawanan di Duel !"
       },
       "first_1000_wins": {
         "name": "Juara Perdagangan",

@@ -19,12 +19,14 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Avatar } from "../components/duel/avatar";
 // Importing for the use of the Avatar.
+import { getTranslations } from "next-intl/server";
+// Server-side translations for next-intl, so every label on this page is locale-aware.
 
-function getRiskRating(wins: number, losses: number): string
+function getRiskRating(wins: number, losses: number): "pro" | "amateur" | "beginner"
 {
-	if (wins > losses) return "Pro";
-	if (wins === losses) return "Amateur";
-	return "Beginner";
+	if (wins > losses) return "pro";
+	if (wins === losses) return "amateur";
+	return "beginner";
 }
 
 function fireIcon({unlocked}: {unlocked: boolean})
@@ -461,6 +463,8 @@ export default async function ProfilePage()
 		redirect("/login");
 	}
 
+	const t = await getTranslations("profile");
+
 	// Fetch user's profile data from DB
 	const { data: profile } = await supabase
 		.from("profiles")
@@ -468,7 +472,7 @@ export default async function ProfilePage()
 		.eq("id", user.id)
 		.single();
 
-	const username = profile?.username ?? "Unknown";
+	const username = profile?.username ?? t("unknownUser");
 	const avatarUrl = profile?.avatar_url ?? null;
 
 	const{ data: matches, error } = await supabase
@@ -563,35 +567,35 @@ export default async function ProfilePage()
 						</span>
 
 						<span className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${
-							riskRating === "Pro"
+							riskRating === "pro"
 							? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-							: riskRating === "Amateur"
+							: riskRating === "amateur"
 							? "border-amber-500/30 bg-amber-500/10 text-amber-400"
 							: "border-slate-500/30 bg-slate-500/10 text-slate-400"
 						}`}>
-							{riskRating} Trader
+							{t("traderTier", { tier: t(riskRating) })}
 						</span>
 					</div>
 
 					{/* PERFORMANCE STATS GRID & WIN/LOSS/DRAW BAR */}
 					<div className="w-full mt-10 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
 						<div className="flex justify-between items-center mb-4">
-							<h2 className="text-xl font-semibold text-gray-200">Performance Stats</h2>
-							<span className="text-sm font-mono text-indigo-400">{winRate}% Win Rate</span>
+							<h2 className="text-xl font-semibold text-gray-200">{t("performanceStats")}</h2>
+							<span className="text-sm font-mono text-indigo-400">{winRate}{t("winRateSuffix")}</span>
 						</div>
 
 						{/* STAT CARDS */}
 						<div className="grid grid-cols-3 gap-4 mb-6">
 							<div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-center">
-								<p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Wins</p>
+								<p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">{t("wins")}</p>
 								<p className="text-2xl font-bold text-emerald-300 mt-1">{wins}</p>
 							</div>
 							<div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
-								<p className="text-xs text-amber-400 uppercase tracking-wider font-semibold">Draws</p>
+								<p className="text-xs text-amber-400 uppercase tracking-wider font-semibold">{t("draws")}</p>
 								<p className="text-2xl font-bold text-amber-300 mt-1">{draws}</p>
 							</div>
 							<div className="p-4 rounded-lg bg-rose-500/5 border border-rose-500/20 text-center">
-								<p className="text-xs text-rose-400 uppercase tracking-wider font-semibold">Losses</p>
+								<p className="text-xs text-rose-400 uppercase tracking-wider font-semibold">{t("losses")}</p>
 								<p className="text-2xl font-bold text-rose-300 mt-1">{losses}</p>
 							</div>
 						</div>
@@ -599,9 +603,9 @@ export default async function ProfilePage()
 						<div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden flex">
 							{totalMatches > 0 ? (
 								<>
-									<div style={{width: `${(wins / totalMatches) * 100}%` }} className="bg-emerald-500 h-full" title={`Wins: ${wins}`} />
-									<div style={{ width: `${(draws / totalMatches) * 100}%` }} className="bg-amber-500 h-full" title={`Draws: ${draws}`} />
-									<div style={{ width: `${(losses / totalMatches) * 100}%` }} className="bg-rose-500 h-full" title={`Losses: ${losses}`} />
+									<div style={{width: `${(wins / totalMatches) * 100}%` }} className="bg-emerald-500 h-full" title={`${t("wins")}: ${wins}`} />
+									<div style={{ width: `${(draws / totalMatches) * 100}%` }} className="bg-amber-500 h-full" title={`${t("draws")}: ${draws}`} />
+									<div style={{ width: `${(losses / totalMatches) * 100}%` }} className="bg-rose-500 h-full" title={`${t("losses")}: ${losses}`} />
 								</>
 							) : (
 								<div className="w-full h-full bg-gray-700/50" />
@@ -611,7 +615,7 @@ export default async function ProfilePage()
 
 					<div className="w-full mt-8 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
 						<div className="flex justify-between items-center mb-6">
-							<h2 className="text-lg font-semibold text-gray-200">Achievements</h2>
+							<h2 className="text-lg font-semibold text-gray-200">{t("achievementsLabel")}</h2>
 						</div>
 
 						{/* Stack of Achivement box placeholder */}
@@ -646,17 +650,17 @@ export default async function ProfilePage()
 								<div className="text-left">
 									<div className="flex items-center gap-2">
 										<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-											First Victory
+											{t("achievements.first_1_win.name")}
 										</h3>
 										<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 											wins >= 1
 												? "bg-orange-500/30 text-orange-400 bg-orange-500/10"
 												:"border-gray-700 text-gray-500 bg-gray-800/20"
 										}`}>
-											Novice
+											{t("tiers.novice")}
 										</span>
 									</div>
-									<p className="text-xs text-gray-400 mt-0.5"> Win your first Duel match !</p>
+									<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_1_win.description")}</p>
 								</div>
 							</div>
 
@@ -664,11 +668,11 @@ export default async function ProfilePage()
 							<div className="shrink-0 text-right">
 								{wins >= 1 ? (
 									<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-md">
-										Unlocked
+										{t("unlocked")}
 									</span>
 								) : (
 									<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-										1 Win Left.
+										{t("winsLeft", { count: 1 - wins })}
 									</span>
 								)}
 							</div>
@@ -695,28 +699,28 @@ export default async function ProfilePage()
 									<div className="text-left">
 										<div className="flex items-center gap-2">
 											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 5 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												Greenhorn Trader
+												{t("achievements.first_5_wins.name")}
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 												wins >= 5
 													? "border-amber-600/30 text-amber-500 bg-amber-600/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
-												Bronze
+												{t("tiers.bronze")}
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">Win 5 matches on Duel !</p>
+										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_5_wins.description")}</p>
 									</div>
 								</div>
 								{/* UNLOCKED / LOCKED BADGE */}
 								<div className="shrink-0 text-right">
 									{wins >= 5 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 bg-amber-600/10 border border-amber-600/20 px-2.5 py-1 rounded-md">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{5 - wins} Wins Left
+											{t("winsLeft", { count: 5 - wins })}
 										</span>
 									)}
 								</div>
@@ -743,17 +747,17 @@ export default async function ProfilePage()
 									<div className="text-left">
 										<div className="flex items-center gap-2">
 											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 10 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												Market Competitor
+												{t("achievements.first_10_wins.name")}
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 												wins >= 10
 													? "border-slate-500/30 text-slate-300 bg-slate-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
-												Silver
+												{t("tiers.silver")}
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">Win 10 matches on Duel !</p>
+										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_10_wins.description")}</p>
 									</div>
 								</div>
 
@@ -761,11 +765,11 @@ export default async function ProfilePage()
 								<div className="shrink-0 text-right">
 									{wins >= 10 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 rounded-md">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{10 - wins} Wins Left
+											{t("winsLeft", { count: 10 - wins })}
 										</span>
 									)}
 								</div>
@@ -792,17 +796,17 @@ export default async function ProfilePage()
 									<div className="text-left">
 										<div className="flex items-center gap-2">
 											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 42 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												42 Trader
+												{t("achievements.first_42_wins.name")}
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 												wins >= 42
 													? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
-												Special
+												{t("tiers.special")}
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">The answer to everything !</p>
+										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_42_wins.description")}</p>
 									</div>
 								</div>
 
@@ -810,11 +814,11 @@ export default async function ProfilePage()
 								<div className="shrink-0 text-right">
 									{wins >= 42 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{42 - wins} Wins Left
+											{t("winsLeft", { count: 42 - wins })}
 										</span>
 									)}
 								</div>
@@ -840,17 +844,17 @@ export default async function ProfilePage()
 									<div className="text-left">
 										<div className="flex items-center gap-2">
 											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 100 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												Market Veteran
+												{t("achievements.first_100_wins.name")}
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 												wins >= 100
 													? "border-amber-500/30 text-amber-400 bg-amber-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
-												Crypto
+												{t("tiers.crypto")}
 											</span>
 										</div>
-										<p className="text-xs text-gray-400 mt-0.5">Win 100 matches on Duel !</p>
+										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_100_wins.description")}</p>
 									</div>
 								</div>
 
@@ -858,11 +862,11 @@ export default async function ProfilePage()
 								<div className="shrink-0 text-right">
 									{wins >= 100 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{100 - wins} Wins Left
+											{t("winsLeft", { count: 100 - wins })}
 										</span>
 									)}
 								</div>
@@ -888,33 +892,32 @@ export default async function ProfilePage()
 									<div className="text-left">
 										<div className="flex items-center gap-2">
 											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												Trading Champion
+												{t("achievements.first_500_wins.name")}
 											</h3>
 											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
 												wins >= 500
 													? "border-yellow-500/30 text-yellow-400 bg-yellow-500/10"
 													: "border-gray-700 text-gray-500 bg-gray-800/20"
 											}`}>
-												Legendary
+												{t("tiers.legendary")}
 											</span>
 										</div>
 										<p className="text-xs text-gray-400 mt-0.5">
-											{wins >= 500
-												? "Win 500 matches on Duel !"
-												: `Win 500 matches on Duel ! (${Math.min(wins, 500)} / 500)`}
+											{t("achievements.first_500_wins.description")}
+											{wins >= 500 ? "" : ` (${Math.min(wins, 500)} / 500)`}
 										</p>
 									</div>
 								</div>
-											
+
 								{/* UNLOCKED / LOCKED STATUS BADGE */}
 								<div className="shrink-0 text-right">
 									{wins >= 500 ? (
 										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2.5 py-1 rounded-md">
-											Unlocked
+											{t("unlocked")}
 										</span>
 									) : (
 										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{500 - wins} Wins Left
+											{t("winsLeft", { count: 500 - wins })}
 										</span>
 									)}
 								</div>

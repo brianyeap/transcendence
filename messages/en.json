@@ -119,26 +119,47 @@
     "achievementsLabel": "Achievements",
     "unlocked": "Unlocked",
     "winsProgress": "{wins}/{requirement} wins",
+    "unknownUser": "Unknown",
+    "performanceStats": "Performance Stats",
+    "winRateSuffix": "% Win Rate",
+    "traderTier": "{tier} Trader",
+    "winsLeft": "{count, plural, =1 {# Win Left} other {# Wins Left}}",
+    "tiers": {
+      "novice": "Novice",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "special": "Special",
+      "crypto": "Crypto",
+      "legendary": "Legendary"
+    },
     "achievements": {
       "create_an_account": {
         "name": "Funded & Ready",
         "description": "Register an account"
       },
+      "first_1_win": {
+        "name": "First Victory",
+        "description": "Win your first Duel match !"
+      },
       "first_5_wins": {
         "name": "Greenhorn Trader",
-        "description": "Win 5 matches"
+        "description": "Win 5 matches on Duel !"
       },
       "first_10_wins": {
         "name": "Market Competitor",
-        "description": "Win 10 matches"
+        "description": "Win 10 matches on Duel !"
       },
       "first_42_wins": {
-        "name": "42",
-        "description": "The answer to everything"
+        "name": "42 Trader",
+        "description": "The answer to everything !"
+      },
+      "first_100_wins": {
+        "name": "Market Veteran",
+        "description": "Win 100 matches on Duel !"
       },
       "first_500_wins": {
-        "name": "Market Veteran",
-        "description": "Win 500 matches"
+        "name": "Trading Champion",
+        "description": "Win 500 matches on Duel !"
       },
       "first_1000_wins": {
         "name": "Trading Champion",
