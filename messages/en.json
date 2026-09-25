@@ -43,7 +43,6 @@
     "roomName": "Room Name",
     "roomNamePlaceholder": "eg: Chicken Rice",
     "matchLength": "Match Length",
-    "fixed": "Fixed",
     "startingCapital": "Starting Capital",
     "cancel": "Cancel",
     "create": "Create",
@@ -315,7 +314,7 @@
       "matchLength": "Match length",
       "winsBy": "Wins by",
       "startingCapitalValue": "5K - 20K",
-      "matchLengthValue": "1 min",
+      "matchLengthValue": "30s – 1.5 min",
       "winsByValue": "Higher capital"
     },
 

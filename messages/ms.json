@@ -43,7 +43,6 @@
     "roomName": "Nama Bilik",
     "roomNamePlaceholder": "cth: Nasi Lemak",
     "matchLength": "Tempoh Perlawanan",
-    "fixed": "Tetap",
     "startingCapital": "Modal Permulaan",
     "cancel": "Batal",
     "create": "Cipta",
@@ -315,7 +314,7 @@
       "matchLength": "Tempoh perlawanan",
       "winsBy": "Kemenangan berdasarkan",
       "startingCapitalValue": "5K - 20K",
-      "matchLengthValue": "1 min",
+      "matchLengthValue": "30s – 1.5 min",
       "winsByValue": "Modal lebih tinggi"
     },
 
