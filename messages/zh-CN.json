@@ -231,7 +231,8 @@
     "daysAgo": "{count} 天前",
     "weeksAgo": "{count} 周前",
     "monthsAgo": "{count} 个月前",
-    "yearsAgo": "{count} 年前"
+    "yearsAgo": "{count} 年前",
+	"loadingHistory": "正在加载历史记录..."
   },
   "HistoryDetail": {
     "backToHistory": "返回对决历史",
@@ -595,5 +596,27 @@
     "tryAgain": "重试",
     "backToGames": "返回游戏",
     "matchUnavailableDetail": "比赛可能不存在，您可能不是该比赛的玩家，或者与比赛服务器的连接可能已断开。"
+  },
+  "Friends": {
+    "title": "好友",
+    "description": "从比赛结果页面添加玩家。状态每 5 秒更新一次。",
+    "loading": "正在加载好友...",
+    "friendRequests": "好友请求",
+    "accept": "接受",
+    "decline": "拒绝",
+    "noFriends": "还没有好友。完成一场比赛并添加您的对手。",
+    "sentRequests": "已发送的请求",
+    "cancel": "取消",
+    "removeConfirmation": "要将 {username} 从您的好友列表中移除吗？",
+    "onlineNow": "在线",
+    "neverSeenOnline": "从未在线",
+    "lastOnline": "上次在线于 {time}",
+    "online": "在线",
+    "offline": "离线",
+    "remove": "移除",
+    "secondsAgo": "{seconds}秒前",
+    "minutesAgo": "{minutes}分钟前",
+    "hoursAgo": "{hours}小时前",
+    "daysAgo": "{days}天前"
   }
 }

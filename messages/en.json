@@ -231,7 +231,8 @@
     "daysAgo": "{count}d ago",
     "weeksAgo": "{count}w ago",
     "monthsAgo": "{count}mo ago",
-    "yearsAgo": "{count}y ago"
+    "yearsAgo": "{count}y ago",
+	"loadingHistory": "Loading history logs..."
   },
   "HistoryDetail": {
     "backToHistory": "Back to History",
@@ -595,5 +596,27 @@
     "tryAgain": "Try again",
     "backToGames": "Back to games",
     "matchUnavailableDetail": "It may not exist, you may not be one of its players, or the connection to the match server may be down."
+  },
+  "Friends": {
+    "title": "Friends",
+    "description": "Add players from the match result screen. Status updates every 5 seconds.",
+    "loading": "Loading friends...",
+    "friendRequests": "Friend requests",
+    "accept": "Accept",
+    "decline": "Decline",
+    "noFriends": "No friends yet. Finish a match and add your opponent.",
+    "sentRequests": "Sent requests",
+    "cancel": "Cancel",
+    "removeConfirmation": "Remove {username} from your friends?",
+    "onlineNow": "Online now",
+    "neverSeenOnline": "Never seen online",
+    "lastOnline": "Last online {time}",
+    "online": "Online",
+    "offline": "Offline",
+    "remove": "Remove",
+    "secondsAgo": "{seconds}s ago",
+    "minutesAgo": "{minutes}m ago",
+    "hoursAgo": "{hours}h ago",
+    "daysAgo": "{days}d ago"
   }
 }

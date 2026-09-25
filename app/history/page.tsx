@@ -369,7 +369,7 @@ export default function HistoryPage() {
 		{ key: "LOSS", label: t("filterLosses"), count: stats.losses }, { key: "DRAW", label: t("filterDraws"), count: stats.draws },
 	];
 
-	if (loading) return (<SideNav><div className="flex min-h-screen bg-[#090b11]"><div className="flex-1 flex items-center justify-center p-8 text-white font-medium tracking-wide"><div className="animate-pulse">Loading history logs...</div></div></div></SideNav>);
+	if (loading) return (<SideNav><div className="flex min-h-screen bg-[#090b11]"><div className="flex-1 flex items-center justify-center p-8 text-white font-medium tracking-wide"><div className="animate-pulse">{t("loadingHistory")}</div></div></div></SideNav>);
 
 	return (
 		<SideNav>
