@@ -387,5 +387,178 @@
       "detail": "加入一个开放的房间，或者创建您自己的房间。",
       "button": "寻找比赛"
     }
+  },
+  "WaitingRoom": {
+    "open": "开放",
+    "title": "等待对手",
+    "description": "当有人加入空缺的位置后，比赛将立即开始。您无需刷新页面。",
+    "market": "市场",
+    "startingCapital": "初始资金",
+    "eachPlayer": "每位玩家",
+    "backToGames": "返回游戏",
+    "awayMessage": "您离开期间，比赛仍会保持开放。您可以随时从大厅返回。"
+  },
+  "PlayerSlot": {
+    "waitingForPlayer": "等待玩家",
+    "openSeat": "空缺位置",
+    "you": "您",
+    "ready": "准备就绪",
+    "vs": "对战"
+  },
+  "CountdownScreen": {
+    "bothPlayersIn": "两名玩家已加入",
+    "opensIn": "{symbol} 将在",
+    "starting": "即将开始…",
+    "getReady": "准备好。比赛开始后，价格图表和交易控制将立即显示。",
+    "opponent": "对手"
+  },
+  "MatchChart": {
+    "matchStart": "比赛开始",
+    "long": "Long",
+    "short": "Short",
+    "longEntry": "Long 入场",
+    "shortEntry": "Short 入场",
+    "waitingForMarketData": "等待市场数据…",
+    "preMatch": "赛前",
+    "match": "比赛"
+  },
+  "ConnectionBanner": {
+    "reconnecting": "正在重新连接…",
+    "connectionLost": "连接已断开",
+    "restoringConnection": "正在恢复您的图表、资金和仓位。",
+    "ordersPaused": "在数据流恢复之前，交易控制已暂停。",
+    "retrying": "正在重试…",
+    "retryIn": "{seconds}秒后重试",
+    "retryNow": "立即重试"
+  },
+  "MatchHeader": {
+    "match": "比赛",
+    "vs": "对战",
+    "waiting": "等待中",
+    "rising": "上涨",
+    "falling": "下跌",
+    "unchanged": "未变化",
+    "priceDirection": "价格{direction}",
+    "timeLeft": "剩余时间",
+    "closing": "即将结束",
+    "yourCapital": "您的资金",
+    "opponent": "对手",
+    "connecting": "正在连接…",
+    "level": "持平",
+    "aheadBy": "领先",
+    "behindBy": "落后"
+  },
+  "OrderPanel": {
+    "placeTrade": "下单",
+    "available": "可用资金",
+    "amount": "金额",
+    "long": "Long",
+    "short": "Short",
+    "exposure": "仓位",
+    "entry": "入场",
+    "exposureDetail": "{amount} 的 {opposite} 将完全抵消当前仓位。较小的订单会减少仓位；较大的订单会反转仓位方向。",
+    "placing": "正在下单…",
+    "priceRises": "价格上涨",
+    "priceFalls": "价格下跌",
+    "waitingForServer": "正在等待服务器执行您的交易…",
+    "tradeRejected": "交易被拒绝 — {reason}",
+    "filledAt": "成交价 @",
+    "filledAtServerPrice": "订单按照服务器价格成交，该价格通常与您点击时显示的价格不同。",
+    "exposureFlat": "当前仓位已清空。",
+    "exposureNow": "当前仓位为 {side}",
+    "offsetRealised": "抵消后已实现",
+    "connecting": "正在连接比赛…",
+    "tradingUnavailable": "交易暂时不可用。",
+    "nothingMoves": "在服务器确认您的交易之前，不会执行任何操作。",
+    "enterAmount": "请输入金额。",
+    "amountGreaterThanZero": "金额必须大于零。",
+    "amountExceedsLimit": "超过可交易金额 — 最大为 {amount}。"
+  },
+  "PositionPanel": {
+    "exposure": "仓位",
+    "mark": "当前价格 {price}",
+    "loadingPosition": "正在加载您的仓位…",
+    "noExposure": "当前没有持仓",
+    "takePosition": "判断价格上涨或下跌并下单以建立仓位。",
+    "long": "Long",
+    "short": "Short",
+    "entryPrice": "入场价格",
+    "reservedBalance": "已保留资金",
+    "unrealisedPnl": "未实现盈亏",
+    "levelAtMark": "按当前价格计算持平。",
+    "profitAtMark": "按当前价格平仓可获得利润。",
+    "lossAtMark": "按当前价格平仓会产生亏损。",
+    "realisedPnl": "已实现盈亏"
+  },
+  "RecentTrades": {
+    "recentTrades": "最近交易",
+    "noTradesYet": "暂无交易",
+    "fillsAppearHere": "您的成交记录将显示在这里和图表上。",
+    "long": "Long",
+    "short": "Short",
+    "now": "刚刚",
+    "seconds": "{value}秒",
+    "minutes": "{value}分钟",
+    "hours": "{value}小时"
+  },
+  "MatchResultCard": {
+    "you": "您",
+    "winner": "获胜者",
+    "drew": "平局",
+    "viewMatchSummary": "查看比赛摘要",
+    "backToGames": "返回游戏",
+    "finalCapital": "最终资金",
+    "net": "净变化",
+    "settlementPrice": "结算价格",
+    "startingCapital": "初始资金",
+    "eachPlayer": "每位玩家",
+    "settlementDetail": "时间结束时仍持有的仓位将自动平仓。",
+    "outcome": {
+      "win": {
+        "badge": "您获胜了",
+        "heading": "胜利",
+        "detail": "{opponent}的最终资金低于您。",
+        "footnote": "比赛已结束，无法进行更多交易。"
+      },
+      "loss": {
+        "badge": "您输了",
+        "heading": "失败",
+        "detail": "{opponent}的最终资金高于您。",
+        "footnote": "比赛已结束，无法进行更多交易。"
+      },
+      "draw": {
+        "badge": "无人获胜",
+        "heading": "平局",
+        "detail": "您和{opponent}的最终资金完全相同。",
+        "footnote": "比赛已结束，无法进行更多交易。"
+      }
+    }
+  },
+  "MatchResult": {
+    "finalResult": "最终结果",
+    "loadingFinalResult": "正在加载最终结果…",
+    "matchFinished": "比赛已结束",
+    "viewMatchSummary": "查看比赛摘要",
+    "backToGames": "返回游戏",
+    "figuresUnavailable": "此页面无法显示最终数据。比赛摘要中包含完整记录。"
+  },
+  "AddFriendButton": {
+    "friendAdded": "{opponent} 已在您的好友列表中",
+    "adding": "正在添加...",
+    "addFriend": "添加 {opponent} 为好友"
+  },
+  "LeaveMatch": {
+    "leave": "退出",
+    "leaveMatch": "要退出这场比赛吗？",
+    "leaveDetail": "即使您退出，比赛仍会继续进行。您当前持有的仓位将保持开放，并在时间结束时按照收盘价格结算——退出不会自动平仓。",
+    "stayInMatch": "留在比赛中",
+    "leaveAnyway": "仍然退出"
+  },
+  "MatchScreen": {
+    "loadingMatch": "正在加载比赛…",
+    "matchCouldNotBeLoaded": "无法加载此比赛",
+    "tryAgain": "重试",
+    "backToGames": "返回游戏",
+    "matchUnavailableDetail": "比赛可能不存在，您可能不是该比赛的玩家，或者与比赛服务器的连接可能已断开。"
   }
 }

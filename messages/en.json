@@ -387,5 +387,178 @@
       "detail": "Jump into an open room, or start your own.",
       "button": "Find a match"
     }
+  },
+  "WaitingRoom": {
+    "open": "Open",
+    "title": "Waiting for an opponent",
+    "description": "The match starts the moment someone takes the open seat. You do not need to refresh.",
+    "market": "Market",
+    "startingCapital": "Starting capital",
+    "eachPlayer": "Each player",
+    "backToGames": "Back to games",
+    "awayMessage": "The match stays open while you are away. Return from the lobby at any time."
+  },
+  "PlayerSlot": {
+    "waitingForPlayer": "Waiting for a player",
+    "openSeat": "Open seat",
+    "you": "You",
+    "ready": "Ready",
+    "vs": "vs"
+  },
+  "CountdownScreen": {
+    "bothPlayersIn": "Both players in",
+    "opensIn": "{symbol} opens in",
+    "starting": "Starting…",
+    "getReady": "Get ready. The chart and your controls appear the moment it starts.",
+    "opponent": "Opponent"
+  },
+  "MatchChart": {
+    "matchStart": "Match start",
+    "long": "Long",
+    "short": "Short",
+    "longEntry": "Long entry",
+    "shortEntry": "Short entry",
+    "waitingForMarketData": "Waiting for market data…",
+    "preMatch": "Pre-match",
+    "match": "Match"
+  },
+  "ConnectionBanner": {
+    "reconnecting": "Reconnecting…",
+    "connectionLost": "Connection lost",
+    "restoringConnection": "Restoring your chart, balances and exposure.",
+    "ordersPaused": "Order controls are paused until the stream resumes.",
+    "retrying": "retrying…",
+    "retryIn": "retry in {seconds}s",
+    "retryNow": "Retry now"
+  },
+  "MatchHeader": {
+    "match": "Match",
+    "vs": "vs",
+    "waiting": "waiting",
+    "rising": "rising",
+    "falling": "falling",
+    "unchanged": "unchanged",
+    "priceDirection": "Price {direction}",
+    "timeLeft": "Time left",
+    "closing": "Closing",
+    "yourCapital": "Your capital",
+    "opponent": "Opponent",
+    "connecting": "Connecting…",
+    "level": "Level",
+    "aheadBy": "Ahead by",
+    "behindBy": "Behind by"
+  },
+  "OrderPanel": {
+    "placeTrade": "Place a Trade",
+    "available": "Available",
+    "amount": "Amount",
+    "long": "Long",
+    "short": "Short",
+    "exposure": "Exposure",
+    "entry": "entry",
+    "exposureDetail": "A {opposite} of {amount} offsets it entirely. A smaller one reduces it; a larger one flips the side.",
+    "placing": "Placing…",
+    "priceRises": "Price rises",
+    "priceFalls": "Price falls",
+    "waitingForServer": "Waiting for the server to fill this Trade…",
+    "tradeRejected": "Trade rejected — {reason}",
+    "filledAt": "filled @",
+    "filledAtServerPrice": "Filled at the server's price, which is often not the price shown when you clicked.",
+    "exposureFlat": "Exposure is now flat.",
+    "exposureNow": "Exposure is now {side}",
+    "offsetRealised": "Offset realised",
+    "connecting": "Connecting to the match…",
+    "tradingUnavailable": "Trading is unavailable right now.",
+    "nothingMoves": "Nothing moves until the server confirms your Trade.",
+    "enterAmount": "Enter an amount.",
+    "amountGreaterThanZero": "Amount must be greater than zero.",
+    "amountExceedsLimit": "More than you can trade — at most {amount}."
+  },
+  "PositionPanel": {
+    "exposure": "Exposure",
+    "mark": "Mark {price}",
+    "loadingPosition": "Loading your position…",
+    "noExposure": "No exposure held",
+    "takePosition": "Bet on a rise or a fall to take a position.",
+    "long": "Long",
+    "short": "Short",
+    "entryPrice": "Entry price",
+    "reservedBalance": "Reserved balance",
+    "unrealisedPnl": "Unrealised PnL",
+    "levelAtMark": "Level at the current mark.",
+    "profitAtMark": "Profit if offset at the current mark.",
+    "lossAtMark": "Loss if offset at the current mark.",
+    "realisedPnl": "Realised PnL"
+  },
+  "RecentTrades": {
+    "recentTrades": "Recent trades",
+    "noTradesYet": "No trades yet",
+    "fillsAppearHere": "Your fills will appear here and on the chart.",
+    "long": "Long",
+    "short": "Short",
+    "now": "now",
+    "seconds": "{value}s",
+    "minutes": "{value}m",
+    "hours": "{value}h"
+  },
+  "MatchResultCard": {
+    "you": "You",
+    "winner": "Winner",
+    "drew": "Drew",
+    "viewMatchSummary": "View match summary",
+    "backToGames": "Back to games",
+    "finalCapital": "Final capital",
+    "net": "Net",
+    "settlementPrice": "Settlement price",
+    "startingCapital": "Starting capital",
+    "eachPlayer": "Each player",
+    "settlementDetail": "Any exposure still held when time ran out was offset automatically.",
+    "outcome": {
+      "win": {
+        "badge": "You won",
+        "heading": "Victory",
+        "detail": "{opponent} finished with less capital than you.",
+        "footnote": "The match is over. No further trades can be placed."
+      },
+      "loss": {
+        "badge": "You lost",
+        "heading": "Defeat",
+        "detail": "{opponent} finished with more capital than you.",
+        "footnote": "The match is over. No further trades can be placed."
+      },
+      "draw": {
+        "badge": "Nobody won",
+        "heading": "Draw",
+        "detail": "You and {opponent} finished on exactly the same capital.",
+        "footnote": "The match is over. No further trades can be placed."
+      }
+    }
+  },
+  "MatchResult": {
+    "finalResult": "Final result",
+    "loadingFinalResult": "Loading the final result…",
+    "matchFinished": "This match has finished",
+    "viewMatchSummary": "View match summary",
+    "backToGames": "Back to games",
+    "figuresUnavailable": "The final figures are not available on this screen. The match summary has the full record."
+  },
+  "AddFriendButton": {
+    "friendAdded": "{opponent} is on your friends list",
+    "adding": "Adding...",
+    "addFriend": "Add {opponent} as friend"
+  },
+  "LeaveMatch": {
+    "leave": "Leave",
+    "leaveMatch": "Leave this match?",
+    "leaveDetail": "The match keeps running without you. Any exposure you are holding stays open and is settled at the closing price when the clock runs out — leaving does not close it.",
+    "stayInMatch": "Stay in the match",
+    "leaveAnyway": "Leave anyway"
+  },
+  "MatchScreen": {
+    "loadingMatch": "Loading match…",
+    "matchCouldNotBeLoaded": "This match could not be loaded",
+    "tryAgain": "Try again",
+    "backToGames": "Back to games",
+    "matchUnavailableDetail": "It may not exist, you may not be one of its players, or the connection to the match server may be down."
   }
 }

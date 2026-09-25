@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Avatar } from "../../components/duel/avatar";
 import { fmtClock, fmtUSD } from "../../components/duel/format";
 import { SectionLabel } from "../../components/duel/section-label";
@@ -40,13 +41,15 @@ export function MatchHeader({
 }
 
 function MatchupBlock({ match }: { match: Match }) {
+  const t = useTranslations("MatchHeader");
+
   return (
     <div className="min-w-[170px]">
-      <SectionLabel>Match</SectionLabel>
+      <SectionLabel>{t("match")}</SectionLabel>
       <div className="mt-1.5 flex items-center gap-2">
           <Avatar name={match.playerOne.username} imageUrl={match.playerOne.avatar_url} size="sm" />
         <span className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
-          vs
+          {t("vs")}
         </span>
         {match.playerTwo ? (
           <Avatar name={match.playerTwo.username} imageUrl={match.playerTwo.avatar_url} size="sm" />
@@ -59,7 +62,7 @@ function MatchupBlock({ match }: { match: Match }) {
       <p className="mt-2 truncate text-[12.5px] text-[#9aa6b6]">
         {match.playerOne.username}
         <span className="px-1.5 text-[#3a434f]">·</span>
-        {match.playerTwo?.username ?? "waiting"}
+        {match.playerTwo?.username ?? t("waiting")}
       </p>
     </div>
   );
@@ -73,12 +76,14 @@ function PriceBlock({
   price: number | null;
   direction: "up" | "down" | "flat";
 }) {
+  const t = useTranslations("MatchHeader");
+
   const tone =
     direction === "up" ? "text-[#1fcb83]" : direction === "down" ? "text-[#f6485d]" : "text-[#9aa6b6]";
   const DirectionIcon =
     direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : Minus;
   const directionLabel =
-    direction === "up" ? "rising" : direction === "down" ? "falling" : "unchanged";
+    direction === "up" ? t("rising") : direction === "down" ? t("falling") : t("unchanged");
   return (
     <div className="min-w-[190px]">
       <SectionLabel>{symbol}</SectionLabel>
@@ -87,7 +92,7 @@ function PriceBlock({
           {price === null ? "—" : price.toFixed(2)}
         </span>
         {price !== null && (
-          <span className={`flex items-center gap-1 ${tone}`} title={`Price ${directionLabel}`}>
+          <span className={`flex items-center gap-1 ${tone}`} title={t("priceDirection", { direction: directionLabel })}>
             <DirectionIcon className="size-4" />
           </span>
         )}
@@ -96,10 +101,12 @@ function PriceBlock({
   );
 }
 function ClockBlock({ remaining }: { remaining: number | null }) {
+  const t = useTranslations("MatchHeader");
+
   const urgent = remaining !== null && remaining <= URGENT_SECONDS;
   return (
     <div className="min-w-[120px]">
-      <SectionLabel>Time left</SectionLabel>
+      <SectionLabel>{t("timeLeft")}</SectionLabel>
       <p
         className={`mt-1.5 font-mono text-[28px] font-semibold leading-none tracking-[-.02em] tabular-nums ${
           urgent ? "text-[#f6485d]" : "text-[#eef2f8]"
@@ -110,23 +117,25 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
 
       {urgent && (
         <p className="mt-1.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#f6485d]">
-          Closing
+          {t("closing")}
         </p>
       )}
     </div>
   );
 }
 function CapitalBlock({ player }: { player: PlayerState | null }) {
+  const t = useTranslations("MatchHeader");
+
   return (
     <div className="flex flex-wrap items-start gap-x-7 gap-y-4">
       <div>
-        <SectionLabel>Your capital</SectionLabel>
+        <SectionLabel>{t("yourCapital")}</SectionLabel>
         <p className="mt-1.5 font-mono text-[22px] font-semibold leading-none tracking-[-.02em] tabular-nums">
           {player === null ? "—" : fmtUSD(Math.round(player.capital))}
         </p>
       </div>
       <div>
-        <SectionLabel>Opponent</SectionLabel>
+        <SectionLabel>{t("opponent")}</SectionLabel>
         <p className="mt-1.5 font-mono text-[22px] font-semibold leading-none tracking-[-.02em] tabular-nums text-[#9aa6b6]">
           {player === null ? "—" : fmtUSD(Math.round(player.opponentCapital))}
         </p>
@@ -138,19 +147,21 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
   );
 }
 function StandingLine({ player }: { player: PlayerState | null }) {
+  const t = useTranslations("MatchHeader");
+
   if (player === null) {
-    return <p className="text-[11.5px] text-[#5d6877]">Connecting…</p>;
+    return <p className="text-[11.5px] text-[#5d6877]">{t("connecting")}</p>;
   }
   const gap = player.capital - player.opponentCapital;
   const rounded = Math.round(gap);
 
   if (rounded === 0) {
-    return <p className="text-[11.5px] text-[#9aa6b6]">Level</p>;
+    return <p className="text-[11.5px] text-[#9aa6b6]">{t("level")}</p>;
   }
 
   return (
     <p className={`text-[11.5px] font-semibold ${rounded > 0 ? "text-[#1fcb83]" : "text-[#f6485d]"}`}>
-      {rounded > 0 ? "Ahead by " : "Behind by "}
+      {rounded > 0 ? `${t("aheadBy")} ` : `${t("behindBy")} `}
       <span className="font-mono tabular-nums">{fmtUSD(Math.abs(rounded))}</span>
     </p>
   );
