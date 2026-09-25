@@ -20,6 +20,9 @@ type Friend = {
 	//  The database works this out for us, so a wrong clock on this computer
 	//  cannot make friends look offline.
 	seconds_since_seen: number | null;
+	//  Their profile row, pulled in by profiles(avatar_url) in the query.
+	//  avatar_url is null if they never uploaded a picture.
+	profiles: { avatar_url: string | null } | null;
 };
 
 //  Turn a gap in seconds into short text like "12s ago" or "3m ago".
@@ -50,8 +53,11 @@ export default function FriendsPage() {
 			//  rules take care of that), so there is nothing to filter here.
 			const { data } = await supabase
 				.from("friends_with_status")
-				.select("id, username, seconds_since_seen")
-				.order("seconds_since_seen", { ascending: true, nullsFirst: false });
+				.select("id, username, seconds_since_seen, profiles(avatar_url)")
+				.order("seconds_since_seen", { ascending: true, nullsFirst: false })
+				//  Supabase can't see our tables, so it guesses profiles is a list.
+				//  It's really one row per friend, so we tell it the real shape.
+				.overrideTypes<Friend[], { merge: false }>();
 
 			//  The page may have been closed while we were waiting.
 			if (cancelled) return;
@@ -117,7 +123,7 @@ function FriendRow({ friend }: { friend: Friend }) {
 
 	return (
 		<div className="flex items-center gap-3 rounded-lg border border-line bg-panel p-4">
-			<Avatar name={friend.username} />
+			<Avatar name={friend.username} imageUrl={friend.profiles?.avatar_url} />
 
 			<div className="min-w-0 flex-1">
 				<div className="text-sm font-semibold truncate">{friend.username}</div>

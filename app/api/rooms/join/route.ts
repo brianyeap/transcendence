@@ -2,21 +2,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
-// How many seconds the pre-match countdown lasts before trading starts.
 const COUNTDOWN_SECONDS = 10;
 
 type JoinRoomRequest = {
   roomId?: unknown;
 };
 
-// POST /api/rooms/join
-// The second player calls this to join a waiting room. When they do we:
-//   1. mark them as player two,
-//   2. move the room into the "countdown" state,
-//   3. set the countdown / start / end timestamps that the whole game runs on.
-// We do NOT create the match_players rows here — the socket server (which has the
-// service-role key) creates those when the match starts. That keeps all game-state
-// writes on the server side, which is what our Row Level Security expects.
 export async function POST(request: Request) {
   // --- read and validate the body ------------------------------------------
   let body: JoinRoomRequest;
@@ -33,7 +24,6 @@ export async function POST(request: Request) {
 
   const roomId = body.roomId.trim();
 
-  // --- make sure the caller is logged in -----------------------------------
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -44,7 +34,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Authentication required." }, { status: 401 });
   }
 
-  // --- load the room we are trying to join ---------------------------------
   const { data: room, error: roomError } = await supabase
     .from("matches")
     .select("id, player_one_user_id, player_two_user_id, status, duration_seconds")
@@ -59,7 +48,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Room not found." }, { status: 404 });
   }
 
-  // You cannot join your own room (you are already player one).
   if (room.player_one_user_id === user.id) {
     return Response.json({ error: "You cannot join your own room." }, { status: 400 });
   }
@@ -87,22 +75,12 @@ export async function POST(request: Request) {
     );
   }
 
-  // --- work out the three timestamps the game runs on ----------------------
   const durationSeconds = room.duration_seconds ?? MATCH_DURATION_SECONDS;
+  const countdownStartsAt = new Date();
+  const startsAt = new Date(countdownStartsAt.getTime() + COUNTDOWN_SECONDS * 1000); // now + count down
+  const endsAt = new Date(startsAt.getTime() + durationSeconds * 1000); // start + duration
 
-  const countdownStartsAt = new Date(); // now
-  const startsAt = new Date(countdownStartsAt.getTime() + COUNTDOWN_SECONDS * 1000);
-  const endsAt = new Date(startsAt.getTime() + durationSeconds * 1000);
-
-  // --- update the room: add player two and start the countdown -------------
-  // Joining is a trusted server action: we've already confirmed the caller is
-  // logged in and that the room is open. We do the write with the admin
-  // (service-role) client so it isn't blocked by row-level security — a normal
-  // user is not allowed to write to a room they don't own.
-  //
-  // We repeat the "still waiting / still empty" checks inside the update so that
-  // if two people click Join at the same moment, only the first one wins.
-  const admin = createSupabaseAdminClient();
+  const admin = createSupabaseAdminClient(); // uing admin to bypass rls so we cna update the match even though the user is not the owner
   const { data: updated, error: updateError } = await admin
     .from("matches")
     .update({
