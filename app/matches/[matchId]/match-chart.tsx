@@ -32,26 +32,18 @@ const HAIRLINE = "rgba(255,255,255,.05)";
 const BORDER = "rgba(255,255,255,.07)";
 
 function toPoint(candle: Candle): CandlestickData<Time> {
-  const rising = candle.close >= candle.open;
-  const shell = {
+  // Green if the price went up during this candle, red if it went down
+  const color = candle.close >= candle.open ? UP : DOWN;
+  return {
     time: candle.time as UTCTimestamp,
     open: candle.open,
     high: candle.high,
     low: candle.low,
     close: candle.close,
+    color,
+    borderColor: color,
+    wickColor: color,
   };
-
-  if (candle.preMatch) {
-    return {
-      ...shell,
-      color: rising ? TEXT_DIMMEST : RAISED,
-      borderColor: TEXT_DIM,
-      wickColor: TEXT_DIMMEST,
-    };
-  }
-
-  const live = rising ? UP : DOWN;
-  return { ...shell, color: live, borderColor: live, wickColor: live };
 }
 
 function dividerMarker(time: number): SeriesMarker<Time> {
@@ -140,12 +132,8 @@ export function MatchChart({
   const firstTimeRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
 
-  const dividerTime = useMemo(() => {
-    const boundary = candles.findIndex((candle) => !candle.preMatch);
-    return boundary <= 0 ? null : candles[boundary].time;
-  }, [candles]);
-
-  const hasPreMatch = useMemo(() => candles.some((candle) => candle.preMatch), [candles]);
+  // Every candle is part of the match, so the "Match start" arrow goes on the first one
+  const dividerTime = candles[0]?.time ?? null;
 
   const candlePhase = useMemo(() => {
     const first = candles[0];
@@ -359,17 +347,6 @@ export function MatchChart({
             <span className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
             Waiting for market data…
           </p>
-        </div>
-      ) : hasPreMatch ? (
-        <div className="pointer-events-none absolute left-3.5 top-3 flex items-center gap-3.5 text-[10.5px] font-bold uppercase tracking-[.08em]">
-          <span className="flex items-center gap-1.5 text-[#5d6877]">
-            <span className="h-2.5 w-[3px] rounded-[1px] bg-[#3a434f] ring-1 ring-[#5d6877]" />
-            Pre-match
-          </span>
-          <span className="flex items-center gap-1.5 text-[#9aa6b6]">
-            <span className="h-2.5 w-[3px] rounded-[1px] bg-[#1fcb83]" />
-            Match
-          </span>
         </div>
       ) : null}
     </div>
