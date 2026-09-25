@@ -45,10 +45,6 @@ export default function PrivacyScreen() {
 
       <Section title={t("section5Title")}>
         <p>{t("section5")}</p>
-
-        <p className="mt-2 text-[12px] text-[#5d6877]">
-          {t("section5Note")}
-        </p>
       </Section>
 
       <Section title={t("section6Title")}>
