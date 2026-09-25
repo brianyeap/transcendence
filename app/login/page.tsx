@@ -8,6 +8,8 @@ import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
+import { Languages } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 function LoginForm() {
   const router = useRouter();
@@ -18,6 +20,9 @@ function LoginForm() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const t = useTranslations("Login");
+  const locale = useLocale();
 
   const rawNext = searchParams.get("next");
   const safeNext = useMemo(() => validateSafeRedirect(rawNext, "/"), [rawNext]);
@@ -44,12 +49,12 @@ function LoginForm() {
     setError("");
 
     if (!email.includes("@")) {
-      setError("Enter a valid email address.");
+      setError(t("validEmail"));
       return;
     }
 
     if (isRegister && username.trim().length < 3) {
-      setError("Pick a username with at least 3 characters.");
+      setError(t("usernameMinLength"));
       return;
     }
 
@@ -73,7 +78,7 @@ function LoginForm() {
             .upsert({ id: data.user.id, email, username }, { onConflict: "id" });
         }
 
-        toast.success("Account created.");
+        toast.success(t("accountCreated"));
         router.push(safeNext);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -96,7 +101,7 @@ function LoginForm() {
         router.push(safeNext);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -108,47 +113,77 @@ function LoginForm() {
         <Logo />
 
         <h1 className="text-4xl font-bold">
-          Trade head-to-head.
+          {t("tagline")}
           <br />
-          <span className="text-dim">Highest capital wins.</span>
+          <span className="text-dim">{t("highestCapitalWins")}</span>
         </h1>
 
-        <p className="text-xs text-faint">Simulated markets - No real funds at risk</p>
+        <p className="text-xs text-faint">{t("simulatedMarkets")}</p>
       </section>
 
       {/* Right side */}
       <section className="grid place-items-center p-6">
+
+		{/* Language drop down */}
+		  <div className="absolute right-6 top-6">
+			<div className="pb-2">
+			  <div className="flex items-center gap-2">
+		        <Languages className="h-3.5 w-3.5 shrink-0 text-[#4d86ff]" />
+			    <div className="leading-tight">
+			      <div className="text-[12px] uppercase tracking-wide text-[#5d6877]">
+				    {t("language")}
+			      </div>
+			    </div>
+			  </div>
+			</div>
+
+			<select
+			  value={locale}
+			  onChange={(e) => {
+				const newLocale = e.target.value;
+				document.cookie = `locale=${newLocale}; path=/`;
+				window.location.reload();
+			  }}
+			  className="ml-1 cursor-pointer rounded-[7px] border border-white/[.07] bg-[#151a23] px-3 py-2 text-sm text-[#eef2f8] outline-none transition-colors hover:border-white/[.14]"
+			>
+
+			  <option value="en">English</option>
+			  <option value="ms">Malay</option>
+			  <option value="zh-CN">Chinese (Simplified)</option>
+			</select>
+		  </div>
+
         <form onSubmit={submit} className="w-full max-w-sm">
           <h2 className="text-2xl font-bold">
-            {isRegister ? "Create your account" : "Welcome back"}
+            {isRegister ? t("createAccountTitle") : t("welcomeBack")}
           </h2>
           <p className="mb-6 mt-1 text-sm text-muted">
-            {isRegister ? "Set up your trader profile to start dueling." : "Sign in to enter the lobby."}
+            {isRegister ? t("createAccountDescription") : t("signInDescription")}
           </p>
 
           {isRegister && (
             <Field
-              label="Username"
+              label={t("username")}
               value={username}
               onChange={setUsername}
-              placeholder="e.g. candle_wick"
+              placeholder={t("usernamePlaceholder")}
             />
           )}
 
           <Field
-            label="Email"
+            label={t("email")}
             type="email"
             value={email}
             onChange={setEmail}
-            placeholder="you@example.com"
+            placeholder={t("emailPlaceholder")}
           />
 
           <Field
-            label="Password"
+            label={t("password")}
             type="password"
             value={password}
             onChange={setPassword}
-            placeholder="Enter your password"
+            placeholder={t("passwordPlaceholder")}
           />
 
           {error && (
@@ -158,17 +193,17 @@ function LoginForm() {
           )}
 
           <Button type="submit" disabled={loading} className="w-full py-3">
-            {loading ? "Loading..." : isRegister ? "Create account" : "Log in"}
+            {loading ? t("loading") : isRegister ? t("createAccount") : t("logIn")}
           </Button>
 
 		  <p className="mt-3 text-left text-xs text-muted">
-            By continuing, you agree to our{" "}
+            {t("termsIntro")}{" "}
             <Link href="/terms-services" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
-              Terms of Service
+              {t("termsOfService")}
             </Link>{" "}
-            and{" "}
+            {t("and")}{" "}
             <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
-              Privacy Policy
+              {t("privacyPolicy")}
             </Link>
             .
           </p>
@@ -176,7 +211,7 @@ function LoginForm() {
           {/* google login */}
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-line" />
-            <span className="text-xs text-muted">OR</span>
+            <span className="text-xs text-muted">{t("or")}</span>
             <div className="h-px flex-1 bg-line" />
           </div>
 
@@ -207,17 +242,17 @@ function LoginForm() {
                 d="M12 6.27c1.43 0 2.72.49 3.74 1.46l2.8-2.8C16.83 3.39 14.62 2.4 12 2.4a9.74 9.74 0 0 0-8.71 5.37l3.24 2.53C7.3 7.99 9.46 6.27 12 6.27Z"
               />
             </svg>
-            Continue with Google
+            {t("continueWithGoogle")}
           </button>
 
           <p className="mt-5 text-center text-sm text-muted">
-            {isRegister ? "Already have an account? " : "New here? "}
+            {isRegister ? t("alreadyHaveAccount") : t("newHere")}{" "}
             <button
               type="button"
               onClick={() => setMode(isRegister ? "login" : "register")}
               className="font-semibold text-brand"
             >
-              {isRegister ? "Log in" : "Create an account"}
+              {isRegister ? t("logIn") : t("createAnAccount")}
             </button>
           </p>
         </form>
