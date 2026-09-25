@@ -1,0 +1,11 @@
+apiVersion: 1
+contactPoints:
+    - orgId: 1
+      name: transcendence
+      receivers:
+        - uid: cfzb7zbs99fk0b
+          type: email
+          settings:
+            addresses: amberyeap02@gmail.com
+            singleEmail: true
+          disableResolveMessage: false

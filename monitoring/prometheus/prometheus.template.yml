@@ -9,8 +9,8 @@ scrape_configs:
     metrics_path: /customer/v1/privileged/metrics
     scheme: https
     basic_auth:
-      username: username
-      password: change-this-to-supabase-api
+      username: service_role
+      password: ${SUPABASE_METRICS_KEY}
     static_configs:
       - targets:
           - 'mljqvfqtpargrwxifxum.supabase.co:443'

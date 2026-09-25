@@ -1,12 +1,15 @@
 services:
   prometheus:
-    image: prom/prometheus:v3.9.1
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
     container_name: prometheus
     restart: unless-stopped
+    environment:
+      SUPABASE_METRICS_KEY: ${SUPABASE_METRICS_KEY}
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     networks:
       - transcendence
@@ -22,6 +25,12 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: smtp.gmail.com:587
+      GF_SMTP_USER: ${SMTP_USER}
+      GF_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      GF_SMTP_FROM_ADDRESS: ${SMTP_USER}
+      GF_SMTP_SKIP_VERIFY: "false"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
