@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDownRight, ArrowUpRight, CircleSlash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fmtUSD } from "../../components/duel/format";
 import { pnlTone, signedUSD } from "./format";
 import { SectionLabel } from "../../components/duel/section-label";
@@ -13,14 +14,16 @@ export function PositionPanel({
   player: PlayerState | null;
   price: number | null;
 }) {
+  const t = useTranslations("PositionPanel");
+
   return (
     <section
       className="rounded-xl border border-white/[.07] bg-[#0f131b] p-5"
     >
       <div className="flex items-center justify-between gap-3">
-        <SectionLabel id="exposure-heading">Exposure</SectionLabel>
+        <SectionLabel id="exposure-heading">{t("exposure")}</SectionLabel>
         <span className="font-mono text-[11.5px] tabular-nums text-[#5d6877]">
-          {price === null ? "—" : `Mark ${price.toFixed(2)}`}
+          {price === null ? "—" : t("mark", { price: price.toFixed(2) })}
         </span>
       </div>
 
@@ -36,27 +39,33 @@ export function PositionPanel({
 }
 
 function Connecting() {
+  const t = useTranslations("PositionPanel");
+
   return (
     <p className="mt-5 flex items-center gap-2.5 text-[13px] text-[#5d6877]">
       <span className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
-      Loading your position…
+      {t("loadingPosition")}
     </p>
   );
 }
 
 function FlatState({ player }: { player: PlayerState }) {
+  const t = useTranslations("PositionPanel");
+
   return (
     <div className="mt-4 rounded-[7px] border border-dashed border-white/[.07] bg-[#151b25] px-4 py-6 text-center">
       <CircleSlash2 className="mx-auto size-5 text-[#3a434f]" />
-      <p className="mt-2.5 text-[13.5px] font-semibold text-[#eef2f8]">No exposure held</p>
+      <p className="mt-2.5 text-[13.5px] font-semibold text-[#eef2f8]">{t("noExposure")}</p>
       <p className="mt-1 text-[12.5px] text-[#9aa6b6]">
-        Bet on a rise or a fall to take a position.
+        {t("takePosition")}
       </p>
       <RealisedRow realisedPnl={player.realisedPnl} className="mt-4" />
     </div>
   );
 }
 function ExposureState({ player }: { player: PlayerState }) {
+  const t = useTranslations("PositionPanel");
+
   const long = player.netSide === "long";
   const DirectionIcon = long ? ArrowUpRight : ArrowDownRight;
   const sideTone = long ? "text-[#1fcb83]" : "text-[#f6485d]";
@@ -70,17 +79,17 @@ function ExposureState({ player }: { player: PlayerState }) {
           className={`inline-flex items-center gap-1.5 rounded-[7px] border px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[.08em] ${sideBg} ${sideTone}`}
         >
           <DirectionIcon className="size-3.5" />
-          {long ? "Long" : "Short"}
+          {long ? t("long") : t("short")}
         </span>
         <span className="font-mono text-[19px] font-semibold tracking-[-.02em] tabular-nums">
           {fmtUSD(Math.round(player.netAmount))}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
-        <Figure label="Entry price">
+        <Figure label={t("entryPrice")}>
           {player.entryPrice === null ? "—" : player.entryPrice.toFixed(2)}
         </Figure>
-        <Figure label="Reserved balance">
+        <Figure label={t("reservedBalance")}>
           {fmtUSD(Math.round(player.reservedBalance))}
         </Figure>
       </div>
@@ -91,30 +100,34 @@ function ExposureState({ player }: { player: PlayerState }) {
 }
 
 function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
+  const t = useTranslations("PositionPanel");
+
   const rounded = Math.round(unrealisedPnl);
   const tone = pnlTone(unrealisedPnl);
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
       <div className="flex items-baseline justify-between gap-3">
-        <SectionLabel>Unrealised PnL</SectionLabel>
+        <SectionLabel>{t("unrealisedPnl")}</SectionLabel>
         <span className={`font-mono text-[22px] font-semibold tracking-[-.02em] tabular-nums ${tone}`}>
           {signedUSD(rounded)}
         </span>
       </div>
       <p className="mt-1.5 text-[11.5px] text-[#5d6877]">
         {rounded === 0
-          ? "Level at the current mark."
+          ? t("levelAtMark")
           : rounded > 0
-            ? "Profit if offset at the current mark."
-            : "Loss if offset at the current mark."}
+            ? t("profitAtMark")
+            : t("lossAtMark")}
       </p>
     </div>
   );
 }
 function RealisedRow({ realisedPnl, className = "" }: { realisedPnl: number; className?: string }) {
+  const t = useTranslations("PositionPanel");
+
   return (
     <p className={`text-[11.5px] text-[#5d6877] ${className}`}>
-      Realised PnL{" "}
+      {t("realisedPnl")}{" "}
       <span className={`font-mono font-semibold tabular-nums ${pnlTone(realisedPnl)}`}>
         {signedUSD(realisedPnl)}
       </span>

@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ActionLink, CentredScreen, LoadingLine, MessageScreen } from "./message-screen";
 import { MatchResultCard } from "./match-result-card";
 import { useCompletedResult } from "./use-completed-result";
@@ -28,7 +29,7 @@ export function MatchResult({
     <CentredScreen>
       <div className="w-full max-w-lg rounded-xl border border-white/[.07] bg-[#0f131b] p-6 sm:p-7">
         <p className="mb-4 text-center text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
-          Final result
+          <ResultLabel />
         </p>
         <MatchResultCard
           result={result}
@@ -41,28 +42,37 @@ export function MatchResult({
   );
 }
 
+function ResultLabel() {
+  const t = useTranslations("MatchResult");
+
+  return <>{t("finalResult")}</>;
+}
+
 function ResultLoading() {
-  return <LoadingLine>Loading the final result…</LoadingLine>;
+  const t = useTranslations("MatchResult");
+
+  return <LoadingLine>{t("loadingFinalResult")}</LoadingLine>;
 }
 
 function ResultUnavailable({ match }: { match: Match }) {
+  const t = useTranslations("MatchResult");
+
   return (
     <MessageScreen
-      heading="This match has finished"
+      heading={t("matchFinished")}
       actions={
         <>
           <ActionLink href={`/history/${match.id}`} tone="primary">
-            View match summary
+            {t("viewMatchSummary")}
           </ActionLink>
           <ActionLink href="/" tone="secondary">
             <ArrowLeft className="size-4" />
-            Back to games
+            {t("backToGames")}
           </ActionLink>
         </>
       }
     >
-      The final figures are not available on this screen. The match summary has the full
-      record.
+      {t("figuresUnavailable")}
     </MessageScreen>
   );
 }

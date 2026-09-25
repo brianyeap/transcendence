@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   MatchTransportProvider,
   useMatchConnection,
@@ -90,28 +91,29 @@ function MatchUnavailable({
   connection: ConnectionStatus;
   onRetry: () => void;
 }) {
+  const t = useTranslations("MatchScreen");
+
   if (connection !== "disconnected") {
-    return <LoadingLine>Loading match…</LoadingLine>;
+    return <LoadingLine>{t("loadingMatch")}</LoadingLine>;
   }
 
   return (
     <MessageScreen
-      heading="This match could not be loaded"
+      heading={t("matchCouldNotBeLoaded")}
       actions={
         <>
           <ActionButton onClick={onRetry} tone="primary">
             <RefreshCw className="size-4" />
-            Try again
+            {t("tryAgain")}
           </ActionButton>
           <ActionLink href="/" tone="secondary">
             <ArrowLeft className="size-4" />
-            Back to games
+            {t("backToGames")}
           </ActionLink>
         </>
       }
     >
-      It may not exist, you may not be one of its players, or the connection to the match
-      server may be down.
+      {t("matchUnavailableDetail")}
     </MessageScreen>
   );
 }

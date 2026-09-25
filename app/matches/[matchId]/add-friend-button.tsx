@@ -86,7 +86,7 @@ export function AddFriendButton({
 		return (
 			<p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-win">
 				<Check className="size-4" aria-hidden />
-				{opponentName} is on your friends list
+				{t("friendAdded", { opponent: opponentName })}
 			</p>
 		);
 	}

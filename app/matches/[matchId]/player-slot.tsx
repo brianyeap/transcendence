@@ -1,18 +1,21 @@
 "use client";
 
 import type React from "react";
+import { useTranslations } from "next-intl";
 import { Avatar } from "../../components/duel/avatar";
 import type { Match, PlayerRef } from "@/lib/match/types";
 
 export function PlayerSlot({
   player,
   viewerUserId,
-  emptyLabel = "Waiting for a player",
+  emptyLabel,
 }: {
   player: PlayerRef | null;
   viewerUserId: string | null;
   emptyLabel?: string;
 }): React.ReactElement {
+  const t = useTranslations("PlayerSlot");
+
   if (player === null) {
     return (
       <div className="flex flex-1 items-center gap-3 rounded-[7px] border border-dashed border-white/[.12] bg-[#0f131b] px-4 py-3.5">
@@ -23,10 +26,10 @@ export function PlayerSlot({
         </span>
         <div className="min-w-0">
           <p className="truncate text-[14px] font-semibold text-[#5d6877]">
-            {emptyLabel}
+            {emptyLabel ?? t("waitingForPlayer")}
           </p>
           <p className="mt-0.5 text-[11.5px] text-[#3a434f]">
-            Open seat
+            {t("openSeat")}
           </p>
         </div>
       </div>
@@ -43,12 +46,12 @@ export function PlayerSlot({
           <span className="truncate">{player.username}</span>
           {isViewer ? (
             <span className="rounded border border-[#4d86ff]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#4d86ff]">
-              You
+              {t("you")}
             </span>
           ) : null}
         </p>
         <p className="mt-0.5 text-[11.5px] text-[#1fcb83]">
-          Ready
+          {t("ready")}
         </p>
       </div>
     </div>
@@ -64,14 +67,20 @@ export function PlayerPair({
   viewerUserId: string | null;
   emptyLabel?: string;
 }): React.ReactElement {
+  const t = useTranslations("PlayerSlot");
+
   return (
     <div className="mt-6 flex flex-col gap-2.5">
-      <PlayerSlot player={match.playerOne} viewerUserId={viewerUserId} />
-      <div
-        className="text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
-      >
-        vs
+      <PlayerSlot
+        player={match.playerOne}
+        viewerUserId={viewerUserId}
+        emptyLabel={emptyLabel}
+      />
+
+      <div className="text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+        {t("vs")}
       </div>
+
       <PlayerSlot
         player={match.playerTwo}
         viewerUserId={viewerUserId}
