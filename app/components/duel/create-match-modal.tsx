@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 import { useTranslations } from "next-intl";
 
-// Every Match is one minute for now. Kept as a named constant so the fixed rule
-// is obvious at the call site and easy to lift back into an option later.
-const MATCH_DURATION_SECONDS = 60
+// The match lengths a creator can pick. Values are in seconds and must match
+// ALLOWED_DURATIONS in lib/match/rules.ts, or the server will reject them.
+const DURATION_OPTIONS = [
+    { label: '30s', value: 30 },
+    { label: '1 min', value: 60 },
+    { label: '1.5 min', value: 90 }
+]
 
 const CAPITAL_OPTIONS = [
     { label: '5K', value: 5000 },
@@ -25,6 +29,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     const backdropRef = useRef<HTMLDivElement>(null)
     const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
     const [capital, setCapital] = useState(10000)
+    const [duration, setDuration] = useState(60) // seconds
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const t = useTranslations("CreateMatch");
@@ -66,7 +71,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                 body: JSON.stringify({
                     name,
                     startingCapital: capital,
-                    durationSeconds: MATCH_DURATION_SECONDS,
+                    durationSeconds: duration,
                 }),
             })
             const result = await response.json()
@@ -113,12 +118,24 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     />
                 </div>
 
-                {/* Duration is fixed at one minute — shown, not chosen. */}
+                {/* Match length: same button style as starting capital below. */}
                 <div className="flex flex-col gap-1.5">
                     <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("matchLength")}</span>
-                    <div className="flex items-center justify-between rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2.5">
-                        <span className="text-sm font-semibold text-[#eef2f8]">1 min</span>
-                        <span className="rounded-full bg-white/[.04] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.04em] text-[#5d6877]">{t("fixed")}</span>
+                    <div className="flex gap-2">
+                        {DURATION_OPTIONS.map((opt) => {
+                            const selected = duration === opt.value
+                            return (
+                                <button
+                                    key={opt.value} onClick={() => setDuration(opt.value)} disabled={isCreating}
+                                    className={`flex-1 rounded-lg border py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${selected
+                                            ? 'border-transparent bg-[#4d86ff] text-white'
+                                            : 'border-white/[.07] bg-[#0f131b] text-[#9aa6b6] hover:border-white/[.12] hover:text-[#eef2f8]'
+                                        }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
 

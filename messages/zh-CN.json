@@ -43,7 +43,6 @@
     "roomName": "房间名称",
     "roomNamePlaceholder": "例如：黄金右脚",
     "matchLength": "对决时长",
-    "fixed": "固定",
     "startingCapital": "初始资金",
     "cancel": "取消",
     "create": "创建",
@@ -315,7 +314,7 @@
       "matchLength": "比赛时长",
       "winsBy": "胜负依据",
       "startingCapitalValue": "5K - 20K",
-      "matchLengthValue": "1 分钟",
+      "matchLengthValue": "30 秒 – 1.5 分钟",
       "winsByValue": "资金较高"
     },
 
