@@ -544,7 +544,10 @@
   },
   "AddFriendButton": {
     "friendAdded": "{opponent} is on your friends list",
-    "adding": "Adding...",
+    "requestSent": "Friend request sent to {opponent}",
+    "accepting": "Accepting...",
+    "acceptRequest": "Accept {opponent}'s friend request",
+    "sending": "Sending...",
     "addFriend": "Add {opponent} as friend"
   },
   "LeaveMatch": {
