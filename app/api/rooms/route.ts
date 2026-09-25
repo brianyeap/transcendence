@@ -1,8 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
+import { ALLOWED_DURATIONS, MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
-const ALLOWED_DURATION = new Set([MATCH_DURATION_SECONDS]);
+const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
 
 // max room name
 const MAX_NAME_LENGTH = 40;
