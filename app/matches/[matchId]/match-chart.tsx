@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   CandlestickSeries,
   ColorType,
@@ -46,13 +47,16 @@ function toPoint(candle: Candle): CandlestickData<Time> {
   };
 }
 
-function dividerMarker(time: number): SeriesMarker<Time> {
+function dividerMarker(
+  time: number,
+  matchStartLabel: string
+): SeriesMarker<Time> {
   return {
     time: time as UTCTimestamp,
     position: "aboveBar",
     shape: "arrowDown",
     color: ACCENT,
-    text: "Match start",
+    text: matchStartLabel,
   };
 }
 
@@ -60,11 +64,17 @@ const CANDLE_SECONDS = 60;
 
 function candleTimeOf(executedAt: number, phase: number): number {
   const seconds = Math.floor(executedAt / 1000);
-  const past = (((seconds - phase) % CANDLE_SECONDS) + CANDLE_SECONDS) % CANDLE_SECONDS;
+  const past =
+    (((seconds - phase) % CANDLE_SECONDS) + CANDLE_SECONDS) % CANDLE_SECONDS;
   return seconds - past;
 }
 
-function buildTradeMarkers(trades: TradeFill[], phase: number): SeriesMarker<Time>[] {
+function buildTradeMarkers(
+  trades: TradeFill[],
+  phase: number,
+  longLabel: string,
+  shortLabel: string
+): SeriesMarker<Time>[] {
   const buckets = new Map<
     string,
     { time: number; side: Side; amount: number; count: number }
@@ -74,8 +84,14 @@ function buildTradeMarkers(trades: TradeFill[], phase: number): SeriesMarker<Tim
     const time = candleTimeOf(trade.executedAt, phase);
     const key = `${time}:${trade.side}`;
     const bucket = buckets.get(key);
+
     if (bucket === undefined) {
-      buckets.set(key, { time, side: trade.side, amount: trade.amount, count: 1 });
+      buckets.set(key, {
+        time,
+        side: trade.side,
+        amount: trade.amount,
+        count: 1,
+      });
     } else {
       bucket.amount += trade.amount;
       bucket.count += 1;
@@ -86,7 +102,10 @@ function buildTradeMarkers(trades: TradeFill[], phase: number): SeriesMarker<Tim
     .sort((a, b) => a.time - b.time)
     .map((bucket) => {
       const long = bucket.side === "long";
-      const label = `${long ? "Long" : "Short"} ${fmtUSD(Math.round(bucket.amount))}`;
+      const label = `${long ? longLabel : shortLabel} ${fmtUSD(
+        Math.round(bucket.amount)
+      )}`;
+
       return {
         time: bucket.time as UTCTimestamp,
         position: long ? "belowBar" : "aboveBar",
@@ -99,12 +118,13 @@ function buildTradeMarkers(trades: TradeFill[], phase: number): SeriesMarker<Tim
 
 function mergeMarkers(
   dividerTime: number | null,
-  tradeMarkers: SeriesMarker<Time>[]
+  tradeMarkers: SeriesMarker<Time>[],
+  matchStartLabel: string
 ): SeriesMarker<Time>[] {
   const merged =
     dividerTime === null
       ? [...tradeMarkers]
-      : [dividerMarker(dividerTime), ...tradeMarkers];
+      : [dividerMarker(dividerTime, matchStartLabel), ...tradeMarkers];
 
   return merged.sort((a, b) => (a.time as number) - (b.time as number));
 }
@@ -122,6 +142,8 @@ export function MatchChart({
   entryPrice: number | null;
   netSide: NetSide;
 }): React.ReactElement {
+  const t = useTranslations("MatchChart");
+
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick", Time> | null>(null);
@@ -137,26 +159,42 @@ export function MatchChart({
 
   const candlePhase = useMemo(() => {
     const first = candles[0];
+
     if (first === undefined) {
       return 0;
     }
+
     return ((first.time % CANDLE_SECONDS) + CANDLE_SECONDS) % CANDLE_SECONDS;
   }, [candles]);
 
   const markers = useMemo(
-    () => mergeMarkers(dividerTime, buildTradeMarkers(trades, candlePhase)),
-    [dividerTime, trades, candlePhase]
+    () =>
+      mergeMarkers(
+        dividerTime,
+        buildTradeMarkers(
+          trades,
+          candlePhase,
+          t("long"),
+          t("short")
+        ),
+        t("matchStart")
+      ),
+    [dividerTime, trades, candlePhase, t]
   );
 
   useEffect(() => {
     const host = hostRef.current;
+
     if (host === null) {
       return;
     }
 
     const fontFamily = getComputedStyle(host).fontFamily;
 
-    const size = { width: host.clientWidth, height: host.clientHeight };
+    const size = {
+      width: host.clientWidth,
+      height: host.clientHeight,
+    };
 
     const chart = createChart(host, {
       width: size.width,
@@ -231,22 +269,30 @@ export function MatchChart({
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
+
       if (entry === undefined) {
         return;
       }
+
       const width = Math.round(entry.contentRect.width);
       const height = Math.round(entry.contentRect.height);
+
       if (width <= 0 || height <= 0) {
         return;
       }
+
       const wasCollapsed = size.width <= 0 || size.height <= 0;
+
       size.width = width;
       size.height = height;
+
       chart.applyOptions({ width, height });
+
       if (wasCollapsed) {
         chart.timeScale().fitContent();
       }
     });
+
     observer.observe(host);
 
     return () => {
@@ -261,12 +307,14 @@ export function MatchChart({
   useEffect(() => {
     const chart = chartRef.current;
     const series = seriesRef.current;
+
     if (chart === null || series === null) {
       return;
     }
 
     const first = candles.length > 0 ? candles[0].time : null;
     const drawn = drawnCountRef.current;
+
     const continuation =
       drawn > 0 &&
       first === firstTimeRef.current &&
@@ -275,7 +323,9 @@ export function MatchChart({
 
     if (!continuation && !(drawn === 0 && candles.length === 0)) {
       series.setData(candles.map(toPoint));
-      lastTimeRef.current = candles.length > 0 ? candles[candles.length - 1].time : null;
+
+      lastTimeRef.current =
+        candles.length > 0 ? candles[candles.length - 1].time : null;
 
       if (candles.length > 0) {
         chart.timeScale().fitContent();
@@ -288,11 +338,13 @@ export function MatchChart({
 
   useEffect(() => {
     const series = seriesRef.current;
+
     if (series === null || lastCandle === null) {
       return;
     }
 
     const lastTime = lastTimeRef.current;
+
     if (lastTime !== null && lastCandle.time < lastTime) {
       return;
     }
@@ -307,14 +359,19 @@ export function MatchChart({
 
   useEffect(() => {
     const series = seriesRef.current;
-    if (series === null) return;
+
+    if (series === null) {
+      return;
+    }
 
     if (entryLineRef.current !== null) {
       series.removePriceLine(entryLineRef.current);
       entryLineRef.current = null;
     }
 
-    if (entryPrice === null || netSide === "flat") return;
+    if (entryPrice === null || netSide === "flat") {
+      return;
+    }
 
     entryLineRef.current = series.createPriceLine({
       price: entryPrice,
@@ -322,7 +379,7 @@ export function MatchChart({
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
       axisLabelVisible: true,
-      title: netSide === "long" ? "Long entry" : "Short entry",
+      title: netSide === "long" ? t("longEntry") : t("shortEntry"),
     });
 
     return () => {
@@ -331,21 +388,19 @@ export function MatchChart({
         entryLineRef.current = null;
       }
     };
-  }, [entryPrice, netSide]);
+  }, [entryPrice, netSide, t]);
 
   const isEmpty = candles.length === 0;
 
   return (
-    <div
-      className="relative h-full min-h-[260px] w-full overflow-hidden rounded-xl border border-white/[.07] bg-[#0f131b]"
-    >
+    <div className="relative h-full min-h-[260px] w-full overflow-hidden rounded-xl border border-white/[.07] bg-[#0f131b]">
       <div ref={hostRef} className="absolute inset-0 font-mono" />
 
       {isEmpty ? (
         <div className="absolute inset-0 grid place-items-center">
           <p className="flex items-center gap-2.5 text-sm text-[#5d6877]">
             <span className="size-2 animate-pulse rounded-full bg-[#4d86ff]" />
-            Waiting for market data…
+            {t("waitingForMarketData")}
           </p>
         </div>
       ) : null}

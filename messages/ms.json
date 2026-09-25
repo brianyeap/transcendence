@@ -387,5 +387,178 @@
       "detail": "Sertai bilik yang terbuka, atau cipta bilik anda sendiri.",
       "button": "Cari perlawanan"
     }
+  },
+  "WaitingRoom": {
+    "open": "Terbuka",
+    "title": "Menunggu lawan",
+    "description": "Perlawanan akan bermula sebaik sahaja seseorang mengambil tempat yang tersedia. Anda tidak perlu memuat semula halaman.",
+    "market": "Pasaran",
+    "startingCapital": "Modal permulaan",
+    "eachPlayer": "Setiap pemain",
+    "backToGames": "Kembali ke permainan",
+    "awayMessage": "Perlawanan akan kekal terbuka semasa anda tiada. Anda boleh kembali dari lobi pada bila-bila masa."
+  },
+  "PlayerSlot": {
+    "waitingForPlayer": "Menunggu pemain",
+    "openSeat": "Tempat tersedia",
+    "you": "Anda",
+    "ready": "Sedia",
+    "vs": "lawan"
+  },
+  "CountdownScreen": {
+    "bothPlayersIn": "Kedua-dua pemain telah masuk",
+    "opensIn": "{symbol} bermula dalam",
+    "starting": "Bermula…",
+    "getReady": "Bersedia. Carta dan kawalan anda akan muncul sebaik sahaja perlawanan bermula.",
+    "opponent": "Lawan"
+  },
+  "MatchChart": {
+    "matchStart": "Mula perlawanan",
+    "long": "Long",
+    "short": "Short",
+    "longEntry": "Kemasukan Long",
+    "shortEntry": "Kemasukan Short",
+    "waitingForMarketData": "Menunggu data pasaran…",
+    "preMatch": "Pra-perlawanan",
+    "match": "Perlawanan"
+  },
+  "ConnectionBanner": {
+    "reconnecting": "Menyambung semula…",
+    "connectionLost": "Sambungan terputus",
+    "restoringConnection": "Memulihkan carta, baki dan posisi anda.",
+    "ordersPaused": "Kawalan pesanan dijeda sehingga sambungan data disambung semula.",
+    "retrying": "mencuba semula…",
+    "retryIn": "cuba semula dalam {seconds}s",
+    "retryNow": "Cuba semula sekarang"
+  },
+  "MatchHeader": {
+    "match": "Perlawanan",
+    "vs": "lawan",
+    "waiting": "menunggu",
+    "rising": "menaik",
+    "falling": "menurun",
+    "unchanged": "tidak berubah",
+    "priceDirection": "Harga {direction}",
+    "timeLeft": "Masa berbaki",
+    "closing": "Akan tamat",
+    "yourCapital": "Modal anda",
+    "opponent": "Lawan",
+    "connecting": "Menyambung…",
+    "level": "Seimbang",
+    "aheadBy": "Mendahului sebanyak",
+    "behindBy": "Ketinggalan sebanyak"
+  },
+  "OrderPanel": {
+    "placeTrade": "Buat Dagangan",
+    "available": "Tersedia",
+    "amount": "Jumlah",
+    "long": "Long",
+    "short": "Short",
+    "exposure": "Posisi",
+    "entry": "kemasukan",
+    "exposureDetail": "{opposite} sebanyak {amount} akan menutup posisi ini sepenuhnya. Jumlah yang lebih kecil akan mengurangkannya; jumlah yang lebih besar akan menukar arah posisi.",
+    "placing": "Sedang dibuat…",
+    "priceRises": "Harga naik",
+    "priceFalls": "Harga turun",
+    "waitingForServer": "Menunggu pelayan melaksanakan Dagangan ini…",
+    "tradeRejected": "Dagangan ditolak — {reason}",
+    "filledAt": "dilaksanakan @",
+    "filledAtServerPrice": "Dilaksanakan pada harga pelayan, yang selalunya berbeza daripada harga yang dipaparkan semasa anda mengklik.",
+    "exposureFlat": "Posisi kini kosong.",
+    "exposureNow": "Posisi kini {side}",
+    "offsetRealised": "Realisasi daripada penutupan",
+    "connecting": "Menyambung ke perlawanan…",
+    "tradingUnavailable": "Dagangan tidak tersedia buat masa ini.",
+    "nothingMoves": "Tiada apa-apa berlaku sehingga pelayan mengesahkan Dagangan anda.",
+    "enterAmount": "Masukkan jumlah.",
+    "amountGreaterThanZero": "Jumlah mestilah lebih besar daripada sifar.",
+    "amountExceedsLimit": "Melebihi jumlah yang boleh anda dagangkan — maksimum {amount}."
+  },
+  "PositionPanel": {
+    "exposure": "Posisi",
+    "mark": "Harga semasa {price}",
+    "loadingPosition": "Memuatkan posisi anda…",
+    "noExposure": "Tiada posisi dipegang",
+    "takePosition": "Buat dagangan berdasarkan kenaikan atau penurunan harga untuk mengambil posisi.",
+    "long": "Long",
+    "short": "Short",
+    "entryPrice": "Harga kemasukan",
+    "reservedBalance": "Baki disimpan",
+    "unrealisedPnl": "PnL Belum Direalisasi",
+    "levelAtMark": "Seimbang pada harga semasa.",
+    "profitAtMark": "Keuntungan jika ditutup pada harga semasa.",
+    "lossAtMark": "Kerugian jika ditutup pada harga semasa.",
+    "realisedPnl": "PnL Direalisasi"
+  },
+  "RecentTrades": {
+    "recentTrades": "Dagangan terkini",
+    "noTradesYet": "Belum ada dagangan",
+    "fillsAppearHere": "Dagangan anda akan dipaparkan di sini dan pada carta.",
+    "long": "Long",
+    "short": "Short",
+    "now": "sekarang",
+    "seconds": "{value}s",
+    "minutes": "{value}m",
+    "hours": "{value}j"
+  },
+  "MatchResultCard": {
+    "you": "Anda",
+    "winner": "Pemenang",
+    "drew": "Seri",
+    "viewMatchSummary": "Lihat ringkasan perlawanan",
+    "backToGames": "Kembali ke permainan",
+    "finalCapital": "Modal akhir",
+    "net": "Bersih",
+    "settlementPrice": "Harga penyelesaian",
+    "startingCapital": "Modal permulaan",
+    "eachPlayer": "Setiap pemain",
+    "settlementDetail": "Sebarang posisi yang masih terbuka apabila masa tamat akan ditutup secara automatik.",
+    "outcome": {
+      "win": {
+        "badge": "Anda menang",
+        "heading": "Kemenangan",
+        "detail": "{opponent} tamat dengan modal yang lebih rendah daripada anda.",
+        "footnote": "Perlawanan telah tamat. Tiada dagangan lanjut boleh dibuat."
+      },
+      "loss": {
+        "badge": "Anda kalah",
+        "heading": "Kekalahan",
+        "detail": "{opponent} tamat dengan modal yang lebih tinggi daripada anda.",
+        "footnote": "Perlawanan telah tamat. Tiada dagangan lanjut boleh dibuat."
+      },
+      "draw": {
+        "badge": "Tiada pemenang",
+        "heading": "Seri",
+        "detail": "Anda dan {opponent} tamat dengan jumlah modal yang sama.",
+        "footnote": "Perlawanan telah tamat. Tiada dagangan lanjut boleh dibuat."
+      }
+    }
+  },
+  "MatchResult": {
+    "finalResult": "Keputusan akhir",
+    "loadingFinalResult": "Memuatkan keputusan akhir…",
+    "matchFinished": "Perlawanan ini telah tamat",
+    "viewMatchSummary": "Lihat ringkasan perlawanan",
+    "backToGames": "Kembali ke permainan",
+    "figuresUnavailable": "Angka akhir tidak tersedia pada skrin ini. Ringkasan perlawanan mengandungi rekod penuh."
+  },
+  "AddFriendButton": {
+    "friendAdded": "{opponent} telah ditambahkan ke senarai rakan anda",
+    "adding": "Menambah...",
+    "addFriend": "Tambah {opponent} sebagai rakan"
+  },
+  "LeaveMatch": {
+    "leave": "Keluar",
+    "leaveMatch": "Keluar daripada perlawanan ini?",
+    "leaveDetail": "Perlawanan akan terus berjalan tanpa anda. Sebarang posisi yang anda pegang akan kekal terbuka dan diselesaikan pada harga penutupan apabila masa tamat — keluar tidak akan menutupnya.",
+    "stayInMatch": "Kekal dalam perlawanan",
+    "leaveAnyway": "Tetap keluar"
+  },
+  "MatchScreen": {
+    "loadingMatch": "Memuatkan perlawanan…",
+    "matchCouldNotBeLoaded": "Perlawanan ini tidak dapat dimuatkan",
+    "tryAgain": "Cuba lagi",
+    "backToGames": "Kembali ke permainan",
+    "matchUnavailableDetail": "Perlawanan ini mungkin tidak wujud, anda mungkin bukan salah seorang pemainnya, atau sambungan ke pelayan perlawanan mungkin terputus."
   }
 }

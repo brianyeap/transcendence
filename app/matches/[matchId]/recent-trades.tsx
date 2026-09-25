@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Receipt } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { fmtUSD } from "../../components/duel/format";
 import { pnlTone, signedUSD } from "./format";
@@ -21,7 +22,7 @@ export function RecentTrades({ trades }: { trades: TradeFill[] }): React.ReactEl
           id="recent-trades-heading"
           className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
         >
-          Recent trades
+          <RecentTradesLabel />
         </p>
         {trades.length > 0 ? (
           <span className="font-mono text-[11.5px] tabular-nums text-[#5d6877]">
@@ -46,19 +47,29 @@ export function RecentTrades({ trades }: { trades: TradeFill[] }): React.ReactEl
   );
 }
 
+function RecentTradesLabel() {
+  const t = useTranslations("RecentTrades");
+
+  return <>{t("recentTrades")}</>;
+}
+
 function EmptyState() {
+  const t = useTranslations("RecentTrades");
+
   return (
     <div className="mt-3.5 rounded-[7px] border border-dashed border-white/[.07] bg-[#151b25] px-4 py-5 text-center">
       <Receipt className="mx-auto size-4.5 text-[#3a434f]" />
-      <p className="mt-2 text-[12.5px] font-semibold text-[#eef2f8]">No trades yet</p>
+      <p className="mt-2 text-[12.5px] font-semibold text-[#eef2f8]">{t("noTradesYet")}</p>
       <p className="mt-1 text-[11.5px] text-[#9aa6b6]">
-        Your fills will appear here and on the chart.
+        {t("fillsAppearHere")}
       </p>
     </div>
   );
 }
 
 function TradeRow({ trade }: { trade: TradeFill }) {
+  const t = useTranslations("RecentTrades");
+
   const long = trade.side === "long";
   const DirectionIcon = long ? ArrowUpRight : ArrowDownRight;
   const sideTone = long ? "text-[#1fcb83]" : "text-[#f6485d]";
@@ -73,7 +84,7 @@ function TradeRow({ trade }: { trade: TradeFill }) {
           className={`inline-flex items-center gap-1 rounded-[5px] border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[.08em] ${sideBg} ${sideTone}`}
         >
           <DirectionIcon className="size-3" />
-          {long ? "Long" : "Short"}
+          {long ? t("long") : t("short")}
         </span>
         <Elapsed executedAt={trade.executedAt} />
       </div>
@@ -101,6 +112,7 @@ function TradeRow({ trade }: { trade: TradeFill }) {
 }
 
 function Elapsed({ executedAt }: { executedAt: number }) {
+  const t = useTranslations("RecentTrades");
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -113,16 +125,29 @@ function Elapsed({ executedAt }: { executedAt: number }) {
       dateTime={new Date(executedAt).toISOString()}
       className="shrink-0 font-mono text-[10.5px] tabular-nums text-[#5d6877]"
     >
-      {elapsedLabel(now - executedAt)}
+      {elapsedLabel(now - executedAt, {
+        now: t("now"),
+        seconds: (value) => t("seconds", { value }),
+        minutes: (value) => t("minutes", { value }),
+        hours: (value) => t("hours", { value }),
+      })}
     </time>
   );
 }
 
-function elapsedLabel(elapsedMs: number) {
+function elapsedLabel(
+  elapsedMs: number,
+  labels: {
+    now: string;
+    seconds: (value: number) => string;
+    minutes: (value: number) => string;
+    hours: (value: number) => string;
+  }
+) {
   const seconds = Math.max(0, Math.floor(elapsedMs / 1000));
-  if (seconds < 10) return "now";
-  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 10) return labels.now;
+  if (seconds < 60) return labels.seconds(seconds);
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  return `${Math.floor(minutes / 60)}h`;
+  if (minutes < 60) return labels.minutes(minutes);
+  return labels.hours(Math.floor(minutes / 60));
 }

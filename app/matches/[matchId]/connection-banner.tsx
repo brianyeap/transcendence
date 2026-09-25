@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LoaderCircle, RefreshCw, WifiOff } from "lucide-react";
 
 const BACKOFF_MS = [1000, 2000, 4000, 8000];
@@ -19,6 +20,8 @@ export function ConnectionBanner({
   connection: "connecting" | "connected" | "disconnected";
   onReconnect: () => void;
 }): React.ReactElement {
+  const t = useTranslations("ConnectionBanner");
+
   const attemptRef = useRef(0);
   const retryAtRef = useRef<number | null>(null);
 
@@ -96,12 +99,12 @@ export function ConnectionBanner({
 
           <p className="min-w-0 flex-1 text-[13px] text-[#eef2f8]">
             <span className="font-semibold">
-              {connecting ? "Reconnecting…" : "Connection lost"}
+              {connecting ? t("reconnecting") : t("connectionLost")}
             </span>{" "}
             <span className="text-[#9aa6b6]">
               {connecting
-                ? "Restoring your chart, balances and exposure."
-                : "Order controls are paused until the stream resumes."}
+                ? t("restoringConnection")
+                : t("ordersPaused")}
             </span>
           </p>
 
@@ -111,8 +114,8 @@ export function ConnectionBanner({
                 className="font-mono text-[12px] tabular-nums text-[#5d6877]"
               >
                 {secondsLeft === null || secondsLeft <= 0
-                  ? "retrying…"
-                  : `retry in ${secondsLeft}s`}
+                  ? t("retrying")
+                  : t("retryIn", { seconds: secondsLeft })}
               </span>
 
               <button
@@ -121,7 +124,7 @@ export function ConnectionBanner({
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-2.5 py-1.5 text-[12.5px] font-semibold text-[#eef2f8] transition hover:border-white/[.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
               >
                 <RefreshCw className="size-3.5 text-[#9aa6b6]" />
-                Retry now
+                {t("retryNow")}
               </button>
             </>
           )}

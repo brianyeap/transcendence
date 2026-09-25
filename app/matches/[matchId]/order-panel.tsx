@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { PlayerState, Side, TradeFill, TradeRejection } from "@/lib/match/types";
 import { fmtUSD } from "../../components/duel/format";
 import { fmtPrice } from "./format";
@@ -27,6 +28,8 @@ export function OrderPanel({
   onSubmit: (input: { side: Side; amount: number }) => void;
   onDismissFeedback: () => void;
 }): React.ReactElement {
+  const t = useTranslations("OrderPanel");
+
   const [raw, setRaw] = useState("");
   const [pendingSide, setPendingSide] = useState<Side | null>(null);
 
@@ -69,7 +72,11 @@ export function OrderPanel({
   const maxOrder = Math.max(maxLong, maxShort);
 
   const amount = parseAmount(raw);
-  const error = validate(raw, amount, player);
+  const error = validate(raw, amount, player, {
+    enterAmount: t("enterAmount"),
+    amountGreaterThanZero: t("amountGreaterThanZero"),
+    amountExceedsLimit: (amount) => t("amountExceedsLimit", { amount }),
+  });
   const canSubmit = !locked && amount !== null && error === null;
   const canSubmitSide = (side: Side) =>
     canSubmit && amount !== null && amount <= (side === "long" ? maxLong : maxShort);
@@ -97,10 +104,10 @@ export function OrderPanel({
           id="order-panel-heading"
           className="text-[13px] font-semibold tracking-[-.01em] text-[#eef2f8]"
         >
-          Place a Trade
+          {t("placeTrade")}
         </h2>
         <p className="text-[11px] text-[#5d6877]">
-          Available{" "}
+          {t("available")}{" "}
           <span className="font-mono font-semibold text-[#9aa6b6]">
             {player === null ? "—" : fmtUSD(Math.floor(available))}
           </span>
@@ -113,7 +120,7 @@ export function OrderPanel({
         htmlFor="order-amount"
         className="mt-3 mb-1.5 block text-[10.5px] font-bold uppercase tracking-[.04em] text-[#5d6877]"
       >
-        Amount
+        {t("amount")}
       </label>
       <div className="relative">
         <span
@@ -182,15 +189,17 @@ export function OrderPanel({
 }
 
 function ExposureHint({ player }: { player: PlayerState | null }) {
+  const t = useTranslations("OrderPanel");
+
   if (player === null || player.netSide === "flat") return null;
-  const held = player.netSide === "long" ? "Long" : "Short";
-  const opposite = player.netSide === "long" ? "Short" : "Long";
+  const held = player.netSide === "long" ? t("long") : t("short");
+  const opposite = player.netSide === "long" ? t("short") : t("long");
   const tone = player.netSide === "long" ? "text-[#1fcb83]" : "text-[#f6485d]";
 
   return (
     <div className="mt-3 rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2">
       <p className="text-[11px] text-[#9aa6b6]">
-        <span className="text-[#5d6877]">Exposure</span>{" "}
+        <span className="text-[#5d6877]">{t("exposure")}</span>{" "}
         <span className={`font-semibold ${tone}`}>{held}</span>{" "}
         <span className="font-mono font-semibold text-[#eef2f8]">
           {fmtUSD(Math.round(player.netAmount))}
@@ -198,14 +207,16 @@ function ExposureHint({ player }: { player: PlayerState | null }) {
         {player.entryPrice !== null && (
           <>
             <span className="text-[#3a434f]"> · </span>
-            <span className="text-[#5d6877]">entry </span>
+            <span className="text-[#5d6877]">{t("entry")} </span>
             <span className="font-mono text-[#9aa6b6]">{fmtPrice(player.entryPrice)}</span>
           </>
         )}
       </p>
       <p className="mt-1 text-[10.5px] text-[#5d6877]">
-        A {opposite} of {fmtUSD(Math.round(player.netAmount))} offsets it entirely. A smaller one
-        reduces it; a larger one flips the side.
+        {t("exposureDetail", {
+          opposite,
+          amount: fmtUSD(Math.round(player.netAmount)),
+        })}
       </p>
     </div>
   );
@@ -222,6 +233,8 @@ function BetButton({
   pending: boolean;
   onClick: () => void;
 }) {
+  const t = useTranslations("OrderPanel");
+
   const isLong = side === "long";
   const Arrow = isLong ? ArrowUp : ArrowDown;
   return (
@@ -235,10 +248,10 @@ function BetButton({
     >
       <span className="flex items-center gap-1.5 text-[14px] font-bold tracking-[-.01em]">
         <Arrow className="size-4" strokeWidth={2.75} />
-        {pending ? "Placing…" : isLong ? "Long" : "Short"}
+        {pending ? t("placing") : isLong ? t("long") : t("short")}
       </span>
       <span className="text-[10.5px] font-semibold opacity-75">
-        {isLong ? "Price rises" : "Price falls"}
+        {isLong ? t("priceRises") : t("priceFalls")}
       </span>
     </button>
   );
@@ -257,13 +270,15 @@ function Feedback({
   disabled: boolean;
   connecting: boolean;
 }) {
+  const t = useTranslations("OrderPanel");
+
   if (hidden) {
     return (
       <p
         className="mt-3 flex items-center gap-2 text-[11.5px] text-[#5d6877]"
       >
         <span className="size-1.5 animate-pulse rounded-full bg-[#4d86ff]" />
-        Waiting for the server to fill this Trade…
+        {t("waitingForServer")}
       </p>
     );
   }
@@ -272,7 +287,7 @@ function Feedback({
       <p
         className="mt-3 rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]"
       >
-        Trade rejected — {rejection.reason}
+        {t("tradeRejected", { reason: rejection.reason })}
       </p>
     );
   }
@@ -284,27 +299,30 @@ function Feedback({
       >
         <p className="text-[12.5px] text-[#eef2f8]">
           <span className={`font-semibold ${isLong ? "text-[#1fcb83]" : "text-[#f6485d]"}`}>
-            {isLong ? "Long" : "Short"}
+            {isLong ? t("long") : t("short")}
           </span>{" "}
-          <span className="font-mono font-semibold">{fmtUSD(Math.round(fill.amount))}</span> filled @{" "}
+          <span className="font-mono font-semibold">{fmtUSD(Math.round(fill.amount))}</span>{" "}
+          {t("filledAt")}{" "}
           <span className="font-mono font-semibold">{fmtPrice(fill.fillPrice)}</span>
         </p>
         <p className="mt-1 text-[10.5px] text-[#5d6877]">
-          Filled at the server&apos;s price, which is often not the price shown when you clicked.
+          {t("filledAtServerPrice")}
         </p>
         <p className="mt-1 text-[11px] text-[#9aa6b6]">
           {fill.resultingNetSide === "flat" ? (
-            "Exposure is now flat."
+            t("exposureFlat")
           ) : (
             <>
-              Exposure is now {fill.resultingNetSide === "long" ? "Long" : "Short"}{" "}
+              {t("exposureNow", {
+                side: fill.resultingNetSide === "long" ? t("long") : t("short"),
+              })}{" "}
               <span className="font-mono">{fmtUSD(Math.round(fill.resultingNetAmount))}</span>.
             </>
           )}
           {fill.realisedPnl !== null && (
             <>
               {" "}
-              Offset realised{" "}
+              {t("offsetRealised")}{" "}
               <span
                 className={`font-mono font-semibold ${
                   fill.realisedPnl < 0 ? "text-[#f6485d]" : "text-[#1fcb83]"
@@ -323,20 +341,20 @@ function Feedback({
   if (connecting) {
     return (
       <p className="mt-3 text-[11.5px] text-[#5d6877]">
-        Connecting to the match…
+        {t("connecting")}
       </p>
     );
   }
   if (disabled) {
     return (
       <p className="mt-3 text-[11.5px] text-[#5d6877]">
-        Trading is unavailable right now.
+        {t("tradingUnavailable")}
       </p>
     );
   }
   return (
     <p className="mt-3 text-[11.5px] text-[#3a434f]">
-      Nothing moves until the server confirms your Trade.
+      {t("nothingMoves")}
     </p>
   );
 }
@@ -377,14 +395,23 @@ function maxForSide(player: PlayerState | null, side: Side): number {
   return Math.max(0, player.availableBalance + player.netAmount + released - 0.01);
 }
 
-function validate(raw: string, amount: number | null, player: PlayerState | null): string | null {
+function validate(
+  raw: string,
+  amount: number | null,
+  player: PlayerState | null,
+  messages: {
+    enterAmount: string;
+    amountGreaterThanZero: string;
+    amountExceedsLimit: (amount: string) => string;
+  }
+): string | null {
   if (raw.trim() === "") return null;
-  if (amount === null) return "Enter an amount.";
-  if (amount <= 0) return "Amount must be greater than zero.";
+  if (amount === null) return messages.enterAmount;
+  if (amount <= 0) return messages.amountGreaterThanZero;
   if (player !== null) {
     const ceiling = Math.max(maxForSide(player, "long"), maxForSide(player, "short"));
     if (amount > ceiling) {
-      return `More than you can trade — at most ${fmtUSD(Math.floor(ceiling))}.`;
+      return messages.amountExceedsLimit(fmtUSD(Math.floor(ceiling)));
     }
   }
   return null;
