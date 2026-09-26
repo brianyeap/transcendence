@@ -247,11 +247,36 @@ export default function SettingsPage() {
           <div className="px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Avatar
-                  name={username || userEmail}
-                  imageUrl={previewUrl ?? avatarUrl}
-                  size="lg"
-                />
+                {/*
+                 * The local preview is rendered as a plain <img> ON PURPOSE.
+                 *
+                 * `previewUrl` is a blob: URL created by URL.createObjectURL()
+                 * a few lines up. It is generated locally from the file the user
+                 * just picked, never leaves the browser, is never persisted, and
+                 * is never seen by anyone else — so it is always safe to render.
+                 *
+                 * It must NOT go through <Avatar>, because <Avatar> applies
+                 * isTrustedAvatarUrl() and a blob: URL has an empty hostname
+                 * (protocol is "blob:", not "https:"), so it would fail the
+                 * allowlist and fall back to initials.
+                 *
+                 * The allowlist is deliberately still applied to `avatarUrl`
+                 * below — that value comes from the database and is the real
+                 * attack surface. Keep the two paths separate.
+                 */}
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt=""
+                    className="size-11 shrink-0 rounded-[30%] object-cover shadow-[inset_0_1px_0_rgba(255,255,255,.18)]"
+                  />
+                ) : (
+                  <Avatar
+                    name={username || userEmail}
+                    imageUrl={avatarUrl}
+                    size="lg"
+                  />
+                )}
                 <div>
                   <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">
                     {t("profilePhoto")}
