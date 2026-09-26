@@ -1,3 +1,17 @@
+/**
+ * CLIENT-SIDE PREVIEW ONLY.
+ *
+ * `resizeImage` produces a small JPEG purely so the settings page can show the
+ * user what their cropped photo will look like, instantly and without a round
+ * trip to the server.
+ *
+ * The output of this function is NEVER uploaded and is NEVER trusted. It is a
+ * cosmetic preview held in component state. The real validation, decode and
+ * re-encode happen server-side in app/api/profile/avatar/route.ts, which checks
+ * magic bytes and decodes the original file itself — nothing here is a security
+ * control. Editing this file, or skipping it entirely from the console, changes
+ * only what the user sees locally.
+ */
 export async function resizeImage(file: File, maxSize: number = 256): Promise<Blob>
 {
 	return new Promise((resolve, reject) => {
@@ -7,23 +21,23 @@ export async function resizeImage(file: File, maxSize: number = 256): Promise<Bl
 	  reader.onload = (e) => {
 		img.src = e.target?.result as string;
 	  };
-  
+
 	  img.onload = () => {
 		const canvas = document.createElement("canvas");
 		canvas.width = maxSize;
 		canvas.height = maxSize;
-  
+
 		const ctx = canvas.getContext("2d");
 		if (!ctx) {
 		  reject(new Error("Canvas context not available"));
 		  return;
 		}
-  
+
 		// Center-crop to square before resizing
 		const size = Math.min(img.width, img.height);
 		const offsetX = (img.width - size) / 2;
 		const offsetY = (img.height - size) / 2;
-  
+
 		ctx.drawImage(
 		  img,
 		  offsetX, offsetY, size, size,
@@ -39,20 +53,9 @@ export async function resizeImage(file: File, maxSize: number = 256): Promise<Bl
 		  0.85
 		);
 	  };
-  
+
 	  img.onerror = reject;
 	  reader.onerror = reject;
 	  reader.readAsDataURL(file);
-	});
-}
-
-// This function helps convert a Blob to base44 string.
-export async function blobToBase64(blob: Blob): Promise<string>
-{
-	return new Promise((resolve, reject) => {
-	  const reader = new FileReader();
-	  reader.onload = () => resolve(reader.result as string);
-	  reader.onerror = reject;
-	  reader.readAsDataURL(blob);
 	});
 }

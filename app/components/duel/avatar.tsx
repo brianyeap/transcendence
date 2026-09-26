@@ -1,16 +1,23 @@
-export function Avatar({ 
-	name, 
-	imageUrl, 
-	size = "md" 
-  }: { 
-	name: string; 
+import { isTrustedAvatarUrl } from "@/lib/avatar-url";
+
+export function Avatar({
+	name,
+	imageUrl,
+	size = "md"
+  }: {
+	name: string;
 	imageUrl?: string | null;
-	size?: "sm" | "md" | "lg" 
+	size?: "sm" | "md" | "lg"
   }) {
 	const sizeClass = size === "lg" ? "size-11 text-base" : size === "sm" ? "size-8 text-xs" : "size-9 text-sm";
-  
-	// If a real uploaded image exists, show it
-	if (imageUrl) {
+
+	// Render the image only if the URL points at our own Supabase project.
+	// The write path (app/api/profile/avatar/route.ts) already guarantees this,
+	// but avatar_url is read back from the database in several places — including
+	// the live-match transport — so this is the safety net if that ever regresses.
+	// Anything else falls through to initials rather than loading a third-party
+	// URL into every viewer's browser.
+	if (imageUrl && isTrustedAvatarUrl(imageUrl)) {
 	  return (
 		<img
 		  src={imageUrl}
