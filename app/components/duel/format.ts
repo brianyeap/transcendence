@@ -24,3 +24,13 @@ export function fmtSigned(value: number) {
 //   const date = new Date(Date.now() - minutes * 60 * 1000);
 //   return formatDistanceToNow(date, { addSuffix: true });
 // }
+
+/* the colours for profit/loss - red, green, grey 
+	used in the matches/[matchId]/ pages
+*/
+export function pnlTone(value: number): string {
+  const rounded = Math.round(value);
+  if (rounded > 0) return "text-[#1fcb83]";
+  if (rounded < 0) return "text-[#f6485d]";
+  return "text-[#9aa6b6]";
+}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { PlayerState, Side, TradeFill, TradeRejection } from "@/lib/match/types";
 import { fmtUSD } from "../../components/duel/format";
-import { fmtPrice } from "./format";
+import { fmtPrice } from "../../components/duel/format";
 
 const PRESETS = [0.25, 0.5, 0.75, 1] as const;
 

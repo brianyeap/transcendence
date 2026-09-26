@@ -3,9 +3,9 @@
 import { ArrowDownRight, ArrowUpRight, CircleSlash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { fmtUSD } from "../../components/duel/format";
-import { pnlTone, signedUSD } from "./format";
 import { SectionLabel } from "../../components/duel/section-label";
 import type { PlayerState } from "@/lib/match/types";
+import { fmtSigned, pnlTone } from "../../components/duel/format";
 
 export function PositionPanel({
   player,
@@ -109,7 +109,7 @@ function UnrealisedBlock({ unrealisedPnl }: { unrealisedPnl: number }) {
       <div className="flex items-baseline justify-between gap-3">
         <SectionLabel>{t("unrealisedPnl")}</SectionLabel>
         <span className={`font-mono text-[22px] font-semibold tracking-[-.02em] tabular-nums ${tone}`}>
-          {signedUSD(rounded)}
+          {fmtSigned(rounded)}
         </span>
       </div>
       <p className="mt-1.5 text-[11.5px] text-[#5d6877]">
@@ -129,7 +129,7 @@ function RealisedRow({ realisedPnl, className = "" }: { realisedPnl: number; cla
     <p className={`text-[11.5px] text-[#5d6877] ${className}`}>
       {t("realisedPnl")}{" "}
       <span className={`font-mono font-semibold tabular-nums ${pnlTone(realisedPnl)}`}>
-        {signedUSD(realisedPnl)}
+        {fmtSigned(realisedPnl)}
       </span>
     </p>
   );
