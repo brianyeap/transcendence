@@ -24,7 +24,6 @@ import type { Candle, NetSide, Side, TradeFill } from "@/lib/match/types";
 
 const UP = "#1fcb83";
 const DOWN = "#f6485d";
-const ACCENT = "#4d86ff";
 const PANEL = "#0f131b";
 const RAISED = "#151b25";
 const TEXT_DIM = "#5d6877";
@@ -44,19 +43,6 @@ function toPoint(candle: Candle): CandlestickData<Time> {
     color,
     borderColor: color,
     wickColor: color,
-  };
-}
-
-function dividerMarker(
-  time: number,
-  matchStartLabel: string
-): SeriesMarker<Time> {
-  return {
-    time: time as UTCTimestamp,
-    position: "aboveBar",
-    shape: "arrowDown",
-    color: ACCENT,
-    text: matchStartLabel,
   };
 }
 
@@ -116,17 +102,8 @@ function buildTradeMarkers(
     });
 }
 
-function mergeMarkers(
-  dividerTime: number | null,
-  tradeMarkers: SeriesMarker<Time>[],
-  matchStartLabel: string
-): SeriesMarker<Time>[] {
-  const merged =
-    dividerTime === null
-      ? [...tradeMarkers]
-      : [dividerMarker(dividerTime, matchStartLabel), ...tradeMarkers];
-
-  return merged.sort((a, b) => (a.time as number) - (b.time as number));
+function mergeMarkers(tradeMarkers: SeriesMarker<Time>[]): SeriesMarker<Time>[] {
+  return [...tradeMarkers].sort((a, b) => (a.time as number) - (b.time as number));
 }
 
 export function MatchChart({
@@ -154,9 +131,6 @@ export function MatchChart({
   const firstTimeRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
 
-  // Every candle is part of the match, so the "Match start" arrow goes on the first one
-  const dividerTime = candles[0]?.time ?? null;
-
   const candlePhase = useMemo(() => {
     const first = candles[0];
 
@@ -170,16 +144,9 @@ export function MatchChart({
   const markers = useMemo(
     () =>
       mergeMarkers(
-        dividerTime,
-        buildTradeMarkers(
-          trades,
-          candlePhase,
-          t("long"),
-          t("short")
-        ),
-        t("matchStart")
+        buildTradeMarkers(trades, candlePhase, t("long"), t("short"))
       ),
-    [dividerTime, trades, candlePhase, t]
+    [trades, candlePhase, t]
   );
 
   useEffect(() => {
