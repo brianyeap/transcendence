@@ -16,7 +16,7 @@ flowchart LR
   end
 
   subgraph Docker["Docker network: transcendence_dev"]
-    WEB["web :3000<br/>Next.js server<br/>proxy.ts + app/api/rooms"]
+    WEB["web :3000<br/>Next.js server<br/>proxy.ts + app/api/rooms<br/>+ app/api/profile/avatar"]
     SOCK["socket :4000<br/>Match engine<br/>socket/server.js"]
     OTEL["otel-collector<br/>4318 in, 8889 out"]
     PROM["prometheus :9090"]
@@ -33,11 +33,11 @@ flowchart LR
   CB["Coinbase public API<br/>BTC-USD candles + ticker"]
   MAIL["Gmail SMTP<br/>alert emails"]
 
-  UI -->|"page requests, /api/rooms"| WEB
+  UI -->|"page requests, /api/rooms,<br/>/api/profile/avatar"| WEB
   WEB -->|"check session cookie"| AUTH
   WEB -->|"server reads + create/join room"| DB
   UI -->|"browser reads: friends, ping_online"| DB
-  UI -->|"avatar upload"| STORE
+  WEB -->|"validated avatar upload<br/>service role"| STORE
   ST -->|"on page load: match, candles,<br/>trades, players snapshot"| DB
   ST <-->|"WebSocket<br/>match:join, trade:submit<br/>tick, capitals, ended"| SOCK
   SOCK -->|"verify login token"| AUTH
@@ -55,7 +55,7 @@ flowchart LR
 
 - **Supabase** is the permanent memory: accounts, rooms/matches, trades, candles, results.
 - **The match engine** is the referee. It keeps live matches in memory (`liveMatches`), decides every fill and the winner, then saves everything to Supabase. The browser only *shows* estimated numbers.
-- **The web server** handles login redirects (`proxy.ts`) and room create/join (`app/api/rooms`). Most other pages read Supabase directly.
+- **The web server** handles login redirects (`proxy.ts`), room create/join (`app/api/rooms`), and avatar uploads (`app/api/profile/avatar`, which checks the image before saving it to Storage). Most other pages read Supabase directly.
 - When the engine starts, it runs `closeStaleMatches()`, which marks as completed any matches whose time has run out and any rooms that have waited for more than 1 hour.
 
 ## 2. Match lifecycle
