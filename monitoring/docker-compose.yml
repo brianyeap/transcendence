@@ -14,17 +14,36 @@ services:
     networks:
       - transcendence
 
+  grafana-certs:
+    image: alpine:3.20
+    container_name: grafana-certs
+    volumes:
+      - ./grafana/certs-entrypoint.sh:/entrypoint.sh:ro
+      - grafana_certs:/certs
+    entrypoint: ["sh", "/entrypoint.sh"]
+    networks:
+      - transcendence
+
   grafana:
     image: grafana/grafana:12.3.1
     container_name: grafana
     restart: unless-stopped
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_started
+      grafana-certs:
+        condition: service_completed_successfully
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_PROTOCOL: https
+      GF_SERVER_CERT_FILE: /etc/grafana/certs/grafana.crt
+      GF_SERVER_CERT_KEY: /etc/grafana/certs/grafana.key
+      GF_SERVER_ROOT_URL: https://localhost:3001/
       GF_SMTP_ENABLED: "true"
       GF_SMTP_HOST: smtp.gmail.com:587
       GF_SMTP_USER: ${SMTP_USER}
@@ -35,6 +54,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_certs:/etc/grafana/certs:ro
     networks:
       - transcendence
 
@@ -47,12 +67,13 @@ services:
     volumes:
       - ./otel/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
     ports:
-      - "4317:4317" # standard OTLP gRPC port
-      - "4318:4318" # OTLP HTTP port
-      - "8889:8889" # endpoint where Collector exposes metrics in a Prometheus-compatible format
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
     networks:
       - transcendence
 
 volumes:
   prometheus_data:
   grafana_data:
+  grafana_certs:
