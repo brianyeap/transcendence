@@ -18,7 +18,7 @@ import {
 	ChevronDown,
 	Loader2,
 } from "lucide-react";
-import { formatMoney, formatDuration, dateLocaleFromAppLocale, formatDateTime, formatPct } from "./_lib/format";
+import { formatMoney, formatDuration, dateLocaleFromAppLocale, formatDateTime, formatPct } from "./format";
 import { CandlestickChart } from "./candlestick-chart";
 import { pnlTone } from "@/app/components/duel/format";
 
@@ -310,7 +310,7 @@ export default function HistoryPage() {
 											<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-xs font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div></div>
-												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at)}</div></div>
+												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at, t)}</div></div>
 											</div>
 										</div>
 
