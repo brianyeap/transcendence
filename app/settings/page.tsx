@@ -26,7 +26,9 @@ export default function SettingsPage() {
 
   // Avatar upload state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
+  // The ORIGINAL file the user picked, sent as-is to the API route, which does
+  // its own decode and re-encode. Distinct from the preview blob.
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const handleLanguageChange = (locale: string) => {
@@ -102,7 +104,13 @@ export default function SettingsPage() {
     }
   }
 
-  // Step 1: user picks a photo file
+  // Step 1: user picks a photo file.
+  //
+  // The type check below is UX ONLY — it gives the user a quick, local
+  // "that's not an image" message. It is NOT a security control: file.type is
+  // a client-supplied string, and this whole function can be skipped from the
+  // console. Real validation (magic bytes + full decode) and the re-encode
+  // happen server-side in app/api/profile/avatar/route.ts.
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -114,65 +122,51 @@ export default function SettingsPage() {
 
     setStatusMessage("");
 
+    // Preview only. This blob is never uploaded — the ORIGINAL file is sent
+    // to the API route, which does its own decode and re-encode.
     const resized = await resizeImage(file, 256);
     const localUrl = URL.createObjectURL(resized);
 
     setPreviewUrl(localUrl);
-    setPendingBlob(resized);
+    setPendingFile(file);
   }
 
-  // Step 2: user clicks Confirm to actually save the photo
+  // Step 2: user clicks Confirm to actually save the photo.
+  //
+  // The browser no longer talks to Storage and no longer writes avatar_url.
+  // It posts the original file to our own route, which validates it and
+  // returns the URL it derived itself.
   async function handleConfirmUpload() {
-    if (!pendingBlob) return;
+    if (!pendingFile) return;
 
     setUploading(true);
     setUploadError(null);
     setStatusMessage(t("uploading"));
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setUploadError(t("signInAgainUpload"));
+      const formData = new FormData();
+      formData.append("file", pendingFile);
+
+      const response = await fetch("/api/profile/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setUploadError(payload?.error || t("uploadFailed"));
         setStatusMessage("");
         return;
       }
 
-      const filePath = `${user.id}/avatar.jpg`;
-
-      const { error: storageError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, pendingBlob, {
-          upsert: true,
-          contentType: "image/jpeg",
-        });
-
-      if (storageError) {
-        setUploadError(storageError.message || t("uploadFailed"));
-        setStatusMessage("");
-        return;
-      }
-
-      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      // ─────────────────────────────────────────────
-      // ZEP: saves the photo's URL into profiles.avatar_url
-      // for the logged-in user's row.
-      // ─────────────────────────────────────────────
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: `${urlData.publicUrl}?v=${Date.now()}` })
-        .eq("id", user.id);
-
-      if (profileError) {
-        setUploadError(profileError.message || t("profilePhotoUpdateFailed"));
-        setStatusMessage("");
-        return;
-      }
-
-      setAvatarUrl(`${urlData.publicUrl}?v=${Date.now()}`);
+      setAvatarUrl(payload?.avatarUrl ?? null);
       setPreviewUrl(null);
-      setPendingBlob(null);
+      setPendingFile(null);
       setUploadError(null);
+      setStatusMessage("");
+    } catch {
+      setUploadError(t("uploadFailed"));
       setStatusMessage("");
     } finally {
       setUploading(false);
@@ -181,7 +175,7 @@ export default function SettingsPage() {
 
   function handleCancelPreview() {
     setPreviewUrl(null);
-    setPendingBlob(null);
+    setPendingFile(null);
     setStatusMessage("");
   }
 
