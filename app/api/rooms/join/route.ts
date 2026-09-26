@@ -9,7 +9,7 @@ type JoinRoomRequest = {
 };
 
 export async function POST(request: Request) {
-  // --- read and validate the body ------------------------------------------
+  // read and validate the body
   let body: JoinRoomRequest;
 
   try {
