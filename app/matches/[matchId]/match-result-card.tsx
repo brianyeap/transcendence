@@ -5,8 +5,8 @@ import { ArrowLeft, CircleX, Equal, ScrollText, Trophy } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ActionLink } from "./message-screen";
 import { fmtUSD } from "../../components/duel/format";
-import { pnlTone, signedUSD } from "./format";
 import type { Match, MatchEnded, PlayerRef } from "@/lib/match/types";
+import { fmtSigned, pnlTone } from "../../components/duel/format";
 
 type Outcome = "win" | "loss" | "draw";
 
@@ -180,7 +180,7 @@ function PlayerResult({
         <p className="text-[12px] text-[#9aa6b6]">
           {t("net")}{" "}
           <span className={`font-mono font-semibold tabular-nums ${pnlTone(net)}`}>
-            {signedUSD(net)}
+            {fmtSigned(net)}
           </span>
           {percent === null ? null : (
             <span className={`font-mono tabular-nums ${pnlTone(net)}`}>

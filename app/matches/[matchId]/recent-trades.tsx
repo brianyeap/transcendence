@@ -5,8 +5,8 @@ import { ArrowDownRight, ArrowUpRight, Receipt } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { fmtUSD } from "../../components/duel/format";
-import { pnlTone, signedUSD } from "./format";
 import type { TradeFill } from "@/lib/match/types";
+import { fmtSigned, pnlTone } from "../../components/duel/format";
 
 const VISIBLE_ROWS = 6;
 
@@ -103,7 +103,7 @@ function TradeRow({ trade }: { trade: TradeFill }) {
               trade.realisedPnl
             )}`}
           >
-            {signedUSD(trade.realisedPnl)}
+            {fmtSigned(trade.realisedPnl)}
           </span>
         )}
       </div>
