@@ -171,6 +171,8 @@ async function loadPlayers(matchRow) {
 
 const ticking = new Set();
 
+const startingMatches = new Map();
+
 // Make sure a match is loaded into memory and its clock is ticking. (Safe to call many times)
 async function ensureMatchRunning(matchRow) {
   // IF match alr running
@@ -178,6 +180,19 @@ async function ensureMatchRunning(matchRow) {
     return liveMatches.get(matchRow.id);
   }
 
+  // Nobody is setting it up yet: start it and remember that we are.
+  // This runs before any await, so a second join always sees it.
+  if (!startingMatches.has(matchRow.id)) {
+    const starting = startMatch(matchRow).finally(() => startingMatches.delete(matchRow.id));
+    startingMatches.set(matchRow.id, starting);
+  }
+
+  // Everyone waits for the same setup and gets the same match object.
+  return startingMatches.get(matchRow.id);
+}
+
+// Load a match into memory and start its clock. Only ensureMatchRunning calls this.
+async function startMatch(matchRow) {
   // Load the players (money + positions).
   const players = await loadPlayers(matchRow);
 
