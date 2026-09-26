@@ -18,148 +18,9 @@ import {
 	ChevronDown,
 	Loader2,
 } from "lucide-react";
-
-// --- Helper Functions ---
-function formatMoney(value: number): string {
-	const sign = value > 0 ? "+" : "";
-	return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function formatDuration(starts_at?: string | null, ends_at?: string | null): string {
-	if (!starts_at || !ends_at) return "—";
-	const start = new Date(starts_at).getTime();
-	const end = new Date(ends_at).getTime();
-	if (Number.isNaN(start) || Number.isNaN(end)) return "—";
-	const seconds = Math.max(0, Math.round((end - start) / 1000));
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = seconds % 60;
-	return `${minutes}m ${remainingSeconds}s`;
-}
-
-function dateLocaleFromAppLocale(locale: string): string {
-	if (locale === "zh-CN") return "zh-CN";
-	if (locale === "ms") return "ms-MY";
-	return "en-GB";
-}
-
-function formatDateTime(dateString: string | null | undefined, locale: string): string {
-	if (!dateString) return "—";
-	const date = new Date(dateString);
-	if (Number.isNaN(date.getTime())) return "—";
-	return date.toLocaleDateString(dateLocaleFromAppLocale(locale), {
-		day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-	});
-}
-
-function getPnLColor(value: number): string {
-	if (value > 0) return "text-emerald-400";
-	if (value < 0) return "text-rose-400";
-	return "text-gray-400";
-}
-
-// --- Candlestick Chart Component ---
-function CandlestickChart({ candles, trades, currentUserId, t }: any) {
-	if (!candles || candles.length === 0) return null;
-
-	const sequences = candles.map((c: any) => c.sequence);
-	const minSequence = Math.min(...sequences, 0);
-	const maxSequence = Math.max(...sequences, 1);
-
-	const tradePrices = trades.map((tr: any) => tr.execution_price);
-	const allPrices = [...candles.map((c: any) => c.low), ...candles.map((c: any) => c.high), ...tradePrices];
-	const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-	const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
-
-	const priceRange = maxPrice - minPrice || 1;
-	const padPriceMin = minPrice - priceRange * 0.1;
-	const padPriceMax = maxPrice + priceRange * 0.1;
-	const paddedRange = padPriceMax - padPriceMin;
-
-	const svgWidth = 1000;
-	const svgHeight = 320;
-	const padLeft = 70, padRight = 30, padTop = 30, padBottom = 30;
-	const chartWidth = svgWidth - padLeft - padRight;
-	const chartHeight = svgHeight - padTop - padBottom;
-
-	const getX = (seq: number) => padLeft + ((seq - minSequence) / (maxSequence - minSequence || 1)) * chartWidth;
-	const getY = (price: number) => padTop + (1 - (price - padPriceMin) / paddedRange) * chartHeight;
-
-	const gridCount = 5;
-	const gridLines = Array.from({ length: gridCount }).map((_, i) => {
-		const price = padPriceMin + (i / (gridCount - 1)) * paddedRange;
-		return { price, y: getY(price) };
-	});
-
-	const candleWidth = Math.max(1.5, (chartWidth / (candles.length || 1)) * 0.6);
-
-	return (
-		<div className="relative w-full overflow-x-auto">
-			<svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full min-w-[700px] h-80" preserveAspectRatio="none">
-				<g transform="translate(80, 15)">
-					<path d="M 0 -4 L -4 2 L 4 2 Z" fill="#10b981" stroke="#ffffff" strokeWidth="1" />
-					<text x="8" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youLong")}</text>
-					<path transform="translate(75, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="#ef4444" stroke="#ffffff" strokeWidth="1" />
-					<text x="83" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youShort")}</text>
-					<path transform="translate(155, 0)" d="M 0 -4 L -4 2 L 4 2 Z" fill="none" stroke="#34d399" strokeWidth="1.5" />
-					<text x="163" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentLong")}</text>
-					<path transform="translate(255, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="none" stroke="#f87171" strokeWidth="1.5" />
-					<text x="263" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentShort")}</text>
-				</g>
-
-				{gridLines.map((line, i) => (
-					<g key={i}>
-						<line x1={padLeft} y1={line.y} x2={svgWidth - padRight} y2={line.y} stroke="#ffffff" strokeOpacity="0.08" strokeDasharray="3 3" />
-						<text x={padLeft - 8} y={line.y + 4} fill="#5d6877" fontSize="10" fontFamily="monospace" textAnchor="end">
-							${line.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-						</text>
-					</g>
-				))}
-
-				{candles.map((c: any) => {
-					const cx = getX(c.sequence);
-					const cyOpen = getY(c.open), cyClose = getY(c.close), cyHigh = getY(c.high), cyLow = getY(c.low);
-					const isGreen = c.close >= c.open;
-					const color = isGreen ? "#10b981" : "#ef4444";
-					return (
-						<g key={c.sequence}>
-							<line x1={cx} y1={cyHigh} x2={cx} y2={cyLow} stroke={color} strokeWidth="1.5" />
-							<rect x={cx - candleWidth / 2} y={Math.min(cyOpen, cyClose)} width={candleWidth} height={Math.max(1.2, Math.abs(cyOpen - cyClose))} fill={color} />
-						</g>
-					);
-				})}
-
-				{trades.map((trade: any) => {
-					const tx = getX(trade.candle_sequence);
-					const ty = getY(trade.execution_price);
-					const isCurrentUser = trade.user_id === currentUserId;
-					const isLong = trade.side === "long";
-					let markerFill = "", markerStroke = "", markerStrokeWidth = "1.5";
-					let markerPath = isLong
-						? `M ${tx} ${ty - 7} L ${tx - 6} ${ty + 3} L ${tx + 6} ${ty + 3} Z`
-						: `M ${tx} ${ty + 7} L ${tx - 6} ${ty - 3} L ${tx + 6} ${ty - 3} Z`;
-
-					if (isCurrentUser) {
-						markerFill = isLong ? "#10b981" : "#ef4444";
-						markerStroke = "#ffffff";
-					} else {
-						markerFill = "none";
-						markerStroke = isLong ? "#34d399" : "#f87171";
-						markerStrokeWidth = "2";
-					}
-
-					return (
-						<g key={trade.id}>
-							<circle cx={tx} cy={ty} r="9" fill={isLong ? "#10b981" : "#ef4444"} fillOpacity="0.1" />
-							<path d={markerPath} fill={markerFill} stroke={markerStroke} strokeWidth={markerStrokeWidth}>
-								<title>{t("tradeTooltip", { username: trade.username, side: isLong ? t("long") : t("short"), amount: trade.amount_usdt, price: trade.execution_price })}</title>
-							</path>
-						</g>
-					);
-				})}
-			</svg>
-		</div>
-	);
-}
+import { formatMoney, formatDuration, dateLocaleFromAppLocale, formatDateTime, formatPct } from "./_lib/format";
+import { CandlestickChart } from "./candlestick-chart";
+import { pnlTone } from "@/app/components/duel/format";
 
 // --- Reusable UI Helpers ---
 function getResultColor(result: string) { return result === "WIN" ? "text-emerald-400" : result === "LOSS" ? "text-rose-400" : "text-gray-400"; }
@@ -180,13 +41,6 @@ function getRelativeTime(dateString: string, t: any): string {
 	if (diffDays < 7) return t("daysAgo", { count: diffDays }); if (diffDays < 30) return t("weeksAgo", { count: Math.floor(diffDays / 7) });
 	if (diffDays < 365) return t("monthsAgo", { count: Math.floor(diffDays / 30) }); return t("yearsAgo", { count: Math.floor(diffDays / 365) });
 }
-function formatPct(value: number, base: number): string {
-	if (!base || !Number.isFinite(base) || !Number.isFinite(value)) return "—";
-	const pct = (value / base) * 100;
-	if (!Number.isFinite(pct)) return "—";
-	return `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`;
-}
-
 function CumulativeChart({ data }: { data: { value: number; result: string }[] }) {
 	if (data.length === 0) return null;
 	const width = 800, height = 160, padX = 16, padY = 24;
@@ -479,14 +333,14 @@ export default function HistoryPage() {
 														<div className="flex items-center justify-center gap-8">
 															<div className="text-right">
 																<div className="text-sm font-semibold">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
-																<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-																<div className={`text-xs font-mono ${getPnLColor(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
+																<div className={`text-xl font-bold font-mono ${pnlTone(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className={`text-xs font-mono ${pnlTone(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
 															</div>
 															<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
 															<div className="text-left">
 																<div className="text-sm font-semibold">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
-																<div className={`text-xl font-bold font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-																<div className={`text-xs font-mono ${getPnLColor(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
+																<div className={`text-xl font-bold font-mono ${pnlTone(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className={`text-xs font-mono ${pnlTone(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
 															</div>
 														</div>
 
