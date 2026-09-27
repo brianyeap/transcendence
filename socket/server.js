@@ -67,7 +67,9 @@ function roomName(matchId) {
 
 // Save a player's position and etc
 async function savePlayer(matchId, userId, player) {
-  await supabase
+  // Supabase does not throw on failure - it hands back an `error` instead,
+  // so we grab it and print it. Otherwise a failed save is silent.
+  const { error } = await supabase
     .from("match_players")
     .update({
       available_balance: player.availableBalance,
@@ -78,11 +80,12 @@ async function savePlayer(matchId, userId, player) {
     })
     .eq("match_id", matchId)
     .eq("user_id", userId);
+  if (error) console.error("savePlayer failed:", error.message);
 }
 
 // Add the trades
 async function saveTrade(matchId, userId, side, amount, price, result, candleSequence) {
-  await supabase.from("trades").insert({
+  const { error } = await supabase.from("trades").insert({
     match_id: matchId,
     user_id: userId,
     side: side,
@@ -93,11 +96,12 @@ async function saveTrade(matchId, userId, side, amount, price, result, candleSeq
     resulting_notional: result.next.notional,
     candle_sequence: candleSequence,              // candle tick
   });
+  if (error) console.error("saveTrade failed:", error.message);
 }
 
 // ADd cancle to db
 async function saveCandle(matchId, sequence, candle) {
-  await supabase.from("match_candles").insert({
+  const { error } = await supabase.from("match_candles").insert({
     match_id: matchId,
     sequence: sequence, // count of the candle
     open_time: candle.time ? new Date(candle.time * 1000).toISOString() : new Date().toISOString(), // use time if not now
@@ -106,6 +110,7 @@ async function saveCandle(matchId, sequence, candle) {
     low: candle.low,
     close: candle.close,
   });
+  if (error) console.error("saveCandle failed:", error.message);
 }
 
 
@@ -527,44 +532,51 @@ io.on("connection", (socket) => {
   socket.on("trade:submit", async ({ matchId, side, amount }) => {
     // Same rule as match:join - the trader is whoever the token says they are.
     const userId = socket.data.userId;
+    console.log("trade:submit from", userId, "->", side, amount, "in match", matchId);
+
+    // Send a rejection back to the player, and print it so we can see it in the logs.
+    function reject(reason) {
+      console.log("trade rejected for", userId, "-", reason);
+      socket.emit("trade:rejected", { reason });
+    }
 
     const match = liveMatches.get(matchId);
 
     // The match must be live (started, not ended).
     if (!match || !match.started || match.ended) {
-      socket.emit("trade:rejected", { reason: "Match is not active." });
+      reject("Match is not active.");
       return;
     }
 
     // Check the order details.
     if (side !== "long" && side !== "short") {
-      socket.emit("trade:rejected", { reason: "Side must be long or short." });
+      reject("Side must be long or short.");
       return;
     }
     const orderAmount = Number(amount);
     if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
-      socket.emit("trade:rejected", { reason: "Amount must be a positive number." });
+      reject("Amount must be a positive number.");
       return;
     }
 
     // The player must be in this match.
     const player = match.players[userId];
     if (!player) {
-      socket.emit("trade:rejected", { reason: "You are not in this match." });
+      reject("You are not in this match.");
       return;
     }
 
     // We need a current price to trade at.
     const price = match.latestPrice;
     if (price === null) {
-      socket.emit("trade:rejected", { reason: "No price yet, try again in a moment." });
+      reject("No price yet, try again in a moment.");
       return;
     }
 
     // Work out the result of the order.
     const result = applyTrade(player, side, orderAmount, price);
     if (!result.ok) {
-      socket.emit("trade:rejected", { reason: result.reason });
+      reject(result.reason);
       return;
     }
 
@@ -573,6 +585,7 @@ io.on("connection", (socket) => {
     // ...and into the database (player row + a trades log entry).
     await savePlayer(matchId, userId, result.next);
     await saveTrade(matchId, userId, side, orderAmount, price, result, match.sequence);
+    console.log("trade accepted for", userId, "-", side, orderAmount, "@", price);
 
     // Tell just this player what happened (opponents don't see live trades).
     // We include the resulting position so the chart can mark the fill and the
