@@ -136,6 +136,9 @@ Table trades {
   execution_price numeric [not null]
   candle_sequence integer [note: 'Which candle the trade happened on']
   executed_at timestamptz [not null, default: `now()`]
+  realized_pnl numeric [note: 'P&L this trade locked in']
+  resulting_side position_side [note: 'Position after the trade']
+  resulting_notional numeric [note: 'Position size after the trade (USDT)']
 
   Indexes {
     match_id [name: 'trades_match_idx']
