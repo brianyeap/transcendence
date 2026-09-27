@@ -416,6 +416,18 @@ Things already set up in the code for ngrok:
 
 **If a match never connects or hangs in the countdown**, check that `.env.local` has the *current* tunnel URLs (the script prints them), and that no other ngrok agent is already running. The free tier allows only one at a time.
 
+### Playing on the same network (LAN)
+
+If both computers are on the same network (e.g. the 42 cluster), you don't need ngrok. Open Docker Desktop, then run:
+
+```bash
+./run_lan.sh
+```
+
+The script finds this machine's local IP (`ip route` on Linux, `ipconfig getifaddr` on macOS), points `NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS` at it, recreates the containers, and prints the URL. **Both players open that URL**, including the host. Press **Ctrl+C** to switch `.env.local` back to localhost.
+
+`next.config.ts` allows private IP ranges (`10.*`, `172.*`, `192.168.*`) in `allowedDevOrigins`; without that, the dev server blocks its own JS and login does nothing. For Google login, add `http://<your-ip>:3000/**` to the Supabase redirect URLs. If the other computer can't connect at all, check the host's firewall.
+
 ### Stop the stack
 
 ```bash
