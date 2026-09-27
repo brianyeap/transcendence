@@ -7,6 +7,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { formatMoney, formatDuration, dateLocaleFromAppLocale, formatDateTime } from "../format";
 import { CandlestickChart } from "../candlestick-chart";
 import { pnlTone } from "@/app/components/duel/format";
+import { LocalDateTime } from "../local-date-time";
 
 // --- Server Component ---
 export default async function MatchDetailPage({
@@ -234,14 +235,14 @@ export default async function MatchDetailPage({
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex item-center gap-1 mb-1">
 									<Clock className="w-3 h-3" /> {t("startTime")}
 								</div>
-								<div className="text-sm font-semibold">{formatDateTime(match.starts_at, locale)}</div>
+								<div className="text-sm font-semibold"><LocalDateTime iso={match.starts_at} locale={locale} /></div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] flex items-center gap-1 mb-1">
 									<Clock className="w-3 h-3" /> {t("endTime")}
 								</div>
-								<div className="text-sm font-semibold">{formatDateTime(match.ends_at, locale)}</div>
+								<div className="text-sm font-semibold"><LocalDateTime iso={match.ends_at} locale={locale} /></div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
@@ -320,20 +321,18 @@ export default async function MatchDetailPage({
 										) : (
 											<TrendingDown className="w-3.5 h-3.5 text-rose-400" />
 										)}
-										<span className={`text-sm font-semibold ${trade.side === "long" ? "text-emerald-400" : "text-rose-400"
-											}`}>
+										<span className={`text-sm font-semibold ${trade.side === "long" ? "text-emerald-400" : "text-rose-400"}`}>
 											{trade.side === "long" ? t("long") : t("short")}
 										</span>
 									</div>
 									<div className="text-sm font-mono">
 										${trade.amount_usdt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 									</div>
+									<div className="text-sm font-mono text-[#9aa6b6]">
+										${trade.execution_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+									</div>
 									<div className="text-[11px] text-[#5d6877]">
-										{new Date(trade.executed_at).toLocaleTimeString(dateLocaleFromAppLocale(locale), {
-											hour: "2-digit",
-											minute: "2-digit",
-											second: "2-digit",
-										})}
+										<LocalDateTime iso={trade.executed_at} locale={locale} mode="time" />
 									</div>
 								</div>
 							))}
