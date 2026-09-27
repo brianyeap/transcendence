@@ -64,13 +64,13 @@ function formatRoom(
   const isOwner = room.player_one_user_id === currentUserId;
   const profile = creatorProfiles.get(room.player_one_user_id);
   const creatorName = profile?.username ?? room.player_one_user_id.slice(0, 8);
-  const creatorAvatar = profile?.avatar_url ?? null; // 👈 Extract avatar
+  const creatorAvatar = profile?.avatar_url ?? null;
 
   return {
     id: room.id,
     name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`),
     creator: isOwner ? "you" : creatorName,
-    creator_avatar_url: creatorAvatar, // 👈 ADD THIS LINE
+    creator_avatar_url: creatorAvatar,
     players: room.player_two_user_id ? 2 : 1,
     capacity: 2,
     ageMin: getRoomAgeMinutes(room.created_at),
