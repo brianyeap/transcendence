@@ -1,0 +1,76 @@
+/**
+ * CLIENT-SIDE PREVIEW ONLY.
+ *
+ * `resizeImage` produces a small JPEG purely so the settings page can show the
+ * user what their cropped photo will look like, instantly and without a round
+ * trip to the server.
+ *
+ * The output of this function is NEVER uploaded and is NEVER trusted. It is a
+ * cosmetic preview held in component state. The real validation, decode and
+ * re-encode happen server-side in app/api/profile/avatar/route.ts, which checks
+ * magic bytes and decodes the original file itself — nothing here is a security
+ * control. Editing this file, or skipping it entirely from the console, changes
+ * only what the user sees locally.
+ */
+
+/**
+ * Image types the avatar upload accepts. Used by the settings page for the
+ * file picker's `accept` and a quick "wrong format" message — UX only. Keep it
+ * in sync with detectFormat() in app/api/profile/avatar/route.ts, which is the
+ * real check.
+ */
+export const AVATAR_MIME_TYPES = [
+	"image/jpeg",
+	"image/png",
+	"image/gif",
+	"image/webp",
+	"image/avif",
+];
+
+export async function resizeImage(file: File, maxSize: number = 256): Promise<Blob>
+{
+	return new Promise((resolve, reject) => {
+	  const img = new Image();
+	  const reader = new FileReader();
+
+	  reader.onload = (e) => {
+		img.src = e.target?.result as string;
+	  };
+
+	  img.onload = () => {
+		const canvas = document.createElement("canvas");
+		canvas.width = maxSize;
+		canvas.height = maxSize;
+
+		const ctx = canvas.getContext("2d");
+		if (!ctx) {
+		  reject(new Error("Canvas context not available"));
+		  return;
+		}
+
+		// Center-crop to square before resizing
+		const size = Math.min(img.width, img.height);
+		const offsetX = (img.width - size) / 2;
+		const offsetY = (img.height - size) / 2;
+
+		ctx.drawImage(
+		  img,
+		  offsetX, offsetY, size, size,
+		  0, 0, maxSize, maxSize
+		);
+
+		canvas.toBlob(
+		  (blob) => {
+			if (blob) resolve(blob);
+			else reject(new Error("Canvas export failed"));
+		  },
+		  "image/jpeg",
+		  0.85
+		);
+	  };
+
+	  img.onerror = reject;
+	  reader.onerror = reject;
+	  reader.readAsDataURL(file);
+	});
+}

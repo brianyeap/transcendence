@@ -1,0 +1,195 @@
+// ============================================================================
+// supabase/schema.dbml: the live database schema in DBML
+// ----------------------------------------------------------------------------
+// Same tables as supabase/schema.sql (live dump, 2026-09-28), written in DBML
+// so it is easy to look at. Paste this whole file into https://dbdiagram.io
+// to get a diagram.
+//
+// This file is only for viewing. It is written by hand from schema.sql, so if
+// the database changes, update both files. RLS policies and functions are not
+// shown here (DBML has no syntax for them). See schema.sql for those.
+// Docs: https://dbml.dbdiagram.io/docs
+// ============================================================================
+
+// ---------- Enums (fixed lists of allowed values) ----------
+
+Enum match_status {
+  waiting
+  countdown
+  active
+  completed
+}
+
+Enum position_side {
+  long
+  short
+  flat
+}
+
+Enum trade_side {
+  long
+  short
+}
+
+// ---------- Supabase's built-in login table ----------
+// Lives in the `auth` schema and is managed by Supabase, not by us.
+// Shown here only so the arrows pointing at it have something to land on.
+
+Table auth.users {
+  id uuid [primary key]
+
+  Note: 'Supabase Auth table (managed by Supabase). Only the id column is shown.'
+}
+
+// ---------- Our tables ----------
+
+Table profiles {
+  id uuid [primary key, note: 'Same id as auth.users.id']
+  username text [not null, unique]
+  avatar_url text
+
+  Note: 'One row per player. Public info (username and avatar) readable by authenticated users.'
+}
+
+Table user_presence {
+  user_id uuid [primary key, note: 'Same id as auth.users.id']
+  last_seen_at timestamptz [default: `now()`, note: 'Updated by ping_online(); visible only to accepted friends and self']
+
+  Note: 'Tracks online presence. Protected by RLS so only accepted friends and the user themselves can read it.'
+}
+
+Table friends {
+  user_id uuid [not null, note: 'Who sent the friend request']
+  friend_id uuid [not null, note: 'Who received it']
+  status text [not null, default: 'pending', note: "'pending' or 'accepted'"]
+  created_at timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (user_id, friend_id) [pk]
+    // Stops A->B and B->A both existing: only one row per pair of players
+    (`LEAST(user_id, friend_id)`, `GREATEST(user_id, friend_id)`) [unique, name: 'friends_one_row_per_pair']
+  }
+
+  Note: 'Friend requests and friendships. A request becomes a friendship when status turns to accepted.'
+}
+
+Table matches {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  name text
+  status match_status [not null]
+  symbol text [not null, default: 'BTCUSDT']
+  starting_capital numeric [not null]
+  duration_seconds integer
+  player_one_user_id uuid [not null, note: 'Who created the room']
+  player_two_user_id uuid [note: 'Empty until someone joins']
+  winner_user_id uuid [note: 'Empty for a draw or an unfinished match']
+  invited_user_id uuid [note: 'Private room for this one friend. Empty = public room anyone can join']
+  countdown_starts_at timestamptz
+  starts_at timestamptz
+  ends_at timestamptz
+  final_price numeric
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'One row per 1v1 trading match.'
+}
+
+Table match_players {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  match_id uuid [not null]
+  user_id uuid [not null]
+  available_balance numeric [not null]
+  realized_pnl numeric [not null]
+  current_side position_side [not null]
+  position_notional_usdt numeric [not null]
+  average_entry_price numeric
+  final_capital numeric
+  result text [note: "'win', 'loss' or 'draw'. Written by the engine at settlement."]
+  created_at timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (match_id, user_id) [unique]
+    match_id [name: 'match_players_match_idx']
+  }
+
+  Note: "Each player's state inside one match (balance, open position, result)."
+}
+
+Table match_candles {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  match_id uuid [not null]
+  sequence integer [not null, note: 'Order of the candle within the match']
+  open_time timestamptz [not null]
+  open numeric [not null]
+  high numeric [not null]
+  low numeric [not null]
+  close numeric [not null]
+
+  Indexes {
+    (match_id, sequence) [unique]
+    match_id [name: 'match_candles_match_idx']
+  }
+
+  Note: 'Price candles shown during a match.'
+}
+
+Table trades {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  match_id uuid [not null]
+  user_id uuid [not null]
+  side trade_side [not null]
+  amount_usdt numeric [not null]
+  execution_price numeric [not null]
+  candle_sequence integer [note: 'Which candle the trade happened on']
+  executed_at timestamptz [not null, default: `now()`]
+  realized_pnl numeric [note: 'P&L this trade locked in']
+  resulting_side position_side [note: 'Position after the trade']
+  resulting_notional numeric [note: 'Position size after the trade (USDT)']
+
+  Indexes {
+    match_id [name: 'trades_match_idx']
+    user_id [name: 'trades_user_idx']
+  }
+
+  Note: 'Every buy/sell a player makes during a match.'
+}
+
+// ---------- Relationships (foreign keys) ----------
+//   -  one-to-one     >  many-to-one
+
+// A profile belongs to exactly one login account
+Ref: profiles.id - auth.users.id [delete: cascade]
+
+// Presence row belongs to one login account
+Ref: user_presence.user_id - auth.users.id [delete: cascade]
+
+// Friends point at profiles
+Ref: friends.user_id > profiles.id [delete: cascade]
+Ref: friends.friend_id > profiles.id [delete: cascade]
+
+// Matches point straight at auth.users (not profiles)
+Ref: matches.player_one_user_id > auth.users.id
+Ref: matches.player_two_user_id > auth.users.id
+Ref: matches.winner_user_id > auth.users.id
+Ref: matches.invited_user_id > auth.users.id [delete: cascade]
+
+// Per-match data points back at its match
+Ref: match_players.match_id > matches.id
+Ref: match_candles.match_id > matches.id
+Ref: trades.match_id > matches.id
+
+// ...and at the player it belongs to
+Ref: match_players.user_id > auth.users.id
+Ref: trades.user_id > auth.users.id
+
+// ---------- The view (DBML cannot draw views, so it is a note) ----------
+
+Note friends_with_status_view {
+  '''
+  VIEW friends_with_status (security_invoker = true)
+  The logged-in user's friend list, joined with each friend's profile:
+    id, username, avatar_url, seconds_since_seen, status, sent_by_me
+  Built from friends JOIN profiles LEFT JOIN user_presence.
+  RLS on friends limits it to your own rows, and RLS on user_presence means
+  seconds_since_seen is null until the request is accepted.
+  '''
+}

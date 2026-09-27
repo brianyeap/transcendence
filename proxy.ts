@@ -1,39 +1,61 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  });
+const PUBLIC_PATHS = ["/login", "/terms-services", "/privacy-policy", "/auth/callback"];
+
+// prevent loginhack work
+function isPublicPaths(pathname: string) {
+	return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
+export async function proxy(request: NextRequest)
+{
+	let response = NextResponse.next({
+		request,
+	});
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
+        getAll() {  // onlyreads sb auth cookies
+          return request.cookies.getAll(); 
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) { // only called when supabase.auth.getClaims() refreshes the cookie
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
-          response = NextResponse.next({
-            request,
-          });
+					response = NextResponse.next({
+						request,
+					});
 
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
+					cookiesToSet.forEach(({ name, value, options }) => {
+						response.cookies.set(name, value, options);
+					});
 
-  await supabase.auth.getUser();
+					if (headers) {
+						Object.entries(headers).forEach(([key, value]) => {
+							response.headers.set(key, value);
+						});
+					}
+				},
+			},
+		}
+	);
 
-  return response;
+	const { data: { user } } = await supabase.auth.getUser();
+
+	if (!user && !isPublicPaths(request.nextUrl.pathname))
+	{
+		const url = request.nextUrl.clone();
+		url.pathname = "/login";
+		return NextResponse.redirect(url);
+	}
+
+	return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+	// Exclude static assets and the auth callback
+	matcher: ["/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

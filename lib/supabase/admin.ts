@@ -1,0 +1,12 @@
+import { createClient } from "@supabase/supabase-js";
+
+export const createSupabaseAdminClient = () => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      // We don't need this client to remember any login session.
+      auth: { persistSession: false },
+    }
+  );
+};

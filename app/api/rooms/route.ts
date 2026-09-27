@@ -1,12 +1,19 @@
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ALLOWED_DURATIONS, MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
-const DEFAULT_SYMBOL = "BTCUSDT";
+const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
+
+// max room name
+const MAX_NAME_LENGTH = 40;
 
 type CreateRoomRequest = {
   symbol?: unknown;
   startingCapital?: unknown;
   durationSeconds?: unknown;
+  name?: unknown;
+  invitedUserId?: unknown; // a friend's id, or empty for a public room
 };
 
 type DeleteRoomRequest = {
@@ -15,28 +22,30 @@ type DeleteRoomRequest = {
 
 type MatchRoom = {
   id: string;
+  name: string | null;
   player_one_user_id: string;
   player_two_user_id: string | null;
   status: string;
   symbol: string;
   starting_capital: number | string;
+  duration_seconds: number | null;
   starts_at: string | null;
   ends_at: string | null;
   created_at: string;
 };
 
-function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // only need starts_at and ends_at no need to pass the whole room object
+function getRoomDuration(room: Pick<MatchRoom, "starts_at" | "ends_at">) { // only need starts_at and ends_at no need to pass the wholeobj
   if (!room.starts_at || !room.ends_at) {
-    return 120;  // default duration 
+    return MATCH_DURATION_SECONDS;
   }
 
   const startsAt = new Date(room.starts_at).getTime();
   const endsAt = new Date(room.ends_at).getTime();
   const durationSeconds = Math.round((endsAt - startsAt) / 1000); // convert milliseconds to seconds
 
-  return Number.isFinite(durationSeconds) && durationSeconds > 0 // check if time i num and dur > 0
+  return Number.isFinite(durationSeconds) && durationSeconds > 0
     ? durationSeconds
-    : 120;
+    : MATCH_DURATION_SECONDS;
 }
 
 function getRoomAgeMinutes(createdAt: string) {
@@ -49,17 +58,25 @@ function getRoomAgeMinutes(createdAt: string) {
   return Math.max(0, Math.round(ageMs / 60000));
 }
 
-function formatRoom(room: MatchRoom, currentUserId: string) {
+function formatRoom(
+  room: MatchRoom,
+  currentUserId: string,
+  creatorProfiles: Map<string, { username: string; avatar_url: string | null }>
+) {
   const isOwner = room.player_one_user_id === currentUserId;
+  const profile = creatorProfiles.get(room.player_one_user_id);
+  const creatorName = profile?.username ?? room.player_one_user_id.slice(0, 8);
+  const creatorAvatar = profile?.avatar_url ?? null;
 
   return {
     id: room.id,
-    name: isOwner ? "Your Room" : `Room ${room.id.slice(0, 8)}`,  // first 8 char
-    creator: isOwner ? "you" : room.player_one_user_id.slice(0, 8),
+    name: room.name?.trim() || (isOwner ? "Your Room" : `${creatorName}'s Room`),
+    creator: isOwner ? "you" : creatorName,
+    creator_avatar_url: creatorAvatar,
     players: room.player_two_user_id ? 2 : 1,
     capacity: 2,
     ageMin: getRoomAgeMinutes(room.created_at),
-    duration: getRoomDuration(room),
+    duration: room.duration_seconds ?? getRoomDuration(room),
     capital: Number(room.starting_capital),
     symbol: "BTC/USDT",
     ownedByCurrentUser: isOwner,
@@ -76,7 +93,78 @@ function getStartingCapital(value: unknown) {
   return capital;
 }
 
+function getRoomName(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const name = value.trim();
+
+  return name.length === 0 ? null : name.slice(0, MAX_NAME_LENGTH);
+}
+
+function getDurationSeconds(value: unknown) {
+  const duration = Number(value);
+
+  if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
+    return MATCH_DURATION_SECONDS;
+  }
+
+  return duration;
+}
+
+// Find the match this user is currently playing, if any. "Playing" means the
+// second player has joined and the engine has taken over: the room is counting
+// down or trading is live. Waiting rooms are excluded — those are already in the
+// open-rooms list.
+async function findActiveMatch(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string
+) {
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, name, status, player_one_user_id, player_two_user_id, ends_at") // selecting the columns we need
+    .or(`player_one_user_id.eq.${userId},player_two_user_id.eq.${userId}`) // i can be either player one or player two
+    .in("status", ["countdown", "active"]) // only countodwn and active status
+    .order("created_at", { ascending: false }) // newwest first
+    .limit(1)
+    .maybeSingle(); // oe item or null
+
+  if (!match) {
+    return null;
+  }
+
+  // Who you are up against, so the banner can say "vs <name>".
+  const opponentId =
+    match.player_one_user_id === userId
+      ? match.player_two_user_id
+      : match.player_one_user_id;
+
+  let opponent = "your opponent";
+
+  if (opponentId) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", opponentId)
+      .maybeSingle();
+
+    opponent = profile?.username ?? opponentId.slice(0, 8);
+  }
+
+  return {
+    id: match.id,
+    name: match.name?.trim() || "Your match",
+    status: match.status,
+    opponent,
+    endsAt: match.ends_at,
+  };
+}
+
 export async function GET() {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -84,22 +172,39 @@ export async function GET() {
   } = await supabase.auth.getUser();  // getting user and if there is any error
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   const { data: rooms, error } = await supabase // basically result.data is rooms and result.error is error
     .from("matches")
     .select(
-      "id, player_one_user_id, player_two_user_id, status, symbol, starting_capital, starts_at, ends_at, created_at"
+      "id, name, player_one_user_id, player_two_user_id, status, symbol, starting_capital, duration_seconds, starts_at, ends_at, created_at"
     )
     .eq("status", "waiting") // only get waiting
     .order("created_at", { ascending: false });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // Keep the real database error in the server log, send a friendly one to the player.
+    console.error("GET /api/rooms failed:", error.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
-  const sortedRooms = (rooms as MatchRoom[])
+  const matchRooms = rooms as MatchRoom[];
+
+  const creatorIds = [...new Set(matchRooms.map((room) => room.player_one_user_id))]; // dedupe and array of creator id
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_url")
+    .in("id", creatorIds);
+
+    const creatorProfiles = new Map<string, { username: string; avatar_url: string | null }>(
+      (profiles ?? []).map((profile) => [
+        profile.id,
+        { username: profile.username, avatar_url: profile.avatar_url }
+      ])
+    );
+
+  const sortedRooms = matchRooms
     .toSorted((roomA, roomB) => { // sorted func will handlw which to compare i jst have to return - or +
       const roomAIsMine = roomA.player_one_user_id === user.id;
       const roomBIsMine = roomB.player_one_user_id === user.id;
@@ -113,33 +218,40 @@ export async function GET() {
         new Date(roomA.created_at).getTime()
       );
     })
-    .map((room) => formatRoom(room, user.id));
+    .map((room) => formatRoom(room, user.id, creatorProfiles));
 
-  return Response.json({ rooms: sortedRooms });
+  const activeMatch = await findActiveMatch(supabase, user.id);
+
+  return Response.json({ rooms: sortedRooms, activeMatch });
 }
 
 export async function POST(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   let body: CreateRoomRequest;
 
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    return Response.json({ error: t("invalidRequest") }, { status: 400 });
   }
 
   const startingCapital = getStartingCapital(body.startingCapital);
+  const durationSeconds = getDurationSeconds(body.durationSeconds);
+  const name = getRoomName(body.name);
   const symbol = "BTC/USDT";
 
   if (startingCapital === null) {
     return Response.json(
-      { error: "Invalid starting capital." },
+      { error: t("invalidCapital") },
       { status: 400 }
     );
   }
 
   if (symbol === null) {
     return Response.json(
-      { error: "Invalid symbol." },
+      { error: t("invalidSymbol") },
       { status: 400 }
     );
   }
@@ -151,52 +263,68 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
+  }
+
+  // "Play with" a friend: make sure they really are an accepted friend.
+  // (The dropdown only shows friends, but anyone can send any id by hand.)
+  const invitedUserId =
+    typeof body.invitedUserId === "string" && body.invitedUserId !== "" ? body.invitedUserId : null;
+
+  if (invitedUserId) {
+    const { data: friend } = await supabase
+      .from("friends_with_status") // only ever returns MY friendships
+      .select("id")
+      .eq("id", invitedUserId)
+      .eq("status", "accepted")
+      .maybeSingle();
+
+    if (!friend) {
+      return Response.json({ error: t("friendsOnly") }, { status: 403 });
+    }
   }
 
   const { count: existingGameCount, error: existingGameError } = await supabase
     .from("matches")
-    .select("id", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true }) // just need the count no row needed
     .or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
-    .neq("status", "completed");
+    .neq("status", "completed"); // not equal to completed so basically everything else
 
   if (existingGameError) {
-    return Response.json({ error: existingGameError.message }, { status: 500 });
+    console.error("POST /api/rooms active game check failed:", existingGameError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
-  if (existingGameCount && existingGameCount > 0) {
+  if (existingGameCount && existingGameCount > 0) { // first iss to check fo rnull
     return Response.json(
-      { error: "You already have an active game. End or delete it before creating another." },
+      { error: t("alreadyInGameCreate") },
       { status: 409 }
     );
   }
 
   const insertPayload = {
     id: crypto.randomUUID(),
+    name, // null when the creator left the field blank
     player_one_user_id: user.id,
     status: "waiting",
     symbol,
     starting_capital: startingCapital,
+    duration_seconds: durationSeconds,
+    invited_user_id: invitedUserId, // null = public room
   };
 
-  const { error: insertError } = await supabase.from("matches").insert(insertPayload);
+  const { error: insertError } = await supabase.from("matches").insert(insertPayload); // creating new match
 
   if (insertError) {
     if (insertError.code === "23505") { // unique_violation code, unique constraint
       return Response.json(
-        { error: "You already have an active game. End or delete it before creating another." },
+        { error: t("alreadyInGameCreate") },
         { status: 409 }
       );
     }
 
     return Response.json(
-      {
-        error: insertError.message,
-        parsed: {
-          request: body,
-          insert: insertPayload,
-        },
-      },
+      { error: t("couldNotCreate") },
       { status: 500 }
     );
   }
@@ -213,7 +341,8 @@ export async function POST(request: Request) {
           ends_at: null,
           created_at: createdAt,
         },
-        user.id
+        user.id,
+        new Map() // just passing as empty cause format room needs it but we dont have any other users yet
       ),
     },
     { status: 201 } // created status
@@ -221,16 +350,19 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   let body: DeleteRoomRequest;
 
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    return Response.json({ error: t("invalidRequest") }, { status: 400 });
   }
 
   if (typeof body.roomId !== "string" || body.roomId.trim().length === 0) {
-    return Response.json({ error: "roomId is required." }, { status: 400 });
+    return Response.json({ error: t("roomIdRequired") }, { status: 400 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -240,23 +372,10 @@ export async function DELETE(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   const roomId = body.roomId.trim();
-
-  const { data: debugRoom, error: debugError } = await supabase
-    .from("matches")
-    .select("id, player_one_user_id, status")
-    .eq("id", roomId)
-    .maybeSingle(); // null if not found, single if found
-
-  console.log("[DELETE /api/rooms] debug", {
-    roomId,
-    userId: user.id,
-    debugRoom,
-    debugError: debugError?.message,
-  });
 
   const { count, error: deleteError } = await supabase
     .from("matches")
@@ -266,15 +385,13 @@ export async function DELETE(request: Request) {
     .eq("status", "waiting");
 
   if (deleteError) {
-    return Response.json({ error: deleteError.message }, { status: 500 });
+    console.error("DELETE /api/rooms failed:", deleteError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   if (!count || count === 0) {
     return Response.json(
-      {
-        error: "Room not found or you do not have permission to delete it.",
-        debug: { roomId, userId: user.id, foundRoom: debugRoom },
-      },
+      { error: t("roomNotDeletable") },
       { status: 404 }
     );
   }
