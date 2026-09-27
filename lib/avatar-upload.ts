@@ -12,6 +12,21 @@
  * control. Editing this file, or skipping it entirely from the console, changes
  * only what the user sees locally.
  */
+
+/**
+ * Image types the avatar upload accepts. Used by the settings page for the
+ * file picker's `accept` and a quick "wrong format" message — UX only. Keep it
+ * in sync with detectFormat() in app/api/profile/avatar/route.ts, which is the
+ * real check.
+ */
+export const AVATAR_MIME_TYPES = [
+	"image/jpeg",
+	"image/png",
+	"image/gif",
+	"image/webp",
+	"image/avif",
+];
+
 export async function resizeImage(file: File, maxSize: number = 256): Promise<Blob>
 {
 	return new Promise((resolve, reject) => {

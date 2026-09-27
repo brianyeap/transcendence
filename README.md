@@ -12,7 +12,8 @@ The goal of the project was to build a complete, multi-user, real-time web appli
 
 - **Live 1v1 trading matches**: both players see the same real BTC candles, streamed by our own Socket.IO match engine
 - **Server-side trading**: every order is checked on the server, positions and PnL are tracked, and the match is settled fairly
-- **Lobby**: create a match (choose 30s / 60s / 90s and 5K / 10K / 20K starting capital), join an open one, invite a friend to a private one, and rejoin a match you left
+- **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left
+- **Game customization**: the match creator picks the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (1 min, 10K, public room).
 - **Accounts**: email/password sign-up, Google sign-in (OAuth 2.0) and TOTP two-factor authentication
 - **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements
 - **Friends**: find players by username and send them a request, accept requests, see which friends are online, and challenge a friend to a private match
@@ -105,6 +106,7 @@ erDiagram
         match_status status "waiting / countdown / active / completed"
         text symbol
         numeric starting_capital
+        int duration_seconds "30 / 60 / 90"
         uuid player_one_user_id FK
         uuid player_two_user_id FK
         uuid winner_user_id FK
@@ -166,7 +168,8 @@ Row Level Security is on for every table. Players can only change their own data
 | Match engine (sockets) | Socket.IO server: rooms, candle streaming, order validation, PnL, settlement, stale-match cleanup, rejoin | Brian |
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
-| Create-match modal | The form for creating a match: length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K). The server checks both against `lib/match/rules.ts`. | Amber |
+| Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
+| Game customization (server side) | `/api/rooms` checks the chosen length and capital against `lib/match/rules.ts` and saves them on the match. The match engine then runs the match for that length with that capital. | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
@@ -198,7 +201,8 @@ Row Level Security is on for every table. Players can only change their own data
 | 13 | Web: File upload and management system | Minor | 1 | Raja |
 | 14 | Gaming: Gamification system | Minor | 1 | Zep, Raja |
 | 15 | Accessibility: Support for additional browsers | Minor | 1 | Everyone |
-| | **Total** | 7 Major + 8 Minor | **22** | (14 required) |
+| 16 | Gaming: Game customization options | Minor | 1 | Amber, Brian |
+| | **Total** | 7 Major + 9 Minor | **23** | (14 required) |
 
 ### How each module was implemented, and why we chose it
 
@@ -225,9 +229,16 @@ Row Level Security is on for every table. Players can only change their own data
 10. **Multiple languages.** `next-intl` with `messages/en.json`, `ms.json` and `zh-CN.json`, plus a language switcher in the UI. All the text players see comes from the message files.
 11. **Game statistics and match history.** Wins, losses, draws and win rate on the profile. A history list with a detail page for each match (trades and chart). A global leaderboard.
 12. **SSR.** Most pages (home, lobby, leaderboard, profile, match and match detail) are React Server Components rendered on the server, and they load their data there before sending the HTML.
-13. **File upload.** Avatars are checked on both sides: the client checks the file type, and the server caps the size and checks the real format from the file's magic bytes (JPEG/PNG), so a faked file type is rejected. The image is resized, stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
+13. **File upload.** Avatars are checked on both sides: the client checks the file type, and the server caps the size and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
 14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile.
 15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
+16. **Game customization.** When creating a match, the creator chooses:
+    - **Match length:** 30 seconds, 1 minute or 1.5 minutes. A short match rewards quick decisions, and a longer one gives the price more time to move.
+    - **Starting capital:** 5K, 10K or 20K USDT. Both players always start with the same amount, so the match stays fair.
+    - **Who can join:** anyone in the lobby, or one chosen friend (a private room only that friend can see).
+    - **Room name:** optional. If left blank, the room is called "&lt;creator&gt;'s Room".
+
+    **Default game:** the modal starts on 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects any capital that isn't in the allowed list, and falls back to the 1-minute default if the length isn't one of the lengths in `lib/match/rules.ts`. They're saved on the `matches` row (`duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values.
 
 ## Individual Contributions
 

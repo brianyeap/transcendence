@@ -41,27 +41,70 @@ const AVATARS_BUCKET = "avatars";
 /** Magic bytes for the formats we accept. */
 const JPEG_MAGIC = [0xff, 0xd8, 0xff];
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const GIF_MAGIC = [0x47, 0x49, 0x46, 0x38]; // "GIF8" (GIF87a and GIF89a)
+const RIFF_MAGIC = [0x52, 0x49, 0x46, 0x46]; // "RIFF" at offset 0 ...
+const WEBP_MAGIC = [0x57, 0x45, 0x42, 0x50]; // ... then "WEBP" at offset 8
+const FTYP_MAGIC = [0x66, 0x74, 0x79, 0x70]; // "ftyp" at offset 4 (AVIF)
 
-type DetectedFormat = "jpeg" | "png" | null;
+type DetectedFormat = "jpeg" | "png" | "gif" | "webp" | "avif" | null;
 
-function startsWith(bytes: Uint8Array, magic: number[]): boolean {
-  if (bytes.length < magic.length) return false;
+/** True if `magic` appears in `bytes` starting at `offset`. */
+function hasBytesAt(bytes: Uint8Array, offset: number, magic: number[]): boolean {
+  if (bytes.length < offset + magic.length) return false;
   for (let i = 0; i < magic.length; i += 1) {
-    if (bytes[i] !== magic[i]) return false;
+    if (bytes[offset + i] !== magic[i]) return false;
   }
   return true;
+}
+
+/** Read 4 bytes at `offset` as an ASCII string, e.g. a brand like "avif". */
+function asciiAt(bytes: Uint8Array, offset: number): string {
+  return String.fromCharCode(...bytes.subarray(offset, offset + 4));
+}
+
+/**
+ * AVIF files start with an "ftyp" box that lists "brands" (format names).
+ *
+ *   bytes 0-3   box size (big-endian)
+ *   bytes 4-7   "ftyp"
+ *   bytes 8-11  major brand      e.g. "avif", or a generic one like "mif1"
+ *   bytes 12-15 minor version    (ignored)
+ *   bytes 16+   compatible brands, 4 bytes each, until the box ends
+ *
+ * It is AVIF if "avif" (still image) or "avis" (image sequence) appears as
+ * the major brand or in the compatible list.
+ */
+function isAvif(bytes: Uint8Array): boolean {
+  if (!hasBytesAt(bytes, 4, FTYP_MAGIC)) return false;
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  // Never read past the box or the file, whichever ends first.
+  const boxEnd = Math.min(view.getUint32(0), bytes.length);
+
+  const brands = [asciiAt(bytes, 8)];
+  for (let offset = 16; offset + 4 <= boxEnd; offset += 4) {
+    brands.push(asciiAt(bytes, offset));
+  }
+  return brands.includes("avif") || brands.includes("avis");
 }
 
 /**
  * Sniff the container from the first bytes of the file.
  *
  * This deliberately ignores `Content-Type` and the filename extension: both
- * are attacker-controlled. Anything that is not a JPEG or PNG — including
- * SVG, GIF, WebP, HTML and every polyglot — returns null and is rejected.
+ * are attacker-controlled. Anything that is not a JPEG, PNG, GIF, WebP or
+ * AVIF — including SVG, HEIC, HTML and every polyglot — returns null and is
+ * rejected. Passing this check only means "looks like one of those"; the
+ * full decode in step 4 is what proves it.
  */
 function detectFormat(bytes: Uint8Array): DetectedFormat {
-  if (startsWith(bytes, JPEG_MAGIC)) return "jpeg";
-  if (startsWith(bytes, PNG_MAGIC)) return "png";
+  if (hasBytesAt(bytes, 0, JPEG_MAGIC)) return "jpeg";
+  if (hasBytesAt(bytes, 0, PNG_MAGIC)) return "png";
+  if (hasBytesAt(bytes, 0, GIF_MAGIC)) return "gif";
+  if (hasBytesAt(bytes, 0, RIFF_MAGIC) && hasBytesAt(bytes, 8, WEBP_MAGIC)) {
+    return "webp";
+  }
+  if (isAvif(bytes)) return "avif";
   return null;
 }
 
@@ -123,7 +166,10 @@ export async function POST(request: Request) {
   // ---- 4. decode and re-encode to a fixed 256x256 JPEG -------------------
   // `sharp` decodes the whole image; if the bytes are not a real, complete
   // image this throws and we reject. The re-encode means the stored object is
-  // always something we produced, never the bytes the client sent.
+  // always something we produced, never the bytes the client sent — so a
+  // WebP, GIF or AVIF upload is still stored and served as a plain JPEG.
+  // For an animated GIF/WebP, sharp only reads the first frame, so the
+  // avatar ends up as a still image.
   let outputBuffer: Buffer;
   try {
     outputBuffer = await sharp(inputBytes, { failOn: "error" })

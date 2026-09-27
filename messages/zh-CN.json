@@ -145,7 +145,7 @@
     "couldNotReadUpload": "无法读取上传内容，请重试。",
     "noFile": "未选择图片。",
     "emptyFile": "该文件为空。",
-    "invalidFormat": "不支持的图片格式，请上传 JPEG 或 PNG。",
+    "invalidFormat": "不支持的图片格式，请上传 JPEG、PNG、GIF、WebP 或 AVIF。",
     "unreadableImage": "无法将该文件读取为图片。",
     "storageFailed": "无法存储图片，请重试。",
     "urlResolveFailed": "无法解析图片网址。",
@@ -742,7 +742,7 @@
     "badRequest": "上传请求有误。请重试。",
     "noFile": "未提供文件。",
     "emptyFile": "文件为空。",
-    "unsupportedFormat": "不支持的图片格式。请上传 JPEG 或 PNG。",
+    "unsupportedFormat": "不支持的图片格式。请上传 JPEG、PNG、GIF、WebP 或 AVIF。",
     "unreadableImage": "无法将该文件识别为图片。",
     "couldNotStore": "无法保存图片。请重试。",
     "couldNotSave": "无法保存你的头像。"

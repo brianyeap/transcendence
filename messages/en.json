@@ -145,7 +145,7 @@
     "couldNotReadUpload": "Could not read the upload. Please try again.",
     "noFile": "No image was selected.",
     "emptyFile": "That file is empty.",
-    "invalidFormat": "Unsupported image format. Please upload a JPEG or PNG.",
+    "invalidFormat": "Unsupported image format. Please upload a JPEG, PNG, GIF, WebP or AVIF.",
     "unreadableImage": "That file could not be read as an image.",
     "storageFailed": "Could not store the image. Please try again.",
     "urlResolveFailed": "Could not resolve the image URL.",
@@ -742,7 +742,7 @@
     "badRequest": "The upload was not sent correctly. Please try again.",
     "noFile": "No file was provided.",
     "emptyFile": "The file is empty.",
-    "unsupportedFormat": "Unsupported image format. Please upload a JPEG or PNG.",
+    "unsupportedFormat": "Unsupported image format. Please upload a JPEG, PNG, GIF, WebP or AVIF.",
     "unreadableImage": "That file could not be read as an image.",
     "couldNotStore": "Could not store the image. Please try again.",
     "couldNotSave": "Could not save your profile photo."

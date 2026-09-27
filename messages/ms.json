@@ -145,7 +145,7 @@
     "couldNotReadUpload": "Tidak dapat membaca muat naik. Sila cuba lagi.",
     "noFile": "Tiada imej dipilih.",
     "emptyFile": "Fail itu kosong.",
-    "invalidFormat": "Format imej tidak disokong. Sila muat naik JPEG atau PNG.",
+    "invalidFormat": "Format imej tidak disokong. Sila muat naik JPEG, PNG, GIF, WebP atau AVIF.",
     "unreadableImage": "Fail itu tidak dapat dibaca sebagai imej.",
     "storageFailed": "Tidak dapat menyimpan imej. Sila cuba lagi.",
     "urlResolveFailed": "Tidak dapat menyelesaikan URL imej.",
@@ -742,7 +742,7 @@
     "badRequest": "Muat naik tidak dihantar dengan betul. Sila cuba lagi.",
     "noFile": "Tiada fail diberikan.",
     "emptyFile": "Fail ini kosong.",
-    "unsupportedFormat": "Format imej tidak disokong. Sila muat naik JPEG atau PNG.",
+    "unsupportedFormat": "Format imej tidak disokong. Sila muat naik JPEG, PNG, GIF, WebP atau AVIF.",
     "unreadableImage": "Fail itu tidak dapat dibaca sebagai imej.",
     "couldNotStore": "Tidak dapat menyimpan imej. Sila cuba lagi.",
     "couldNotSave": "Tidak dapat menyimpan foto profil anda."

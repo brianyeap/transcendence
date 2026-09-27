@@ -6,7 +6,7 @@ import { SideNav } from "../components/duel/side-nav";
 import { LogoutButton } from "../components/auth/logout-button";
 import { Avatar } from "../components/duel/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { resizeImage } from "@/lib/avatar-upload";
+import { resizeImage, AVATAR_MIME_TYPES } from "@/lib/avatar-upload";
 import { messageKeyFor } from "@/lib/i18n/error-codes";
 import {
   USERNAME_MIN_LENGTH,
@@ -126,6 +126,13 @@ export default function SettingsPage() {
 
     if (!file.type.startsWith("image/")) {
       setStatusMessage(t("chooseImageFile"));
+      return;
+    }
+
+    // Same list the server accepts, so the user hears "wrong format" now
+    // instead of after pressing Save.
+    if (!AVATAR_MIME_TYPES.includes(file.type)) {
+      setStatusMessage(tErrors("invalidFormat"));
       return;
     }
 
@@ -393,7 +400,7 @@ export default function SettingsPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept={AVATAR_MIME_TYPES.join(",")}
               className="hidden"
               onChange={handleFileChange}
             />
