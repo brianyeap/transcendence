@@ -48,6 +48,3 @@ next-env.d.ts
 
 # socket dependansies
 /socket/node_modules
-
-# local agent handoff notes
-handoff.md
