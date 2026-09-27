@@ -8,6 +8,8 @@ import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
 import { authErrorKey } from "@/lib/auth/auth-error-key";
+import { validateUsername, USERNAME_MAX_LENGTH } from "@/lib/validation/username";
+import { messageKeyFor } from "@/lib/i18n/error-codes";
 import Link from "next/link";
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -24,6 +26,7 @@ function LoginForm() {
 
   const t = useTranslations("Login");
   const tAuth = useTranslations("AuthErrors");
+  const tErrors = useTranslations("ApiErrors");
   const locale = useLocale();
 
   const rawNext = searchParams.get("next");
@@ -55,10 +58,16 @@ function LoginForm() {
       return;
     }
 
-    if (isRegister && username.trim().length < 3) {
-      setError(t("usernameMinLength"));
+    // Same username rules as the settings page (3-20 chars, letters, numbers,
+    // spaces, _ and -). The rules live in lib/validation/username.ts.
+    const checked = validateUsername(username);
+    if (isRegister && !checked.ok) {
+      // The validator returns an error code; turn it into a translated message.
+      setError(tErrors(messageKeyFor(checked.code) ?? "generic"));
       return;
     }
+    // Trimmed version of the name, so no leading/trailing spaces get saved.
+    const cleanUsername = checked.ok ? checked.username : "";
 
     setLoading(true);
 
@@ -69,7 +78,7 @@ function LoginForm() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { username } },
+          options: { data: { username: cleanUsername } },
         });
 
         if (signUpError) {
@@ -81,7 +90,7 @@ function LoginForm() {
         if (data.user) {
           await supabase
             .from("profiles")
-            .upsert({ id: data.user.id, username }, { onConflict: "id" });
+            .upsert({ id: data.user.id, username: cleanUsername }, { onConflict: "id" });
         }
 
         toast.success(t("accountCreated"));
@@ -177,6 +186,7 @@ function LoginForm() {
               value={username}
               onChange={setUsername}
               placeholder={t("usernamePlaceholder")}
+              maxLength={USERNAME_MAX_LENGTH}
             />
           )}
 
@@ -285,12 +295,15 @@ function Field({
   onChange,
   placeholder,
   type = "text",
+  maxLength,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   type?: string;
+  // Optional: stops the browser from letting you type past this many characters.
+  maxLength?: number;
 }) {
   return (
     <label className="mb-4 block">
@@ -300,6 +313,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        maxLength={maxLength}
         suppressHydrationWarning
         className="h-12 w-full rounded-md border border-line bg-raised px-3 text-sm text-ink outline-none placeholder:text-faint focus:border-brand"
       />
