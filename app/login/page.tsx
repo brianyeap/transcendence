@@ -75,7 +75,7 @@ function LoginForm() {
         if (data.user) {
           await supabase
             .from("profiles")
-            .upsert({ id: data.user.id, email, username }, { onConflict: "id" });
+            .upsert({ id: data.user.id, username }, { onConflict: "id" });
         }
 
         toast.success(t("accountCreated"));

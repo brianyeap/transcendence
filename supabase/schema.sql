@@ -92,14 +92,12 @@ begin
     split_part(new.email, '@', 1)
   );
 
-  insert into public.profiles (id, email, username)
+  insert into public.profiles (id, username)
   values (
     new.id,
-    new.email,
     default_username
   )
   on conflict (id) do update set
-    email = excluded.email,
     username = coalesce(excluded.username, profiles.username);
 
   return new;
@@ -189,7 +187,6 @@ CREATE TABLE public.friends (
 CREATE TABLE public.profiles (
     id uuid NOT NULL,
     username text NOT NULL,
-    email text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     last_seen_at timestamp with time zone,
     avatar_url text
@@ -347,12 +344,6 @@ ALTER TABLE ONLY public.matches
     ADD CONSTRAINT matches_pkey PRIMARY KEY (id);
 
 
---
--- Name: profiles profiles_email_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT profiles_email_key UNIQUE (email);
 
 
 --

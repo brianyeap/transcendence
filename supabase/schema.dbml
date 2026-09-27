@@ -46,7 +46,6 @@ Table auth.users {
 Table profiles {
   id uuid [primary key, note: 'Same id as auth.users.id']
   username text [not null, unique]
-  email text [not null, unique]
   avatar_url text
   last_seen_at timestamptz [note: 'Updated every few seconds by ping_online(); used for the online dot']
   created_at timestamptz [not null, default: `now()`]
