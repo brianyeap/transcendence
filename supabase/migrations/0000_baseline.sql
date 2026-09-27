@@ -136,7 +136,10 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "username" "text" NOT NULL,
     "email" "text" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "last_seen_at" timestamp with time zone
+    "last_seen_at" timestamp with time zone,
+    -- Added by hand on the live project and missed by the original dump.
+    -- 0002's friends_with_status view reads it, so it must exist here.
+    "avatar_url" "text"
 );
 
 

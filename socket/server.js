@@ -7,13 +7,10 @@ require("./instrumentation");
 const http = require("http");
 const { Server } = require("socket.io");
 const { createClient } = require("@supabase/supabase-js");
-// The pure trading maths lives in its own file so it can be tested on its own.
 const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
 const { gamesStarted, gamesCompleted, activeGames, matchesPlayed } = require("./metrics");
 
-// ----------------------------------------------------------------------------
 // Settings
-// ----------------------------------------------------------------------------
 const PORT = 4000;
 const TICK_MS = 500;
 const ALLOWED_ORIGINS = (

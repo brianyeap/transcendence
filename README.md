@@ -1,60 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DUEL — 1v1 Crypto Trading
 
-## Getting Started
+DUEL is a head-to-head **simulated** BTC trading game. Two players join a match, watch the same BTC candle feed, and open long/short positions with virtual capital. After a 10-second countdown and a 60-second trading window, the player with the most capital wins. No real funds are involved.
 
-### Docker development
+## Architecture
 
-Start the development stack with Docker:
+| Part | Where | What it does |
+| --- | --- | --- |
+| Web app | `app/`, `lib/` | Next.js (App Router) UI: login, lobby, match screen, profile, friends, leaderboard, history, settings |
+| Match engine | `socket/` | Node + Socket.IO server on port `4000`. Runs live matches, fetches Coinbase BTC-USD candles, validates trades, saves results |
+| Database / auth | `supabase/` | Supabase Postgres, Auth (email/password, Google OAuth, TOTP 2FA) and Storage (avatars) |
+| Monitoring | `monitoring/` | OpenTelemetry collector → Prometheus → Grafana |
+| Translations | `messages/` | `en`, `ms`, `zh-CN` via `next-intl` |
+
+## Getting started (Docker)
+
+The whole stack runs with Docker Compose. There's no need to run `npm run dev` yourself: the `web` container runs it for you.
+
+### 1. Set up environment files
+
+```bash
+cp .env.example .env.local
+```
+
+```bash
+cp monitoring/.env.example monitoring/.env
+```
+
+Fill in the Supabase values in `.env.local` (Supabase dashboard → Project Settings → API). The socket container reads `.env.local` directly, so the stack won't start without it. `monitoring/.env` holds the Grafana admin login, SMTP settings for alerts, and the Supabase metrics key.
+
+### 2. Set up the database
+
+Run the SQL files in `supabase/migrations/` **in order** in the Supabase SQL editor. `supabase/mfa-rls-policy.sql` is an example policy, not a migration.
+
+### 3. Start the stack
 
 ```bash
 COMPOSE_DISABLE_ENV_FILE=1 docker compose up --build
 ```
 
-The `web` service installs npm dependencies when `node_modules` is missing or older than `package.json` / `package-lock.json`, then starts the Next.js dev server on [http://localhost:3000](http://localhost:3000).
+| Service | URL |
+| --- | --- |
+| Web app | http://localhost:3000 |
+| Match engine (Socket.IO) | http://localhost:4000 |
+| Grafana | https://localhost:3001 (self-signed certificate, so accept the browser warning) |
+| Prometheus | http://localhost:9090 |
+| OTel collector | `4317` (gRPC), `4318` (HTTP), `8889` (Prometheus metrics) |
 
-If port `3000` is already in use, choose another host port:
+The `web` container reinstalls npm dependencies when `node_modules` is missing or older than `package.json` / `package-lock.json`. All services share the `transcendence_dev` network, so they reach each other by service name (e.g. `otel-collector:4318`).
+
+The match engine **does not hot reload**. After editing `socket/server.js`, restart it:
 
 ```bash
-COMPOSE_DISABLE_ENV_FILE=1 WEB_PORT=3001 docker compose up --build
+COMPOSE_DISABLE_ENV_FILE=1 docker compose restart socket
 ```
 
-The compose file uses a named `transcendence_dev` network so future services, such as a Socket.IO server, can be added beside `web` and communicate by service name.
+### Using a different web port
 
-Stop the stack with:
+If port `3000` is taken, set `WEB_PORT`. Don't use `3001`, because Grafana already uses it. The new port must also be listed in `SOCKET_ALLOWED_ORIGINS` in `.env.local`, or the match engine will refuse the connection (`3003` is already listed in the example):
+
+```bash
+COMPOSE_DISABLE_ENV_FILE=1 WEB_PORT=3003 docker compose up --build
+```
+
+### Stop the stack
 
 ```bash
 COMPOSE_DISABLE_ENV_FILE=1 docker compose down
 ```
 
-First, run the development server:
+## Tests
+
+Engine math tests (run inside `socket/`):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd socket && npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The Next.js web app is deployed on **Vercel**. Vercel can't host the match engine, because it's a long-running process that keeps live matches in memory. To make matches playable fully online, deploy `socket/` to a VPS and point `NEXT_PUBLIC_SOCKET_URL` at it. That server's `SOCKET_ALLOWED_ORIGINS` must include the Vercel domain.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docs
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [How DUEL works: architecture diagrams](docs/architecture.md)
+- [Product requirements & planning](docs/prd/trading-game/README.md)
+- [2FA walkthrough](docs/2fa_walkthrough.md)
