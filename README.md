@@ -161,20 +161,20 @@ Row Level Security is on for every table. Players can only change their own data
 | Feature | Description | Built by |
 | --- | --- | --- |
 | Initial UI, layout and login screens | App shell, side navigation, the login and sign-up forms | Brian |
-| Authentication (Supabase) | Email/password, Google OAuth, TOTP 2FA, protected routes | zep |
-| Row Level Security | Database policies so players only see and change what they're allowed to | zep |
+| Authentication (Supabase) | Email/password, Google OAuth, TOTP 2FA, protected routes | Zep |
+| Row Level Security | Database policies so players only see and change what they're allowed to | Zep |
 | Match engine (sockets) | Socket.IO server: rooms, candle streaming, order validation, PnL, settlement, stale-match cleanup, rejoin | Brian |
-| Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | zep, Brian |
+| Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K). The server checks both against `lib/match/rules.ts`. | Amber |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
-| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | zep, Raja |
+| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
 | Match history | A list of past matches and a detail page for each one | Raja |
 | Settings | Username, avatar upload (through a secure server route), 2FA settings | Raja |
 | Shared components | Most of the reusable UI components | Raja |
-| Leaderboard | Ranked by wins, then win rate, then games played, with a stable tie-breaker | zep |
-| Multi-language (i18n) | `en` / `ms` / `zh-CN` with next-intl and a language switcher | zep (Amber helped add translations) |
+| Leaderboard | Ranked by wins, then win rate, then games played, with a stable tie-breaker | Zep |
+| Multi-language (i18n) | `en` / `ms` / `zh-CN` with next-intl and a language switcher | Zep (Amber helped add translations) |
 | Monitoring | OpenTelemetry → Prometheus → Grafana, dashboards and alerts | Amber |
 | Privacy Policy and Terms of Service | Legal pages, linked from the app | Amber |
 | How-to-Play page | Game rules and a trading glossary | Amber |
@@ -187,16 +187,16 @@ Row Level Security is on for every table. Players can only change their own data
 | 2 | Web: Real-time features using WebSockets | Major | 2 | Brian, Amber |
 | 3 | Gaming: Complete web-based game | Major | 2 | Brian, Amber |
 | 4 | Gaming: Remote players | Major | 2 | Brian |
-| 5 | User Management: Standard user management and authentication | Major | 2 | Raja, Brian, zep |
+| 5 | User Management: Standard user management and authentication | Major | 2 | Raja, Brian, Zep |
 | 6 | DevOps: Monitoring system with Prometheus and Grafana | Major | 2 | Amber |
 | 7 | Module of choice: Real-market trading engine | Major | 2 | Brian |
-| 8 | User Management: Remote authentication with OAuth 2.0 (Google) | Minor | 1 | zep |
-| 9 | User Management: Two-Factor Authentication (2FA) | Minor | 1 | zep |
-| 10 | Accessibility: Support for multiple languages (3) | Minor | 1 | zep, Amber |
-| 11 | User Management: Game statistics and match history | Minor | 1 | Raja, zep |
+| 8 | User Management: Remote authentication with OAuth 2.0 (Google) | Minor | 1 | Zep |
+| 9 | User Management: Two-Factor Authentication (2FA) | Minor | 1 | Zep |
+| 10 | Accessibility: Support for multiple languages (3) | Minor | 1 | Zep, Amber |
+| 11 | User Management: Game statistics and match history | Minor | 1 | Raja, Zep |
 | 12 | Web: Server-Side Rendering (SSR) | Minor | 1 | Everyone |
 | 13 | Web: File upload and management system | Minor | 1 | Raja |
-| 14 | Gaming: Gamification system | Minor | 1 | zep, Raja |
+| 14 | Gaming: Gamification system | Minor | 1 | Zep, Raja |
 | | **Total** | 7 Major + 7 Minor | **21** | (14 required) |
 
 ### How each module was implemented, and why we chose it
@@ -304,7 +304,18 @@ Fill in `.env.local`:
 | `NEXT_PUBLIC_SOCKET_URL` | `http://localhost:4000` locally |
 | `SOCKET_ALLOWED_ORIGINS` | The web app origins the match engine accepts |
 
-The socket container reads `.env.local` directly, so the stack won't start without it. `monitoring/.env` holds the Grafana admin login, the SMTP settings for alerts, and the Supabase metrics key. Both files are git-ignored.
+The socket container reads `.env.local` directly, so the stack won't start without it.
+
+Fill in `monitoring/.env`:
+
+| Variable | Where to find it |
+| --- | --- |
+| `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` | Choose your own. This is the login for the Grafana dashboard. |
+| `SMTP_USER` | The Gmail address that sends the alert emails |
+| `SMTP_PASSWORD` | A Gmail **App Password** for that account (Google Account → Security → 2-Step Verification → App passwords), not the normal Gmail password |
+| `SUPABASE_METRICS_KEY` | Supabase → Project Settings → API Keys → Secret key (`sb_secret_…`). Prometheus uses it to read the Supabase metrics endpoint. |
+
+Both files are git-ignored.
 
 ### 2. Set up the database
 
