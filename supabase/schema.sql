@@ -341,7 +341,10 @@ CREATE TABLE public.trades (
     amount_usdt numeric NOT NULL,
     execution_price numeric NOT NULL,
     candle_sequence integer,
-    executed_at timestamp with time zone DEFAULT now() NOT NULL
+    executed_at timestamp with time zone DEFAULT now() NOT NULL,
+    realized_pnl numeric,
+    resulting_side public.position_side,
+    resulting_notional numeric
 );
 
 
