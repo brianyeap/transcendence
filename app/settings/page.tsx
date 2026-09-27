@@ -449,6 +449,9 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+        {statusMessage && (
+          <p className="mt-3 text-xs text-rose-400">{statusMessage}</p>
+        )}
 
         {/* Language section */}
         <div className="mt-6 rounded-[7px] border border-white/[.07] bg-[#0f131b] divide-y divide-white/[.05]">
@@ -490,10 +493,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Security section */}
-        {statusMessage && (
-          <p className="mt-3 text-xs text-rose-400">{statusMessage}</p>
-        )}
-
+        
         <div className="mt-6 rounded-[7px] border border-white/[.07] bg-[#0f131b] divide-y divide-white/[.05]">
           <div className="px-4 py-3 flex items-center gap-2">
             <Shield className="h-3.5 w-3.5 text-[#4d86ff]" />
