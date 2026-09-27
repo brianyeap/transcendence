@@ -201,7 +201,7 @@ export function MatchChart({
         borderColor: BORDER,
         timeVisible: true,
         secondsVisible: false,
-        barSpacing: 8,
+        barSpacing: 2,
         minBarSpacing: 2,
         rightOffset: 4,
         shiftVisibleRangeOnNewBar: true,
