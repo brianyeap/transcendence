@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 import { useTranslations } from "next-intl";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 // The match lengths a creator can pick. Values are in seconds and must match
 // ALLOWED_DURATIONS in lib/match/rules.ts, or the server will reject them.
@@ -30,6 +31,8 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
     const [capital, setCapital] = useState(10000)
     const [duration, setDuration] = useState(60) // seconds
+    const [friends, setFriends] = useState<{ id: string; username: string }[]>([])
+    const [invitedUserId, setInvitedUserId] = useState('') // '' = anyone can join
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const t = useTranslations("CreateMatch");
@@ -38,6 +41,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         setIsCreating(false)
         setError(null)
         setName('') // start fresh next time the modal opens
+        setInvitedUserId('')
         onClose()
     }, [onClose])
 
@@ -58,6 +62,16 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         return () => document.removeEventListener('keydown', handleEscButton)
     }, [isOpen, handleClose]) //dependencies: isOpen, handleClose
 
+    // Load my friends for the "Play with" dropdown when the modal opens.
+    useEffect(() => {
+        if (!isOpen) return
+        createSupabaseBrowserClient()
+            .from("friends_with_status")
+            .select("id, username")
+            .eq("status", "accepted")
+            .then(({ data }) => setFriends(data ?? []))
+    }, [isOpen])
+
     async function handleCreate() {
         setIsCreating(true)
         setError(null)
@@ -72,6 +86,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     name,
                     startingCapital: capital,
                     durationSeconds: duration,
+                    invitedUserId,
                 }),
             })
             const result = await response.json()
@@ -116,6 +131,20 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                         placeholder={t("roomNamePlaceholder")}
                         className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/50 disabled:opacity-50"
                     />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    <label htmlFor="play-with" className="text-[13px] font-semibold text-[#9aa6b6]">{t("playWith")}</label>
+                    <select
+                        id="play-with" disabled={isCreating}
+                        value={invitedUserId} onChange={(e) => setInvitedUserId(e.target.value)}
+                        className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none disabled:opacity-50"
+                    >
+                        <option value="">{t("anyone")}</option>
+                        {friends.map((friend) => (
+                            <option key={friend.id} value={friend.id}>{friend.username}</option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Match length: same button style as starting capital below. */}

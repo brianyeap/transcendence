@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ALLOWED_DURATIONS, MATCH_DURATION_SECONDS } from "@/lib/match/rules";
 
@@ -12,6 +13,7 @@ type CreateRoomRequest = {
   startingCapital?: unknown;
   durationSeconds?: unknown;
   name?: unknown;
+  invitedUserId?: unknown; // a friend's id, or empty for a public room
 };
 
 type DeleteRoomRequest = {
@@ -219,12 +221,15 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   let body: CreateRoomRequest;
 
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    return Response.json({ error: t("invalidRequest") }, { status: 400 });
   }
 
   const startingCapital = getStartingCapital(body.startingCapital);
@@ -234,14 +239,14 @@ export async function POST(request: Request) {
 
   if (startingCapital === null) {
     return Response.json(
-      { error: "Invalid starting capital." },
+      { error: t("invalidCapital") },
       { status: 400 }
     );
   }
 
   if (symbol === null) {
     return Response.json(
-      { error: "Invalid symbol." },
+      { error: t("invalidSymbol") },
       { status: 400 }
     );
   }
@@ -253,7 +258,25 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
+  }
+
+  // "Play with" a friend: make sure they really are an accepted friend.
+  // (The dropdown only shows friends, but anyone can send any id by hand.)
+  const invitedUserId =
+    typeof body.invitedUserId === "string" && body.invitedUserId !== "" ? body.invitedUserId : null;
+
+  if (invitedUserId) {
+    const { data: friend } = await supabase
+      .from("friends_with_status") // only ever returns MY friendships
+      .select("id")
+      .eq("id", invitedUserId)
+      .eq("status", "accepted")
+      .maybeSingle();
+
+    if (!friend) {
+      return Response.json({ error: t("friendsOnly") }, { status: 403 });
+    }
   }
 
   const { count: existingGameCount, error: existingGameError } = await supabase
@@ -268,7 +291,7 @@ export async function POST(request: Request) {
 
   if (existingGameCount && existingGameCount > 0) { // first iss to check fo rnull
     return Response.json(
-      { error: "You already have an active game. End or delete it before creating another." },
+      { error: t("alreadyInGameCreate") },
       { status: 409 }
     );
   }
@@ -281,6 +304,7 @@ export async function POST(request: Request) {
     symbol,
     starting_capital: startingCapital,
     duration_seconds: durationSeconds,
+    invited_user_id: invitedUserId, // null = public room
   };
 
   const { error: insertError } = await supabase.from("matches").insert(insertPayload); // creating new match
@@ -288,13 +312,13 @@ export async function POST(request: Request) {
   if (insertError) {
     if (insertError.code === "23505") { // unique_violation code, unique constraint
       return Response.json(
-        { error: "You already have an active game. End or delete it before creating another." },
+        { error: t("alreadyInGameCreate") },
         { status: 409 }
       );
     }
 
     return Response.json(
-      { error: "Could not create the room." },
+      { error: t("couldNotCreate") },
       { status: 500 }
     );
   }

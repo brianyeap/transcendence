@@ -79,7 +79,9 @@
     "startingCapital": "Modal Permulaan",
     "cancel": "Batal",
     "create": "Cipta",
-    "creating": "Mencipta..."
+    "creating": "Mencipta...",
+    "playWith": "Main dengan",
+    "anyone": "Sesiapa sahaja"
   },
   "Leaderboard": {
     "competition": "Pertandingan",
@@ -609,7 +611,7 @@
   },
   "Friends": {
     "title": "Rakan",
-    "description": "Tambah pemain dari skrin keputusan perlawanan. Status dikemas kini setiap 5 saat.",
+    "description": "Tambah pemain melalui nama pengguna atau dari skrin keputusan perlawanan. Status dikemas kini setiap 5 saat.",
     "loading": "Memuatkan rakan...",
     "friendRequests": "Permintaan rakan",
     "accept": "Terima",
@@ -627,7 +629,38 @@
     "secondsAgo": "{seconds}s yang lalu",
     "minutesAgo": "{minutes}m yang lalu",
     "hoursAgo": "{hours}j yang lalu",
-    "daysAgo": "{days}h yang lalu"
+    "daysAgo": "{days}h yang lalu",
+    "usernamePlaceholder": "Nama pengguna tepat",
+    "sendRequest": "Hantar permintaan",
+    "sending": "Menghantar...",
+    "userNotFound": "Tiada pemain bernama \"{username}\".",
+    "cannotAddYourself": "Anda tidak boleh menambah diri sendiri.",
+    "alreadyFriendsOrPending": "Anda dan {username} sudah berkawan, atau permintaan sedang menunggu.",
+    "requestFailed": "Tidak dapat menghantar permintaan. Cuba lagi.",
+    "requestSentTo": "Permintaan dihantar kepada {username}."
+  },
+  "Invite": {
+    "challengedYou": "{username} mencabar anda",
+    "accept": "Terima",
+    "ignore": "Abaikan",
+    "aFriend": "Seorang rakan",
+    "couldNotJoin": "Tidak dapat menyertai."
+  },
+  "RoomErrors": {
+    "invalidRequest": "Permintaan tidak sah.",
+    "invalidCapital": "Modal permulaan tidak sah.",
+    "invalidSymbol": "Simbol tidak sah.",
+    "loginRequired": "Sila log masuk dahulu.",
+    "friendsOnly": "Anda hanya boleh menjemput rakan anda.",
+    "alreadyInGameCreate": "Anda sudah mempunyai permainan aktif. Tamatkan atau padamnya sebelum mencipta yang lain.",
+    "couldNotCreate": "Tidak dapat mencipta bilik.",
+    "roomIdRequired": "Bilik tidak dinyatakan.",
+    "roomNotFound": "Bilik tidak dijumpai.",
+    "cannotJoinOwnRoom": "Anda tidak boleh menyertai bilik anda sendiri.",
+    "roomForSomeoneElse": "Bilik ini untuk orang lain.",
+    "roomNotOpen": "Bilik ini tidak lagi dibuka.",
+    "alreadyInGameJoin": "Anda sudah mempunyai permainan aktif. Habiskannya sebelum menyertai yang lain.",
+    "roomTaken": "Bilik ini baru sahaja diambil."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Gagal memuatkan faktor keselamatan.",

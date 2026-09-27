@@ -125,6 +125,9 @@ export default function FriendsPage() {
 					</p>
 				</div>
 
+				{/* frined request */}
+				<AddByUsername onSent={(friend) => setFriends((list) => [...list, friend])} />
+
 				{loading ? (
 					<p className="text-sm text-dim">{t("loading")}</p>
 				) : (
@@ -247,5 +250,90 @@ function RequestRow({ friend, children }: { friend: Friend; children: React.Reac
 
 			<div className="flex gap-2">{children}</div>
 		</div>
+	);
+}
+//  A text box + button: send a friend request to someone by their exact
+//  username. Capital letters matter ("bob" won't find "Bob"), because two
+//  players are allowed to be called "Bob" and "bob".
+function AddByUsername({ onSent }: { onSent: (friend: Friend) => void }) {
+	const t = useTranslations("Friends");
+	const [name, setName] = useState("");
+	const [busy, setBusy] = useState(false);     // if request is busy
+	const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+
+	async function send(e: React.FormEvent) {
+		e.preventDefault();          //  stop the form from reloading the page
+		const username = name.trim();
+		if (!username) return;
+
+		setBusy(true);
+		setMessage(null);
+		const supabase = createSupabaseBrowserClient();
+
+		const { data: { user } } = await supabase.auth.getUser();
+
+		//  Find the player with exactly this name. Usernames are unique,v(case sencitive)
+		//     so we get one row or null.
+		const { data: target } = await supabase
+			.from("profiles")
+			.select("id, username, avatar_url")
+			.eq("username", username)
+			.maybeSingle();
+
+		if (!user || !target) {
+			setMessage({ text: t("userNotFound", { username }), ok: false });
+		} else if (target.id === user.id) {
+			setMessage({ text: t("cannotAddYourself"), ok: false });
+		} else {
+			//  Send the request - same insert as the match result screen.
+			const { error } = await supabase
+				.from("friends")
+				.insert({ user_id: user.id, friend_id: target.id });
+
+			if (error?.code === "23505") {
+				//  23505 = "this row already exists". Only one row is allowed per
+				//  pair, so we're already friends or a request is waiting.
+				setMessage({ text: t("alreadyFriendsOrPending", { username }), ok: false });
+			} else if (error) {
+				setMessage({ text: t("requestFailed"), ok: false });
+			} else {
+				setMessage({ text: t("requestSentTo", { username }), ok: true });
+				setName("");
+				onSent({
+					id: target.id,
+					username: target.username,
+					avatar_url: target.avatar_url,
+					seconds_since_seen: null,     //  the next refresh fills this in
+					status: "pending",
+					sent_by_me: true,
+				});
+			}
+		}
+
+		setBusy(false);
+	}
+
+	return (
+		<form onSubmit={send} className="mb-8">
+			<div className="flex gap-2">
+				<input
+					type="text"
+					value={name}
+					onChange={(e) => setName(e.target.value)}
+					disabled={busy}
+					placeholder={t("usernamePlaceholder")}
+					className="min-w-0 flex-1 rounded-md border border-line bg-panel px-3 py-2 text-sm text-ink outline-none placeholder:text-faint focus:border-brand disabled:opacity-50"
+				/>
+				<Button type="submit" disabled={busy || !name.trim()}>
+					{busy ? t("sending") : t("sendRequest")}
+				</Button>
+			</div>
+
+			{message && (
+				<p className={`mt-2 text-xs ${message.ok ? "text-win" : "text-loss"}`}>
+					{message.text}
+				</p>
+			)}
+		</form>
 	);
 }

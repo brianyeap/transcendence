@@ -145,6 +145,8 @@ erDiagram
 | `trades` | Every order a player placed, with the price and the position after it |
 | `friends_with_status` (view) | The logged-in user's friends joined with their profile and online status (`security_invoker`, so RLS still applies) |
 
+How friend requests and online status work, with diagrams: [How friends work](docs/friends.md).
+
 Row Level Security is on for every table. Players can only change their own data, other players' emails are hidden, and only the match engine (using the service-role key) can write match results.
 
 ## Features List
@@ -422,6 +424,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 ### Project docs
 
 - [How DUEL works: architecture diagrams](docs/architecture.md)
+- [How friends work: requests & online status](docs/friends.md)
 - [Product requirements & planning](docs/prd/trading-game/README.md)
 - [2FA walkthrough](docs/2fa_walkthrough.md)
 

@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useOnlinePing } from "./use-online-ping";
+import { useInviteToast } from "./use-invite-toast";
 
 export function SideNav({ children, user }: { children: React.ReactNode; user?: string }) {
 	const [fetchedName, setFetchedName] = useState("");
@@ -21,6 +22,9 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 	// becasue this exist on evrey page so we always ping
 	useOnlinePing();
+
+	// friend invites pop up as a toast
+	useInviteToast();
 
 	useEffect(() => {
 		const supabase = createSupabaseBrowserClient();

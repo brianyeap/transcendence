@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
@@ -9,17 +10,20 @@ type JoinRoomRequest = {
 };
 
 export async function POST(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   // read and validate the body
   let body: JoinRoomRequest;
 
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    return Response.json({ error: t("invalidRequest") }, { status: 400 });
   }
 
   if (typeof body.roomId !== "string" || body.roomId.trim().length === 0) {
-    return Response.json({ error: "roomId is required." }, { status: 400 });
+    return Response.json({ error: t("roomIdRequired") }, { status: 400 });
   }
 
   const roomId = body.roomId.trim();
@@ -31,12 +35,12 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   const { data: room, error: roomError } = await supabase
     .from("matches")
-    .select("id, player_one_user_id, player_two_user_id, status, duration_seconds")
+    .select("id, player_one_user_id, player_two_user_id, status, duration_seconds, invited_user_id")
     .eq("id", roomId)
     .maybeSingle(); // returns null instead of erroring when not found
 
@@ -45,16 +49,21 @@ export async function POST(request: Request) {
   }
 
   if (!room) {
-    return Response.json({ error: "Room not found." }, { status: 404 });
+    return Response.json({ error: t("roomNotFound") }, { status: 404 });
   }
 
   if (room.player_one_user_id === user.id) {
-    return Response.json({ error: "You cannot join your own room." }, { status: 400 });
+    return Response.json({ error: t("cannotJoinOwnRoom") }, { status: 400 });
+  }
+
+  // An invite room can only be joined by the friend it was made for.
+  if (room.invited_user_id && room.invited_user_id !== user.id) {
+    return Response.json({ error: t("roomForSomeoneElse") }, { status: 403 });
   }
 
   // The room must still be waiting for a second player.
   if (room.status !== "waiting" || room.player_two_user_id !== null) {
-    return Response.json({ error: "This room is no longer open." }, { status: 409 });
+    return Response.json({ error: t("roomNotOpen") }, { status: 409 });
   }
 
   // --- make sure this user is not already in another active game -----------
@@ -70,7 +79,7 @@ export async function POST(request: Request) {
 
   if (activeGames && activeGames > 0) {
     return Response.json(
-      { error: "You already have an active game. Finish it before joining another." },
+      { error: t("alreadyInGameJoin") },
       { status: 409 }
     );
   }
@@ -102,7 +111,7 @@ export async function POST(request: Request) {
 
   // If nothing came back, someone else joined first.
   if (!updated) {
-    return Response.json({ error: "This room was just taken." }, { status: 409 });
+    return Response.json({ error: t("roomTaken") }, { status: 409 });
   }
 
   // The room id is also the match id — the client uses it to open /rooms/[roomId].

@@ -79,7 +79,9 @@
     "startingCapital": "Starting Capital",
     "cancel": "Cancel",
     "create": "Create",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "playWith": "Play with",
+    "anyone": "Anyone"
   },
   "Leaderboard": {
     "competition": "Competition",
@@ -609,7 +611,7 @@
   },
   "Friends": {
     "title": "Friends",
-    "description": "Add players from the match result screen. Status updates every 5 seconds.",
+    "description": "Add players by username or from the match result screen. Status updates every 5 seconds.",
     "loading": "Loading friends...",
     "friendRequests": "Friend requests",
     "accept": "Accept",
@@ -627,7 +629,38 @@
     "secondsAgo": "{seconds}s ago",
     "minutesAgo": "{minutes}m ago",
     "hoursAgo": "{hours}h ago",
-    "daysAgo": "{days}d ago"
+    "daysAgo": "{days}d ago",
+    "usernamePlaceholder": "Exact username",
+    "sendRequest": "Send request",
+    "sending": "Sending...",
+    "userNotFound": "No player called \"{username}\".",
+    "cannotAddYourself": "You can't add yourself.",
+    "alreadyFriendsOrPending": "You and {username} are already friends, or a request is waiting.",
+    "requestFailed": "Could not send the request. Try again.",
+    "requestSentTo": "Request sent to {username}."
+  },
+  "Invite": {
+    "challengedYou": "{username} challenged you",
+    "accept": "Accept",
+    "ignore": "Ignore",
+    "aFriend": "A friend",
+    "couldNotJoin": "Could not join."
+  },
+  "RoomErrors": {
+    "invalidRequest": "Invalid request.",
+    "invalidCapital": "Invalid starting capital.",
+    "invalidSymbol": "Invalid symbol.",
+    "loginRequired": "Please log in first.",
+    "friendsOnly": "You can only invite your friends.",
+    "alreadyInGameCreate": "You already have an active game. End or delete it before creating another.",
+    "couldNotCreate": "Could not create the room.",
+    "roomIdRequired": "Room is missing.",
+    "roomNotFound": "Room not found.",
+    "cannotJoinOwnRoom": "You cannot join your own room.",
+    "roomForSomeoneElse": "This room is for someone else.",
+    "roomNotOpen": "This room is no longer open.",
+    "alreadyInGameJoin": "You already have an active game. Finish it before joining another.",
+    "roomTaken": "This room was just taken."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Failed to load security factors.",
