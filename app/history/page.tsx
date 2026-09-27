@@ -374,8 +374,17 @@ export default function HistoryPage() {
 																	<p className="text-xs text-[#5d6877]">{tDetail("noCandleData")}</p>
 																</div>
 															)}
-														</div>
 
+															<div className="flex justify-end mt-3">
+																<Link
+																	href={`/history/${match.id}`}
+																	className="inline-flex items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-white/[.02] px-3 py-1.5 text-xs font-semibold text-[#9aa6b6] hover:bg-white/[.06] hover:text-[#eef2f8] transition-colors"
+																>
+																	{tDetail("viewMatchLogs")}
+																	<ChevronRight className="w-3.5 h-3.5" />
+																</Link>
+															</div>
+														</div>
 													</div>
 												)}
 											</div>

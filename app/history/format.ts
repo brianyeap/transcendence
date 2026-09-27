@@ -1,6 +1,6 @@
 // --- Helper Functions ---
 export function formatMoney(value: number): string {
-	const sign = value > 0 ? "+" : "";
+	const sign = value > 0 ? "+" : value < 0 ? "-" : "";
 	return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -34,5 +34,8 @@ export function formatPct(value: number, base: number): string {
 	if (!base || !Number.isFinite(base) || !Number.isFinite(value)) return "—";
 	const pct = (value / base) * 100;
 	if (!Number.isFinite(pct)) return "—";
-	return `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`;
+	// Round first so a tiny negative that displays as 0.00 is not shown as "-0.00%".
+	const rounded = Number(pct.toFixed(2));
+	const sign = rounded > 0 ? "+" : rounded < 0 ? "-" : "";
+	return `${sign}${Math.abs(rounded).toFixed(2)}%`;
 }
