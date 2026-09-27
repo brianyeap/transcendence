@@ -27,7 +27,6 @@ We have implemented native TOTP Multi-Factor Authentication (MFA / 2FA) into thi
 | [app/components/auth/mfa-settings.tsx](file:///wsl.localhost/Ubuntu/home/zepos/coding_stuff/transcendence/app/components/auth/mfa-settings.tsx) | Client component for settings: enrolls TOTP factor (`enroll`), renders QR code and manual secret, verifies enrollment (`challenge` + `verify`), lists active factors, allows secure factor removal (`unenroll`). |
 | [app/settings/page.tsx](file:///wsl.localhost/Ubuntu/home/zepos/coding_stuff/transcendence/app/settings/page.tsx) | Protected via `requireAuthWithMfa("/settings")`; embeds `<MfaSettings />` in the Security card. |
 | [app/api/user/security/route.ts](file:///wsl.localhost/Ubuntu/home/zepos/coding_stuff/transcendence/app/api/user/security/route.ts) | Sensitive API route demonstrating server-side `assertAal2Action()` protection (returns 403 when session is only `aal1`). |
-| [supabase/mfa-rls-policy.sql](file:///wsl.localhost/Ubuntu/home/zepos/coding_stuff/transcendence/supabase/mfa-rls-policy.sql) | Example PostgreSQL RLS policies enforcing `(select auth.jwt()->>'aal') = 'aal2'`. |
 
 ---
 

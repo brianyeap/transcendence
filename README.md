@@ -30,6 +30,8 @@ The goal of the project was to build a complete, multi-user, real-time web appli
 | Zernest (zep) | `zernest` | **Tech Lead / Architect**, Developer | Owned the technical decisions: the Supabase setup, auth, database security (RLS) and how the frontend talks to the backend. Built the i18n system, the leaderboard and achievements. |
 | Amber Yeap | `ayeap` | Developer | Built the match lifecycle screens (waiting room, countdown, live match, results), the monitoring stack, the legal pages and the How-to-Play page. |
 
+Brian and Raja shared the Project Manager role. Brian handled the planning side: what goes into each sprint and keeping the task board up to date with the PM bot. Raja handled the follow-up side: tracking deadlines, checking on progress and chasing blockers.
+
 All four of us worked as developers, reviewed each other's changes and tested our own features.
 
 ## Project Management
@@ -306,7 +308,7 @@ The socket container reads `.env.local` directly, so the stack won't start witho
 
 ### 2. Set up the database
 
-Run the SQL files in `supabase/migrations/` **in order** in the Supabase SQL editor. `supabase/mfa-rls-policy.sql` is an example policy, not a migration.
+Run the SQL files in `supabase/migrations/` **in order** in the Supabase SQL editor.
 
 ### 3. Start the stack
 
@@ -366,11 +368,7 @@ docker compose up -d --force-recreate --no-deps socket web
 
 **Each time you play**
 
-Start the stack, then run the tunnel script in a second terminal:
-
-```bash
-./run_docker.sh
-```
+Open Docker Desktop, then run the tunnel script. It starts the Docker stack for you:
 
 ```bash
 ./run_ngrok.sh
@@ -378,12 +376,13 @@ Start the stack, then run the tunnel script in a second terminal:
 
 The script:
 
-1. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml) (web, socket, and Grafana).
-2. Writes the new URLs into `.env.local` (`NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS`). This happens every run because free-tier URLs change each time ngrok restarts.
-3. Recreates the `socket` and `web` containers so they pick up the new values.
-4. Prints the web URL. **Both players open that URL.**
+1. Builds and starts the whole stack in the background (`docker compose up -d --build`).
+2. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml) (web, socket, and Grafana).
+3. Writes the new URLs into `.env.local` (`NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS`). This happens every run because free-tier URLs change each time ngrok restarts.
+4. Recreates the `socket` and `web` containers so they pick up the new values.
+5. Waits for the web app to respond, then prints the web URL. **Both players open that URL.**
 
-Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the containers again.
+Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the containers again. The stack keeps running afterwards; stop it with `docker compose down`.
 
 Things already set up in the code for ngrok:
 
@@ -435,7 +434,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 
 ### How AI was used
 
-Each of us used AI assistants: **Claude** (Brian), **Gemini** (zep), and **Qwen, Claude and ChatGPT** (Raja).
+Each of us used AI assistants: **Claude** (Brian), **Gemini** (zep), **Qwen, Claude and ChatGPT** (Raja), and **Claude** (Amber).
 
 - **Debugging:** explaining errors and tracking down bugs such as RLS problems, socket and countdown issues, and chart syncing
 - **Testing:** driving the app through **Playwright MCP servers** for end-to-end checks, and looking for security weaknesses (for example RLS gaps and exposed data)
