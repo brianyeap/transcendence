@@ -77,51 +77,39 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: t("loginRequired") }, { status: 401 });
+    return Response.json({ code: "not_authenticated" }, { status: 401 });
   }
 
   // ---- 2. size ceiling, checked before we parse anything -----------------
   const declaredLength = Number(request.headers.get("content-length") ?? "");
   if (Number.isFinite(declaredLength) && declaredLength > MAX_UPLOAD_BYTES) {
-    return Response.json(
-      { error: t("tooLarge") },
-      { status: 413 }
-    );
+    return Response.json({ code: "file_too_large" }, { status: 413 });
   }
 
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.includes("multipart/form-data")) {
-    return Response.json(
-      { error: t("badRequest") },
-      { status: 400 }
-    );
+    return Response.json({ code: "expected_multipart" }, { status: 400 });
   }
 
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return Response.json({ error: t("badRequest") }, { status: 400 });
+    return Response.json({ code: "could_not_read_upload" }, { status: 400 });
   }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return Response.json(
-      { error: t("noFile") },
-      { status: 400 }
-    );
+    return Response.json({ code: "no_file" }, { status: 400 });
   }
 
   if (file.size === 0) {
-    return Response.json({ error: t("emptyFile") }, { status: 400 });
+    return Response.json({ code: "empty_file" }, { status: 400 });
   }
 
   // A chunked request can omit content-length, so re-check the real size.
   if (file.size > MAX_UPLOAD_BYTES) {
-    return Response.json(
-      { error: t("tooLarge") },
-      { status: 413 }
-    );
+    return Response.json({ code: "file_too_large" }, { status: 413 });
   }
 
   const inputBytes = new Uint8Array(await file.arrayBuffer());
@@ -129,10 +117,7 @@ export async function POST(request: Request) {
   // ---- 3. verify the real format, not the declared one -------------------
   const format = detectFormat(inputBytes);
   if (!format) {
-    return Response.json(
-      { error: t("unsupportedFormat") },
-      { status: 415 }
-    );
+    return Response.json({ code: "invalid_format" }, { status: 415 });
   }
 
   // ---- 4. decode and re-encode to a fixed 256x256 JPEG -------------------
@@ -150,10 +135,7 @@ export async function POST(request: Request) {
       .jpeg({ quality: AVATAR_QUALITY, mozjpeg: true })
       .toBuffer();
   } catch {
-    return Response.json(
-      { error: t("unreadableImage") },
-      { status: 415 }
-    );
+    return Response.json({ code: "unreadable_image" }, { status: 415 });
   }
 
   // ---- 5. write with the service-role client -----------------------------
@@ -171,11 +153,7 @@ export async function POST(request: Request) {
     });
 
   if (uploadError) {
-    console.error("avatar upload to storage failed:", uploadError.message);
-    return Response.json(
-      { error: t("couldNotStore") },
-      { status: 500 }
-    );
+    return Response.json({ code: "storage_failed" }, { status: 500 });
   }
 
   // ---- 6. derive avatar_url ourselves and persist it --------------------
@@ -186,10 +164,7 @@ export async function POST(request: Request) {
 
   const publicUrl = publicUrlData?.publicUrl;
   if (!publicUrl) {
-    return Response.json(
-      { error: t("couldNotStore") },
-      { status: 500 }
-    );
+    return Response.json({ code: "url_resolve_failed" }, { status: 500 });
   }
 
   const avatarUrl = `${publicUrl}?v=${Date.now()}`;
@@ -202,12 +177,67 @@ export async function POST(request: Request) {
     .eq("id", user.id);
 
   if (profileError) {
-    console.error("avatar_url profile update failed:", profileError.message);
-    return Response.json(
-      { error: t("couldNotSave") },
-      { status: 500 }
-    );
+    return Response.json({ code: "profile_save_failed" }, { status: 500 });
   }
 
   return Response.json({ avatarUrl });
+}
+
+/**
+ * DELETE /api/profile/avatar
+ *
+ * Removes the caller's custom avatar and returns them to the initials
+ * fallback. Authenticated exactly like POST: from the session cookie, never
+ * from the body. The object path is derived from the verified user id, so a
+ * caller can only ever remove their own file.
+ *
+ * ORDER MATTERS. The stored file is removed first, then the DB column is
+ * nulled:
+ *   - if the Storage delete fails, nothing has changed and we report an error
+ *   - if the DB write fails after the file is gone, the row still points at a
+ *     missing URL, which <Avatar> renders as initials anyway (the image 404s),
+ *     so the UI is never left showing a photo that no longer exists
+ *
+ * A missing Storage object is not an error: `remove` is idempotent, and a user
+ * who has no file (or whose file was already cleaned up) should still be able
+ * to clear the column.
+ */
+export async function DELETE() {
+  // ---- 1. authenticate from the session, never from the body -------------
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return Response.json({ code: "not_authenticated" }, { status: 401 });
+  }
+
+  // ---- 2. remove the stored file -----------------------------------------
+  // Path is derived from the verified session user id, never from input.
+  const objectPath = `${user.id}/avatar.jpg`;
+
+  const admin = createSupabaseAdminClient();
+  const { error: removeError } = await admin.storage
+    .from(AVATARS_BUCKET)
+    .remove([objectPath]);
+
+  if (removeError) {
+    return Response.json({ code: "storage_delete_failed" }, { status: 500 });
+  }
+
+  // ---- 3. clear the column -----------------------------------------------
+  // Written with the user-scoped client so the existing "update own profile"
+  // policy applies. We are only writing our own row.
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: null })
+    .eq("id", user.id);
+
+  if (profileError) {
+    return Response.json({ code: "profile_delete_failed" }, { status: 500 });
+  }
+
+  return Response.json({ avatarUrl: null });
 }

@@ -7,7 +7,13 @@ import { LogoutButton } from "../components/auth/logout-button";
 import { Avatar } from "../components/duel/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { resizeImage } from "@/lib/avatar-upload";
-import { User, Mail, Shield, Camera, Languages, FileText, Scale, ChevronRight } from "lucide-react";
+import { messageKeyFor } from "@/lib/i18n/error-codes";
+import {
+  USERNAME_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_PATTERN,
+} from "@/lib/validation/username";
+import { User, Mail, Shield, Camera, Languages, FileText, Scale, ChevronRight, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MfaSettings } from "../components/auth/mfa-settings";
 import Link from "next/link";
@@ -17,6 +23,7 @@ export default function SettingsPage() {
   const supabase = createSupabaseBrowserClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("Settings");
+  const tErrors = useTranslations("ApiErrors");
 
   const [locale, setLocale] = useState("en");
 
@@ -31,6 +38,8 @@ export default function SettingsPage() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // True while a remove request is in flight, so the button can disable itself.
+  const [removing, setRemoving] = useState(false);
   const handleLanguageChange = (locale: string) => {
     document.cookie = `locale=${locale}; path=/`;
     window.location.reload();
@@ -155,7 +164,8 @@ export default function SettingsPage() {
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setUploadError(payload?.error || t("uploadFailed"));
+        const key = messageKeyFor(payload?.code);
+        setUploadError(key ? tErrors(key) : t("uploadFailed"));
         setStatusMessage("");
         return;
       }
@@ -179,6 +189,45 @@ export default function SettingsPage() {
     setStatusMessage("");
   }
 
+  // Remove the stored avatar and return to the initials fallback.
+  //
+  // The browser does not touch profiles.avatar_url or Storage directly: it
+  // calls the authenticated DELETE on our own route, which clears the column
+  // server-side. On success we drop the local copy so the <Avatar> immediately
+  // re-renders with initials, with no reload.
+  async function handleRemovePhoto() {
+    if (removing) return;
+
+    setRemoving(true);
+    setUploadError(null);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch("/api/profile/avatar", {
+        method: "DELETE",
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        // Leave avatarUrl as it was: the photo is still there, so showing
+        // initials would misrepresent the server state.
+        const key = messageKeyFor(payload?.code);
+        setUploadError(key ? tErrors(key) : t("removeFailed"));
+        return;
+      }
+
+      setAvatarUrl(null);
+      setPreviewUrl(null);
+      setPendingFile(null);
+      setUploadError(null);
+    } catch {
+      setUploadError(t("removeFailed"));
+    } finally {
+      setRemoving(false);
+    }
+  }
+
   function handleStartEditUsername() {
     setUsernameInput(username);
     setEditingUsername(true);
@@ -187,41 +236,61 @@ export default function SettingsPage() {
   async function handleSaveUsername() {
     const newName = usernameInput.trim();
 
-    if (newName.length < 3) {
+    // ---- UX-only checks. ---------------------------------------------------
+    // These give the user a fast, inline error before any round-trip. They are
+    // NOT a security control: this function can be skipped from the console.
+    // The authoritative checks live in app/api/profile/username/route.ts (which
+    // rejects invalid input before it reaches the DB) and in the NOT VALID
+    // CHECK constraint from migration 0010. Deleting the block below would not
+    // weaken enforcement at all.
+    if (newName.length < USERNAME_MIN_LENGTH) {
       setStatusMessage(t("usernameMinLength"));
+      return;
+    }
+
+    if (newName.length > USERNAME_MAX_LENGTH) {
+      setStatusMessage(t("usernameMaxLength"));
+      return;
+    }
+
+    if (!USERNAME_PATTERN.test(newName)) {
+      setStatusMessage(t("usernameInvalidChars"));
       return;
     }
 
     if (newName === username) {
       setEditingUsername(false);
+      setStatusMessage("");
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    setStatusMessage(t("saving"));
 
-    // ─────────────────────────────────────────────
-    // ZEP: updates profiles.username for this user.
-    // Username is UNIQUE in the schema, so this can
-    // fail with error code 23505 if already taken.
-    // ─────────────────────────────────────────────
-    const result = await supabase
-      .from("profiles")
-      .update({ username: newName })
-      .eq("id", user.id);
+    // The browser no longer writes profiles.username directly. It calls our
+    // own route, which authenticates from the session, validates server-side,
+    // and only then writes. The route returns a machine-readable error CODE,
+    // which we translate here so the message follows the user's language.
+    try {
+      const response = await fetch("/api/profile/username", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: newName }),
+      });
 
-    if (result.error) {
-      if (result.error.code === "23505") {
-        setStatusMessage(t("usernameTaken"));
-      } else {
-        setStatusMessage(t("usernameSaveFailed"));
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const key = messageKeyFor(payload?.code);
+        setStatusMessage(key ? tErrors(key) : t("usernameSaveFailed"));
+        return;
       }
-      return;
-    }
 
-    setUsername(newName);
-    setEditingUsername(false);
-    setStatusMessage("");
+      setUsername(payload?.username ?? newName);
+      setEditingUsername(false);
+      setStatusMessage("");
+    } catch {
+      setStatusMessage(t("usernameSaveFailed"));
+    }
   }
 
   return (
@@ -265,31 +334,19 @@ export default function SettingsPage() {
                  * attack surface. Keep the two paths separate.
                  */}
                 {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt=""
-                    className="size-11 shrink-0 rounded-[30%] object-cover shadow-[inset_0_1px_0_rgba(255,255,255,.18)]"
-                  />
-                ) : (
-                  <Avatar
-                    name={username || userEmail}
-                    imageUrl={avatarUrl}
-                    size="lg"
-                  />
-                )}
-                <div>
-                  <div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-0.5">
-                    {t("profilePhoto")}
-                  </div>
-                  <div className="text-sm font-semibold">
-                    {previewUrl
-                      ? t("previewConfirm")
-                      : avatarUrl
-                        ? t("customPhoto")
-                        : t("usingInitials")}
-                  </div>
-                </div>
-              </div>
+				<img
+				  src={previewUrl}
+				  alt=""
+				  className="size-11 shrink-0 rounded-[30%] object-cover shadow-[inset_0_1px_0_rgba(255,255,255,.18)]"
+				/>
+				) : (
+				  <Avatar
+					name={username || userEmail}
+					imageUrl={avatarUrl}
+					size="lg"
+				  />
+				)}
+			  </div>
 
               {previewUrl ? (
                 <div className="flex items-center gap-2">
@@ -308,14 +365,28 @@ export default function SettingsPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-[7px] border border-white/[.07] text-[#5d6877] hover:text-[#eef2f8] hover:border-white/[.14] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                  {t("changePhoto")}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading || removing}
+                    className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-[7px] border border-white/[.07] text-[#5d6877] hover:text-[#eef2f8] hover:border-white/[.14] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    {t("changePhoto")}
+                  </button>
+                  {/* Only offered when a custom photo is actually set — there is
+                      nothing to remove when the user is already on initials. */}
+                  {avatarUrl && (
+                    <button
+                      onClick={handleRemovePhoto}
+                      disabled={uploading || removing}
+                      className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-[7px] border border-white/[.07] text-[#f6485d] hover:bg-[#f6485d]/10 hover:border-[#f6485d]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {removing ? t("removingPhoto") : t("removePhoto")}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
@@ -343,7 +414,6 @@ export default function SettingsPage() {
                 <div className="text-sm font-semibold">{userEmail}</div>
               </div>
             </div>
-            <span className="text-[10px] text-[#5d6877] border border-white/[.07] rounded px-2 py-0.5">{t("readOnly")}</span>
           </div>
 
           {/* Username row */}

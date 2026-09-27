@@ -1,0 +1,71 @@
+-- ============================================================================
+-- Migration 0010: Enforce username rules on public.profiles
+-- ----------------------------------------------------------------------------
+-- Adds a CHECK constraint so a username must be 3-20 characters and may only
+-- contain A-Z, a-z, 0-9, underscore, hyphen and space.
+--
+-- WHY NOT VALID
+-- `ALTER TABLE ... ADD CONSTRAINT ... NOT VALID` applies the rule to all FUTURE
+-- inserts and updates, but does NOT re-scan existing rows. That matters here:
+-- the live table already contains usernames that break the new rule (see the
+-- audit below). A plain (validating) constraint would fail to apply at all
+-- against that data. NOT VALID lets us start enforcing immediately without
+-- rewriting or renaming a single existing username.
+--
+-- IMPORTANT CONSEQUENCE
+-- A NOT VALID constraint still BLOCKS updates to a row that currently violates
+-- it. In other words, a user whose existing username is too long cannot save
+-- ANY profile change through an UPDATE that touches the row... more precisely,
+-- they cannot update the username column until they set it to a valid value.
+-- The six accounts listed below will therefore have to choose a valid username
+-- the next time they edit it. Their current username keeps working until then.
+--
+-- The equivalent regex used in code is lib/validation/username.ts
+-- (USERNAME_PATTERN). Keep the two in sync.
+--
+-- NOTE: This migration is written but has NOT been applied to the live
+-- database. It must be run separately (e.g. `supabase db push` or the SQL
+-- editor) when you are ready.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- AUDIT: existing rows that violate the new rule
+-- ----------------------------------------------------------------------------
+-- Run this first, on its own, to see exactly which accounts are affected before
+-- applying the constraint. Expected result at time of writing: 6 rows.
+--
+--   select id, username, length(username) as len
+--   from public.profiles
+--   where username !~ '^[A-Za-z0-9_ -]{3,20}$'
+--   order by length(username) desc;
+--
+-- Known violators (from a live audit, for reference — not hard-coded anywhere):
+--   amberyeap002_334303be                len 21  (too long)
+--   artificialinteligenceemail_95193cdb  len 35  (too long)
+--   codebykingvik_462292f3               len 22  (too long)
+--   lasob62078@hotkev.com                len 21  (too long + '@' '.' not allowed)
+--   lilal61647@preparmy.com              len 23  (too long + '@' '.' not allowed)
+--   yevot57791@prorises.com              len 23  (too long + '@' '.' not allowed)
+
+-- ----------------------------------------------------------------------------
+-- CONSTRAINT
+-- ----------------------------------------------------------------------------
+-- The regex mirrors USERNAME_PATTERN + the 3/20 bounds exactly:
+--   ^[A-Za-z0-9_ -]{3,20}$
+-- (the hyphen is last in the class so it is a literal, not a range)
+alter table public.profiles
+  add constraint profiles_username_format_check
+  check (username ~ '^[A-Za-z0-9_ -]{3,20}$')
+  not valid;
+
+-- ----------------------------------------------------------------------------
+-- OPTIONAL FOLLOW-UP (do NOT run until the six accounts above have updated)
+-- ----------------------------------------------------------------------------
+-- Once no rows violate the rule, you can promote the constraint to a fully
+-- validated one. Until then this WILL fail:
+--
+--   alter table public.profiles
+--     validate constraint profiles_username_format_check;
+--
+-- There is intentionally no data migration here: no username is renamed or
+-- touched by this file.
