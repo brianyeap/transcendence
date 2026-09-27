@@ -48,7 +48,9 @@ Schemas such as `auth`, `storage`, `realtime`, `vault`, and `extensions` are par
 
 Row Level Security is enabled on the application tables, and policies provide access rules for profiles, matches, friends, trades, players, and candles. A few details are worth confirming against the intended privacy model:
 
-- **Profiles:** an authenticated `read all profiles` policy allows authenticated users to read every profile row. The `email` column was removed from `public.profiles` and is stored exclusively in `auth.users` to prevent email exposure across users, while allowing public read access to `username`, `avatar_url`, and `last_seen_at`.
+- **Profiles & Presence:** an authenticated `read all profiles` policy allows authenticated users to read public profile details (`username`, `avatar_url`). Sensitive columns (`email`, `created_at`, `last_seen_at`) were removed from `public.profiles`:
+  - `email` and account `created_at` are stored exclusively in `auth.users`, where only the user themselves can access them via `auth.getUser()`.
+  - `last_seen_at` was moved to a separate `public.user_presence` table protected by RLS, allowing only accepted friends and the user themselves to see online activity. Non-friends cannot view presence timestamps.
 - **Candles:** an `authenticated_users_can_read_match_candles` policy allows authenticated users to read candles without restricting them to their own matches. Because the policies are permissive, the separate “read candles for my matches” policy does not narrow that access.
 - **Duplicate profile and player-read policies** appear to overlap. They may be harmless, but consolidating redundant policies can make access behavior easier to understand and maintain.
 - **Participant representation:** `matches` has `player_one_user_id` and `player_two_user_id`, while `match_players` also records users participating in a match. This can be a practical choice for a fixed two-player design, but it creates two places whose participant data must stay consistent.

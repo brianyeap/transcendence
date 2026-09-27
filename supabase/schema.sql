@@ -100,6 +100,13 @@ begin
   on conflict (id) do update set
     username = coalesce(excluded.username, profiles.username);
 
+  insert into public.user_presence (user_id, last_seen_at)
+  values (
+    new.id,
+    now()
+  )
+  on conflict (user_id) do nothing;
+
   return new;
 end;
 $$;
@@ -110,9 +117,12 @@ $$;
 --
 
 CREATE FUNCTION public.ping_online() RETURNS void
-    LANGUAGE sql
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path = public
     AS $$
-  update profiles set last_seen_at = now() where id = auth.uid();
+  INSERT INTO public.user_presence (user_id, last_seen_at)
+  VALUES (auth.uid(), now())
+  ON CONFLICT (user_id) DO UPDATE SET last_seen_at = now();
 $$;
 
 
@@ -187,9 +197,17 @@ CREATE TABLE public.friends (
 CREATE TABLE public.profiles (
     id uuid NOT NULL,
     username text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_seen_at timestamp with time zone,
     avatar_url text
+);
+
+
+--
+-- Name: user_presence; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_presence (
+    user_id uuid NOT NULL,
+    last_seen_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -201,7 +219,7 @@ CREATE VIEW public.friends_with_status WITH (security_invoker='true') AS
  SELECT p.id,
     p.username,
     p.avatar_url,
-    (EXTRACT(epoch FROM (now() - p.last_seen_at)))::integer AS seconds_since_seen,
+    (EXTRACT(epoch FROM (now() - up.last_seen_at)))::integer AS seconds_since_seen,
     f.status,
     (f.user_id = auth.uid()) AS sent_by_me
    FROM (public.friends f
@@ -209,7 +227,8 @@ CREATE VIEW public.friends_with_status WITH (security_invoker='true') AS
         CASE
             WHEN (f.user_id = auth.uid()) THEN f.friend_id
             ELSE f.user_id
-        END)));
+        END))
+     LEFT JOIN public.user_presence up ON ((up.user_id = p.id)));
 
 
 --
@@ -687,6 +706,27 @@ CREATE POLICY users_can_read_own_trades ON public.trades FOR SELECT USING ((auth
 --
 
 CREATE POLICY users_can_update_own_profile ON public.profiles FOR UPDATE USING ((auth.uid() = id));
+
+
+--
+-- Name: user_presence; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_presence ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "read presence" ON public.user_presence
+    FOR SELECT TO authenticated
+    USING ((user_id = auth.uid()) OR (EXISTS (
+        SELECT 1 FROM public.friends f
+        WHERE f.status = 'accepted'
+          AND (((f.user_id = auth.uid()) AND (f.friend_id = public.user_presence.user_id))
+            OR ((f.friend_id = auth.uid()) AND (f.user_id = public.user_presence.user_id)))
+    )));
+
+CREATE POLICY "update own presence" ON public.user_presence
+    FOR ALL TO authenticated
+    USING ((user_id = auth.uid()))
+    WITH CHECK ((user_id = auth.uid()));
 
 
 --

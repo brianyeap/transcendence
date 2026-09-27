@@ -47,10 +47,15 @@ Table profiles {
   id uuid [primary key, note: 'Same id as auth.users.id']
   username text [not null, unique]
   avatar_url text
-  last_seen_at timestamptz [note: 'Updated every few seconds by ping_online(); used for the online dot']
-  created_at timestamptz [not null, default: `now()`]
 
-  Note: 'One row per player. Created automatically on sign-up by the handle_new_user() trigger.'
+  Note: 'One row per player. Public info (username and avatar) readable by authenticated users.'
+}
+
+Table user_presence {
+  user_id uuid [primary key, note: 'Same id as auth.users.id']
+  last_seen_at timestamptz [default: `now()`, note: 'Updated by ping_online(); visible only to accepted friends and self']
+
+  Note: 'Tracks online presence. Protected by RLS so only accepted friends and the user themselves can read it.'
 }
 
 Table friends {
