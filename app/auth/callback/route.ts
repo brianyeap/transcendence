@@ -8,10 +8,16 @@ export async function GET(request: Request) {
 
   // When the server listens on 0.0.0.0, request.url contains that non-routable
   // address. Reconstruct a browser-reachable origin from the Host header instead.
-  const host = request.headers.get("host") ?? requestUrl.host;
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    `${requestUrl.protocol}//${host}`;
+  // Behind a tunnel/proxy (e.g. ngrok) the browser talks https to the tunnel,
+  // but the tunnel talks plain http to us — so prefer the forwarded headers.
+  const host =
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    requestUrl.host;
+  const proto =
+    request.headers.get("x-forwarded-proto") ??
+    requestUrl.protocol.replace(":", "");
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? `${proto}://${host}`;
 
   const code = searchParams.get("code");
   const rawNext = searchParams.get("next");

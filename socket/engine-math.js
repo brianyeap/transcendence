@@ -3,8 +3,8 @@
 // engine-math.js — the pure money maths for a match.
 // ----------------------------------------------------------------------------
 // These functions do NOT touch the network or the database. They only do the
-// arithmetic of trading, so they are easy to read and easy to test on their own
-// (see engine-math.test.js). server.js requires them.
+// arithmetic of trading, so they are easy to read on their own.
+// server.js requires them.
 //
 // A player's state is a plain object:
 //   {

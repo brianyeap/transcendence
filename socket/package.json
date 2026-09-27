@@ -4,8 +4,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js",
-    "test": "node engine-math.test.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",

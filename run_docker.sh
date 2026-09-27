@@ -1,1 +1,1 @@
-COMPOSE_DISABLE_ENV_FILE=1 docker compose up --build
+docker compose up --build

@@ -1,0 +1,14 @@
+# Tunnels for playing across two computers (used by run_ngrok.sh).
+# No secrets here: your authtoken stays in ngrok's own config file.
+# graphan is special cause need ot ecxplicitly say https
+version: "3"
+tunnels:
+  web:            # the app players open
+    proto: http
+    addr: 3000
+  socket:         # the match engine
+    proto: http
+    addr: 4000
+  grafana:        # optional monitoring dashboard
+    proto: http
+    addr: https://localhost:3001

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/terms-services", "/privacy-policy", "/auth/callback"];
 
+// prevent loginhack work
 function isPublicPaths(pathname: string) {
 	return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
@@ -55,7 +56,6 @@ export async function proxy(request: NextRequest)
 }
 
 export const config = {
-	// Exclude static assets and the auth callback (PKCE code exchange must
-	// run before any session exists — intercepting it causes redirect loops).
+	// Exclude static assets and the auth callback
 	matcher: ["/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

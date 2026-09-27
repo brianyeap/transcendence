@@ -281,6 +281,9 @@ export function createSocketTransport(): MatchTransport {
         socket = io(SOCKET_URL, {
           // this callback is sent on every connect and reconnect, so the engine can verify us, sends the access token to the engine for verification
           auth: (cb) => cb({ token: accessToken }),
+          // skip HTTP long-polling and go straight to WebSocket; ngrok's free
+          // tier answers browser polling requests with a warning page instead
+          transports: ["websocket"],
         });
 
         socket.on("connect", () => {
