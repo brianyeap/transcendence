@@ -1,7 +1,7 @@
 // ============================================================================
 // supabase/schema.dbml: the live database schema in DBML
 // ----------------------------------------------------------------------------
-// Same tables as supabase/schema.sql (live dump, 2026-09-27), written in DBML
+// Same tables as supabase/schema.sql (live dump, 2026-09-28), written in DBML
 // so it is easy to look at. Paste this whole file into https://dbdiagram.io
 // to get a diagram.
 //
@@ -83,6 +83,7 @@ Table matches {
   player_one_user_id uuid [not null, note: 'Who created the room']
   player_two_user_id uuid [note: 'Empty until someone joins']
   winner_user_id uuid [note: 'Empty for a draw or an unfinished match']
+  invited_user_id uuid [note: 'Private room for this one friend. Empty = public room anyone can join']
   countdown_starts_at timestamptz
   starts_at timestamptz
   ends_at timestamptz
@@ -158,6 +159,9 @@ Table trades {
 // A profile belongs to exactly one login account
 Ref: profiles.id - auth.users.id [delete: cascade]
 
+// Presence row belongs to one login account
+Ref: user_presence.user_id - auth.users.id [delete: cascade]
+
 // Friends point at profiles
 Ref: friends.user_id > profiles.id [delete: cascade]
 Ref: friends.friend_id > profiles.id [delete: cascade]
@@ -166,6 +170,7 @@ Ref: friends.friend_id > profiles.id [delete: cascade]
 Ref: matches.player_one_user_id > auth.users.id
 Ref: matches.player_two_user_id > auth.users.id
 Ref: matches.winner_user_id > auth.users.id
+Ref: matches.invited_user_id > auth.users.id [delete: cascade]
 
 // Per-match data points back at its match
 Ref: match_players.match_id > matches.id
@@ -183,6 +188,8 @@ Note friends_with_status_view {
   VIEW friends_with_status (security_invoker = true)
   The logged-in user's friend list, joined with each friend's profile:
     id, username, avatar_url, seconds_since_seen, status, sent_by_me
-  Built from friends JOIN profiles. RLS on friends limits it to your own rows.
+  Built from friends JOIN profiles LEFT JOIN user_presence.
+  RLS on friends limits it to your own rows, and RLS on user_presence means
+  seconds_since_seen is null until the request is accepted.
   '''
 }

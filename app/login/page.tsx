@@ -7,6 +7,7 @@ import { Logo } from "../components/duel/logo";
 import { Button } from "../components/duel/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
+import { authErrorKey } from "@/lib/auth/auth-error-key";
 import Link from "next/link";
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -22,6 +23,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const t = useTranslations("Login");
+  const tAuth = useTranslations("AuthErrors");
   const locale = useLocale();
 
   const rawNext = searchParams.get("next");
@@ -40,7 +42,7 @@ function LoginForm() {
       },
     });
     if (oauthError) {
-      setError(oauthError.message);
+      setError(tAuth("oauthFailed"));
     }
   }
 
@@ -70,7 +72,11 @@ function LoginForm() {
           options: { data: { username } },
         });
 
-        if (signUpError) throw new Error(signUpError.message);
+        if (signUpError) {
+          // Supabase messages are English only, so show our translated version.
+          setError(tAuth(authErrorKey(signUpError)));
+          return;
+        }
 
         if (data.user) {
           await supabase
@@ -86,7 +92,10 @@ function LoginForm() {
           password,
         });
 
-        if (signInError) throw new Error(signInError.message);
+        if (signInError) {
+          setError(tAuth(authErrorKey(signInError)));
+          return;
+        }
 
         // Check if user has enrolled MFA and needs secondary factor verification
         const { data: aalData } =
@@ -100,8 +109,9 @@ function LoginForm() {
 
         router.push(safeNext);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("somethingWentWrong"));
+    } catch {
+      // Anything unexpected (e.g. no internet): never show the raw English error.
+      setError(t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }

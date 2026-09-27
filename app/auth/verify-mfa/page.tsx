@@ -6,12 +6,14 @@ import { Logo } from "@/app/components/duel/logo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
 import { Shield, KeyRound, AlertCircle, RefreshCw, LogOut } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function VerifyMfaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawNext = searchParams.get("next");
   const safeNext = validateSafeRedirect(rawNext, "/");
+  const t = useTranslations("VerifyMfa");
 
   const [factorId, setFactorId] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -61,7 +63,7 @@ function VerifyMfaContent() {
 
       if (factorsError) {
         if (isMounted) {
-          setError("Failed to retrieve security factors. Please check your network.");
+          setError(t("failedToLoadFactors"));
           setLoading(false);
         }
         return;
@@ -86,7 +88,7 @@ function VerifyMfaContent() {
     return () => {
       isMounted = false;
     };
-  }, [router, safeNext]);
+  }, [router, safeNext, t]);
 
   async function handleVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,12 +96,12 @@ function VerifyMfaContent() {
     const cleanCode = code.trim().replace(/\s+/g, "");
 
     if (!factorId) {
-      setError("No active two-factor authentication factor found.");
+      setError(t("noFactor"));
       return;
     }
 
     if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
-      setError("Please enter a valid 6-digit authentication code.");
+      setError(t("invalidSixDigitCode"));
       return;
     }
 
@@ -117,9 +119,10 @@ function VerifyMfaContent() {
 
         if (challengeRes.error) {
           if (challengeRes.error.message?.toLowerCase().includes("network")) {
-            setError("Network error while creating challenge. Please check your connection.");
+            setError(t("networkErrorChallenge"));
           } else {
-            setError(challengeRes.error.message || "Failed to initialize verification challenge.");
+            // Supabase's error.message is English only, so show our own text.
+            setError(t("failedToCreateChallenge"));
           }
           setVerifying(false);
           return;
@@ -142,13 +145,13 @@ function VerifyMfaContent() {
         // Reset challenge if expired or invalidated
         if (msg.includes("expired")) {
           setChallengeId(null);
-          setError("Verification challenge expired. A fresh challenge will be generated on your next try.");
+          setError(t("challengeExpired"));
         } else if (msg.includes("invalid") || msg.includes("code")) {
-          setError("Invalid verification code. Please check your authenticator app.");
+          setError(t("invalidCode"));
         } else if (msg.includes("network")) {
-          setError("Network connection issue. Please verify your internet and try again.");
+          setError(t("networkErrorVerify"));
         } else {
-          setError(verifyRes.error.message || "Verification failed. Please try again.");
+          setError(t("failedToVerify"));
         }
 
         setVerifying(false);
@@ -158,7 +161,7 @@ function VerifyMfaContent() {
       // Success: session is now elevated to AAL2!
       router.push(safeNext);
     } catch {
-      setError("An unexpected network error occurred. Please try again.");
+      setError(t("unexpectedNetworkError"));
       setVerifying(false);
     }
   }
@@ -182,9 +185,9 @@ function VerifyMfaContent() {
               <Shield className="size-5" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Two-Factor Authentication</h1>
+              <h1 className="text-lg font-bold">{t("title")}</h1>
               <p className="text-xs text-[#5d6877]">
-                Enter the 6-digit code from your authenticator app.
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -192,14 +195,14 @@ function VerifyMfaContent() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10 text-sm text-[#5d6877]">
               <RefreshCw className="mb-3 size-6 animate-spin text-[#4d86ff]" />
-              Checking security status...
+              {t("checkingStatus")}
             </div>
           ) : (
             <form onSubmit={handleVerify} className="space-y-4">
               <label className="block">
                 <span className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-[#9aa6b6]">
                   <KeyRound className="size-3.5 text-[#4d86ff]" />
-                  Authentication Code
+                  {t("codeLabel")}
                 </span>
                 <input
                   type="text"
@@ -230,10 +233,10 @@ function VerifyMfaContent() {
                 {verifying ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="size-4 animate-spin" />
-                    Verifying...
+                    {t("verifying")}
                   </span>
                 ) : (
-                  "Verify and Continue"
+                  t("verifyContinue")
                 )}
               </button>
 
@@ -244,7 +247,7 @@ function VerifyMfaContent() {
                   className="flex w-full items-center justify-center gap-2 text-xs text-[#5d6877] transition hover:text-[#f6485d]"
                 >
                   <LogOut className="size-3.5" />
-                  Cancel and sign out
+                  {t("cancelSignOut")}
                 </button>
               </div>
             </form>

@@ -375,8 +375,8 @@ export function createSocketTransport(): MatchTransport {
 
         // The engine also uses a plain "error" event for things like being sent
         // to a match you are not part of. Show it the same way as a rejection.
-        socket.on("error", ({ message }: { message: string }) => {
-          handlers.onTradeRejected?.({ reason: message });
+        socket.on("error", ({ reason }: { reason: string }) => {
+          handlers.onTradeRejected?.({ reason });
         });
 
         // --- the end ---

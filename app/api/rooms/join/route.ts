@@ -45,7 +45,9 @@ export async function POST(request: Request) {
     .maybeSingle(); // returns null instead of erroring when not found
 
   if (roomError) {
-    return Response.json({ error: roomError.message }, { status: 500 });
+    // Keep the real database error in the server log, send a friendly one to the player.
+    console.error("POST /api/rooms/join room lookup failed:", roomError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   if (!room) {
@@ -74,7 +76,8 @@ export async function POST(request: Request) {
     .neq("status", "completed");
 
   if (activeError) {
-    return Response.json({ error: activeError.message }, { status: 500 });
+    console.error("POST /api/rooms/join active game check failed:", activeError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   if (activeGames && activeGames > 0) {
@@ -106,7 +109,8 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (updateError) {
-    return Response.json({ error: updateError.message }, { status: 500 });
+    console.error("POST /api/rooms/join update failed:", updateError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   // If nothing came back, someone else joined first.

@@ -243,7 +243,7 @@
     "weeksAgo": "{count}mg yang lalu",
     "monthsAgo": "{count}bln yang lalu",
     "yearsAgo": "{count}thn yang lalu",
-	"loadingHistory": "Memuatkan log sejarah..."
+    "loadingHistory": "Memuatkan log sejarah..."
   },
   "HistoryDetail": {
     "backToHistory": "Kembali ke Sejarah",
@@ -292,11 +292,11 @@
     "section3Title": "3. Penggunaan yang dibenarkan",
     "section3Intro": "Anda bersetuju untuk tidak:",
     "section3Items": {
-    "bots": "Menggunakan bot, skrip, atau automasi untuk membuat dagangan bagi pihak anda",
-    "exploits": "Mengeksploitasi pepijat, keadaan perlumbaan, atau tingkah laku yang tidak disengajakan untuk mendapatkan kelebihan yang tidak adil",
-    "coordinate": "Bekerjasama dengan pihak lawan untuk memanipulasi keputusan sesuatu perlawanan",
-    "access": "Cuba mengakses akaun atau data pengguna lain",
-    "illegal": "Menggunakan perkhidmatan ini untuk sebarang tujuan yang menyalahi undang-undang, berbahaya, atau mengganggu pemain lain"
+      "bots": "Menggunakan bot, skrip, atau automasi untuk membuat dagangan bagi pihak anda",
+      "exploits": "Mengeksploitasi pepijat, keadaan perlumbaan, atau tingkah laku yang tidak disengajakan untuk mendapatkan kelebihan yang tidak adil",
+      "coordinate": "Bekerjasama dengan pihak lawan untuk memanipulasi keputusan sesuatu perlawanan",
+      "access": "Cuba mengakses akaun atau data pengguna lain",
+      "illegal": "Menggunakan perkhidmatan ini untuk sebarang tujuan yang menyalahi undang-undang, berbahaya, atau mengganggu pemain lain"
     },
     "section3Footer": "Kami boleh menggantung atau memadam akaun yang melanggar terma ini.",
     "section4Title": "4. Bukan nasihat kewangan",
@@ -353,7 +353,6 @@
   "HowToPlay": {
     "title": "Cara bermain",
     "intro": "Dua pemain, satu carta BTC/USDT, modal permulaan yang sama. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
-
     "facts": {
       "players": "Pemain",
       "startingCapital": "Modal permulaan",
@@ -363,7 +362,6 @@
       "matchLengthValue": "30s – 1.5 min",
       "winsByValue": "Modal lebih tinggi"
     },
-
     "flow": {
       "title": "Aliran permainan",
       "steps": {
@@ -385,7 +383,6 @@
         }
       }
     },
-
     "trading": {
       "title": "Membuat dagangan",
       "intro": "Setiap dagangan ialah pesanan pasaran. Anda memilih jumlah dan arah, dan dagangan akan dilaksanakan serta-merta pada harga semasa yang diterima. Tiada pesanan had, tiada leverage, dan tiada yuran.",
@@ -401,7 +398,6 @@
       "positionDetail": "Tiada butang “tutup” yang berasingan. Dagangan dalam arah bertentangan akan terlebih dahulu mengimbangi posisi sedia ada, dan jumlah yang masih berbaki akan membuka posisi baharu dalam arah yang bertentangan.",
       "positionExample": "Contohnya, memegang Short bernilai $50 → dagangan Long bernilai $50 akan menutupnya sepenuhnya. Long bernilai $80 akan menutup Short bernilai $50 dan membuka Long baharu bernilai $30."
     },
-
     "screenGuide": {
       "title": "Memahami skrin perlawanan",
       "priceTimer": {
@@ -421,12 +417,10 @@
         "detail": "Anda akan melihat jumlah modal mereka secara langsung. Dagangan individu mereka kekal tersembunyi sehingga perlawanan tamat."
       }
     },
-
     "ending": {
       "title": "Bagaimana perlawanan berakhir",
       "detail": "Apabila masa tamat, pelayan akan menutup sebarang posisi terbuka pada harga akhir. Anda tidak perlu mengingati untuk menutup dagangan sendiri. Pemain yang mempunyai modal lebih tinggi pada akhirnya akan menang. Jika jumlah modal anda sama tepat, perlawanan berakhir seri. Butiran penuh setiap dagangan boleh dilihat selepas itu melalui sejarah perlawanan."
     },
-
     "ready": {
       "title": "Sudah bersedia?",
       "detail": "Sertai bilik yang terbuka, atau cipta bilik anda sendiri.",
@@ -660,7 +654,12 @@
     "roomForSomeoneElse": "Bilik ini untuk orang lain.",
     "roomNotOpen": "Bilik ini tidak lagi dibuka.",
     "alreadyInGameJoin": "Anda sudah mempunyai permainan aktif. Habiskannya sebelum menyertai yang lain.",
-    "roomTaken": "Bilik ini baru sahaja diambil."
+    "roomTaken": "Bilik ini baru sahaja diambil.",
+    "serverError": "Berlaku ralat di pihak kami. Sila cuba lagi.",
+    "roomNotDeletable": "Bilik tidak dijumpai atau anda tiada kebenaran untuk memadamnya.",
+    "couldNotDelete": "Tidak dapat memadam bilik.",
+    "couldNotJoin": "Tidak dapat menyertai bilik.",
+    "couldNotLoad": "Tidak dapat memuatkan bilik."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Gagal memuatkan faktor keselamatan.",
@@ -708,5 +707,59 @@
     "disableWarning": "Menyahaktifkan 2FA mengurangkan keselamatan akaun anda. Anda hanya memerlukan log masuk Google atau kata laluan untuk mengakses lobi dan perlawanan dagangan.",
     "keepEnabled": "Kekalkan Diaktifkan",
     "yesDisable": "Ya, Nyahaktifkan"
+  },
+  "AvatarErrors": {
+    "loginRequired": "Sila log masuk dahulu.",
+    "tooLarge": "Imej terlalu besar. Saiz maksimum ialah 5 MB.",
+    "badRequest": "Muat naik tidak dihantar dengan betul. Sila cuba lagi.",
+    "noFile": "Tiada fail diberikan.",
+    "emptyFile": "Fail ini kosong.",
+    "unsupportedFormat": "Format imej tidak disokong. Sila muat naik JPEG atau PNG.",
+    "unreadableImage": "Fail itu tidak dapat dibaca sebagai imej.",
+    "couldNotStore": "Tidak dapat menyimpan imej. Sila cuba lagi.",
+    "couldNotSave": "Tidak dapat menyimpan foto profil anda."
+  },
+  "AuthErrors": {
+    "invalidCredentials": "E-mel atau kata laluan salah.",
+    "emailTaken": "Akaun dengan e-mel ini sudah wujud.",
+    "weakPassword": "Kata laluan terlalu lemah. Gunakan sekurang-kurangnya 6 aksara.",
+    "emailNotConfirmed": "Sila sahkan e-mel anda sebelum log masuk.",
+    "tooManyRequests": "Terlalu banyak percubaan. Sila tunggu sebentar dan cuba lagi.",
+    "signupDisabled": "Pendaftaran dilumpuhkan buat masa ini.",
+    "network": "Ralat rangkaian. Sila semak sambungan anda.",
+    "oauthFailed": "Tidak dapat memulakan log masuk Google.",
+    "logoutFailed": "Tidak dapat log keluar. Sila cuba lagi.",
+    "loggedOut": "Berjaya log keluar.",
+    "unknown": "Sesuatu telah berlaku. Sila cuba lagi."
+  },
+  "VerifyMfa": {
+    "title": "Pengesahan Dua Faktor",
+    "subtitle": "Masukkan kod 6 digit daripada aplikasi pengesah anda.",
+    "checkingStatus": "Menyemak status keselamatan...",
+    "codeLabel": "Kod Pengesahan",
+    "verifying": "Sedang mengesahkan...",
+    "verifyContinue": "Sahkan dan Teruskan",
+    "cancelSignOut": "Batal dan log keluar",
+    "failedToLoadFactors": "Gagal mendapatkan faktor keselamatan. Sila semak rangkaian anda.",
+    "noFactor": "Tiada faktor pengesahan dua faktor aktif ditemui.",
+    "invalidSixDigitCode": "Sila masukkan kod pengesahan 6 digit yang sah.",
+    "networkErrorChallenge": "Ralat rangkaian semasa mencipta cabaran. Sila semak sambungan anda.",
+    "failedToCreateChallenge": "Gagal memulakan cabaran pengesahan.",
+    "challengeExpired": "Cabaran pengesahan telah tamat tempoh. Cabaran baharu akan dijana pada percubaan seterusnya.",
+    "invalidCode": "Kod pengesahan tidak sah. Sila semak aplikasi pengesah anda.",
+    "networkErrorVerify": "Masalah sambungan rangkaian. Sila semak internet anda dan cuba lagi.",
+    "failedToVerify": "Pengesahan gagal. Sila cuba lagi.",
+    "unexpectedNetworkError": "Ralat rangkaian yang tidak dijangka berlaku. Sila cuba lagi."
+  },
+  "TradeErrors": {
+    "matchNotActive": "Perlawanan tidak aktif.",
+    "invalidSide": "Arah mesti long atau short.",
+    "invalidAmount": "Jumlah mesti nombor positif.",
+    "notInMatch": "Anda tiada dalam perlawanan ini.",
+    "noPriceYet": "Belum ada harga, cuba lagi sebentar.",
+    "notEnoughBalance": "Baki tidak mencukupi.",
+    "matchIdRequired": "Perlawanan tidak dinyatakan.",
+    "matchNotFound": "Perlawanan tidak dijumpai.",
+    "unknown": "Sesuatu telah berlaku."
   }
 }

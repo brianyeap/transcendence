@@ -58,6 +58,7 @@ export type TradeFill = {
 };
 
 export type TradeRejection = {
+  // A key from the "TradeErrors" section of messages/*.json, e.g. "notEnoughBalance".
   reason: string;
 };
 

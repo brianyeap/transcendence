@@ -54,7 +54,7 @@ export function MfaSettings() {
         await supabase.auth.mfa.listFactors();
 
       if (factorsError) {
-        setError(factorsError.message || t("failedToLoadSecurityFactors"));
+        setError(t("failedToLoadSecurityFactors"));
         return;
       }
 
@@ -78,7 +78,7 @@ export function MfaSettings() {
         if (!isMounted) return;
 
         if (factorsError) {
-          setError(factorsError.message || t("failedToLoadSecurityFactors"));
+          setError(t("failedToLoadSecurityFactors"));
           return;
         }
 
@@ -125,7 +125,7 @@ export function MfaSettings() {
       });
 
       if (enrollError || !data) {
-        setError(enrollError?.message || t("failedToStartEnrollment"));
+        setError(t("failedToStartEnrollment"));
         setActionLoading(false);
         return;
       }
@@ -196,7 +196,7 @@ export function MfaSettings() {
         if (challengeError?.message?.toLowerCase().includes("network")) {
           setError(t("networkErrorChallenge"));
         } else {
-          setError(challengeError?.message || t("failedToCreateChallenge"));
+          setError(t("failedToCreateChallenge"));
         }
         setActionLoading(false);
         return;
@@ -218,7 +218,7 @@ export function MfaSettings() {
         } else if (msg.includes("network")) {
           setError(t("networkErrorVerify"));
         } else {
-          setError(verifyError.message || t("failedToVerify"));
+          setError(t("failedToVerify"));
         }
         setActionLoading(false);
         return;
@@ -257,7 +257,7 @@ export function MfaSettings() {
         } else if (msg.includes("network")) {
           setError(t("networkErrorRemoving"));
         } else {
-          setError(unenrollError.message || t("failedToRemove"));
+          setError(t("failedToRemove"));
         }
         setActionLoading(false);
         return;

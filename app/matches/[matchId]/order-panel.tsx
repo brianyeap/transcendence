@@ -271,6 +271,7 @@ function Feedback({
   connecting: boolean;
 }) {
   const t = useTranslations("OrderPanel");
+  const tReason = useTranslations("TradeErrors");
 
   if (hidden) {
     return (
@@ -287,7 +288,11 @@ function Feedback({
       <p
         className="mt-3 rounded-[7px] border border-[#f6485d]/30 bg-[#f6485d]/10 px-3 py-2 text-sm text-[#ff8c99]"
       >
-        {t("tradeRejected", { reason: rejection.reason })}
+        {t("tradeRejected", {
+          // The engine sends a key like "notEnoughBalance". If we ever get one
+          // we don't know, show a generic message instead of the raw key.
+          reason: tReason.has(rejection.reason) ? tReason(rejection.reason) : tReason("unknown"),
+        })}
       </p>
     );
   }

@@ -35,6 +35,8 @@ function round2(n) {
 //     profit/loss, then open a new position with any leftover amount.
 //
 // Returns { ok:false, reason } OR { ok:true, next, tradePnl }.
+// `reason` is a key from the "TradeErrors" section of messages/*.json, so the
+// player's browser can show it in their own language.
 function applyTrade(player, side, amount, price) {
   // Start from a copy of the player's current numbers.
   let availableBalance = player.availableBalance;
@@ -51,7 +53,7 @@ function applyTrade(player, side, amount, price) {
 	// ---- Adding to (or opening) a position in the same direction ----
 	// We need enough free money to cover the whole order.
 	if (amount > availableBalance) {
-	  return { ok: false, reason: "Not enough balance." };
+	  return { ok: false, reason: "notEnoughBalance" };
 	}
 
 	// Weighted average of the old and new entry prices.
@@ -82,7 +84,7 @@ function applyTrade(player, side, amount, price) {
 	// If there is a leftover amount, we must be able to afford opening it.
 	// (The released money is available to help pay for it.)
 	if (remaining > 0 && remaining > availableBalance + released) {
-	  return { ok: false, reason: "Not enough balance." };
+	  return { ok: false, reason: "notEnoughBalance" };
 	}
 
 	// Apply the close.

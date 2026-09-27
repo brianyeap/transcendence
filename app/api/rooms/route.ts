@@ -162,6 +162,9 @@ async function findActiveMatch(
 }
 
 export async function GET() {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -169,7 +172,7 @@ export async function GET() {
   } = await supabase.auth.getUser();  // getting user and if there is any error
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   const { data: rooms, error } = await supabase // basically result.data is rooms and result.error is error
@@ -181,7 +184,9 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // Keep the real database error in the server log, send a friendly one to the player.
+    console.error("GET /api/rooms failed:", error.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   const matchRooms = rooms as MatchRoom[];
@@ -286,7 +291,8 @@ export async function POST(request: Request) {
     .neq("status", "completed"); // not equal to completed so basically everything else
 
   if (existingGameError) {
-    return Response.json({ error: existingGameError.message }, { status: 500 });
+    console.error("POST /api/rooms active game check failed:", existingGameError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   if (existingGameCount && existingGameCount > 0) { // first iss to check fo rnull
@@ -344,16 +350,19 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("RoomErrors");
+
   let body: DeleteRoomRequest;
 
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    return Response.json({ error: t("invalidRequest") }, { status: 400 });
   }
 
   if (typeof body.roomId !== "string" || body.roomId.trim().length === 0) {
-    return Response.json({ error: "roomId is required." }, { status: 400 });
+    return Response.json({ error: t("roomIdRequired") }, { status: 400 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -363,7 +372,7 @@ export async function DELETE(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   const roomId = body.roomId.trim();
@@ -376,12 +385,13 @@ export async function DELETE(request: Request) {
     .eq("status", "waiting");
 
   if (deleteError) {
-    return Response.json({ error: deleteError.message }, { status: 500 });
+    console.error("DELETE /api/rooms failed:", deleteError.message);
+    return Response.json({ error: t("serverError") }, { status: 500 });
   }
 
   if (!count || count === 0) {
     return Response.json(
-      { error: "Room not found or you do not have permission to delete it." },
+      { error: t("roomNotDeletable") },
       { status: 404 }
     );
   }

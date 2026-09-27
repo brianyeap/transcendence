@@ -1,3 +1,15 @@
+-- ============================================================================
+-- supabase/schema.sql: snapshot of the LIVE database (public schema only)
+-- ----------------------------------------------------------------------------
+-- Made with pg_dump on 2026-09-28, after migrations 0000-0011 were applied.
+-- It is for reading, not for running: to build a database, run the files in
+-- supabase/migrations/ in order.
+--
+-- Not shown here because pg_dump --schema=public leaves them out:
+--   - the on_auth_user_created trigger (it lives on auth.users, see 0006)
+--   - the supabase_realtime publication, which includes public.matches (0011)
+-- ============================================================================
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -84,7 +96,6 @@ CREATE FUNCTION public.handle_new_user() RETURNS trigger
 declare
   default_username text;
 begin
-  -- Resolve username from metadata or fall back to the email prefix
   default_username := coalesce(
     new.raw_user_meta_data->>'username',
     new.raw_user_meta_data->>'name',
@@ -118,7 +129,7 @@ $$;
 
 CREATE FUNCTION public.ping_online() RETURNS void
     LANGUAGE sql SECURITY DEFINER
-    SET search_path = public
+    SET search_path TO 'public'
     AS $$
   INSERT INTO public.user_presence (user_id, last_seen_at)
   VALUES (auth.uid(), now())
@@ -222,12 +233,12 @@ CREATE VIEW public.friends_with_status WITH (security_invoker='true') AS
     (EXTRACT(epoch FROM (now() - up.last_seen_at)))::integer AS seconds_since_seen,
     f.status,
     (f.user_id = auth.uid()) AS sent_by_me
-   FROM (public.friends f
+   FROM ((public.friends f
      JOIN public.profiles p ON ((p.id =
         CASE
             WHEN (f.user_id = auth.uid()) THEN f.friend_id
             ELSE f.user_id
-        END))
+        END)))
      LEFT JOIN public.user_presence up ON ((up.user_id = p.id)));
 
 
@@ -292,7 +303,8 @@ CREATE TABLE public.matches (
     winner_user_id uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     duration_seconds integer,
-    name text
+    name text,
+    invited_user_id uuid
 );
 
 
@@ -363,8 +375,6 @@ ALTER TABLE ONLY public.matches
     ADD CONSTRAINT matches_pkey PRIMARY KEY (id);
 
 
-
-
 --
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
@@ -387,6 +397,14 @@ ALTER TABLE ONLY public.profiles
 
 ALTER TABLE ONLY public.trades
     ADD CONSTRAINT trades_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_presence user_presence_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_presence
+    ADD CONSTRAINT user_presence_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -465,6 +483,14 @@ ALTER TABLE ONLY public.match_players
 
 
 --
+-- Name: matches matches_invited_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.matches
+    ADD CONSTRAINT matches_invited_user_id_fkey FOREIGN KEY (invited_user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: matches matches_player_one_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -513,6 +539,14 @@ ALTER TABLE ONLY public.trades
 
 
 --
+-- Name: user_presence user_presence_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_presence
+    ADD CONSTRAINT user_presence_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: matches Authenticated users can read completed matches; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -537,8 +571,9 @@ CREATE POLICY "Players can view their matches" ON public.matches FOR SELECT TO a
 -- Name: matches Users can create their own waiting matches; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "Users can create their own waiting matches" ON public.matches FOR INSERT TO authenticated WITH CHECK (((player_one_user_id = auth.uid()) AND (player_two_user_id IS NULL) AND (status = 'waiting'::public.match_status)));
-
+CREATE POLICY "Users can create their own waiting matches" ON public.matches FOR INSERT TO authenticated WITH CHECK (((player_one_user_id = auth.uid()) AND (player_two_user_id IS NULL) AND (status = 'waiting'::public.match_status) AND ((invited_user_id IS NULL) OR (EXISTS ( SELECT 1
+   FROM public.friends f
+  WHERE ((f.status = 'accepted'::text) AND (((f.user_id = auth.uid()) AND (f.friend_id = matches.invited_user_id)) OR ((f.user_id = matches.invited_user_id) AND (f.friend_id = auth.uid())))))))));
 
 
 --
@@ -552,13 +587,6 @@ ALTER TABLE public.friends ENABLE ROW LEVEL SECURITY;
 --
 
 CREATE POLICY "insert own profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK ((id = auth.uid()));
-
-
---
--- Name: matches join open room as player two; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "join open room as player two" ON public.matches FOR UPDATE TO authenticated USING (((status = 'waiting'::public.match_status) AND (player_two_user_id IS NULL) AND (player_one_user_id <> auth.uid()))) WITH CHECK ((player_two_user_id = auth.uid()));
 
 
 --
@@ -625,6 +653,15 @@ CREATE POLICY "read own match_players" ON public.match_players FOR SELECT USING 
 
 
 --
+-- Name: user_presence read presence; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "read presence" ON public.user_presence FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.friends f
+  WHERE ((f.status = 'accepted'::text) AND (((f.user_id = auth.uid()) AND (f.friend_id = user_presence.user_id)) OR ((f.friend_id = auth.uid()) AND (f.user_id = user_presence.user_id))))))));
+
+
+--
 -- Name: trades read trades for my matches; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -637,7 +674,7 @@ CREATE POLICY "read trades for my matches" ON public.trades FOR SELECT USING ((E
 -- Name: matches read_waiting_matches; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY read_waiting_matches ON public.matches FOR SELECT TO authenticated USING ((status = 'waiting'::public.match_status));
+CREATE POLICY read_waiting_matches ON public.matches FOR SELECT TO authenticated USING (((status = 'waiting'::public.match_status) AND ((invited_user_id IS NULL) OR (invited_user_id = auth.uid()))));
 
 
 --
@@ -661,11 +698,24 @@ CREATE POLICY "send friend requests" ON public.friends FOR INSERT TO authenticat
 ALTER TABLE public.trades ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: user_presence update own presence; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "update own presence" ON public.user_presence TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
 -- Name: profiles update own profile; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "update own profile" ON public.profiles FOR UPDATE TO authenticated USING ((id = auth.uid())) WITH CHECK ((id = auth.uid()));
 
+
+--
+-- Name: user_presence; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_presence ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: profiles users_can_insert_own_profile; Type: POLICY; Schema: public; Owner: -
@@ -700,27 +750,6 @@ CREATE POLICY users_can_read_own_trades ON public.trades FOR SELECT USING ((auth
 --
 
 CREATE POLICY users_can_update_own_profile ON public.profiles FOR UPDATE USING ((auth.uid() = id));
-
-
---
--- Name: user_presence; Type: ROW SECURITY; Schema: public; Owner: -
---
-
-ALTER TABLE public.user_presence ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "read presence" ON public.user_presence
-    FOR SELECT TO authenticated
-    USING ((user_id = auth.uid()) OR (EXISTS (
-        SELECT 1 FROM public.friends f
-        WHERE f.status = 'accepted'
-          AND (((f.user_id = auth.uid()) AND (f.friend_id = public.user_presence.user_id))
-            OR ((f.friend_id = auth.uid()) AND (f.user_id = public.user_presence.user_id)))
-    )));
-
-CREATE POLICY "update own presence" ON public.user_presence
-    FOR ALL TO authenticated
-    USING ((user_id = auth.uid()))
-    WITH CHECK ((user_id = auth.uid()));
 
 
 --

@@ -41,7 +41,7 @@
     "friends": "好友",
     "profile": "个人资料",
     "settings": "设置",
-	"howtoplay": "如何游玩",
+    "howtoplay": "如何游玩",
     "logout": "退出登录"
   },
   "Lobby": {
@@ -243,7 +243,7 @@
     "weeksAgo": "{count} 周前",
     "monthsAgo": "{count} 个月前",
     "yearsAgo": "{count} 年前",
-	"loadingHistory": "正在加载历史记录..."
+    "loadingHistory": "正在加载历史记录..."
   },
   "HistoryDetail": {
     "backToHistory": "返回对决历史",
@@ -353,7 +353,6 @@
   "HowToPlay": {
     "title": "如何游玩",
     "intro": "两名玩家、一张 BTC/USDT 价格图表，以及相同的初始资金。比赛结束时资金更多的玩家获胜。",
-
     "facts": {
       "players": "玩家",
       "startingCapital": "初始资金",
@@ -363,7 +362,6 @@
       "matchLengthValue": "30 秒 – 1.5 分钟",
       "winsByValue": "资金较高"
     },
-
     "flow": {
       "title": "游戏流程",
       "steps": {
@@ -385,7 +383,6 @@
         }
       }
     },
-
     "trading": {
       "title": "进行交易",
       "intro": "每笔交易都是市价单。您选择交易金额和方向，订单会按照当前实时价格立即成交。没有限价单、没有杠杆，也没有手续费。",
@@ -401,7 +398,6 @@
       "positionDetail": "没有单独的“平仓”按钮。反方向的交易会先抵消您现有的仓位，剩余的金额则会在相反方向建立新的仓位。",
       "positionExample": "例如：持有 $50 的 Short → 一笔 $50 的 Long 交易会将其完全平仓。一笔 $80 的 Long 会先平掉 $50 的 Short，然后建立新的 $30 Long 仓位。"
     },
-
     "screenGuide": {
       "title": "如何查看比赛画面",
       "priceTimer": {
@@ -421,12 +417,10 @@
         "detail": "您可以实时看到对手的资金总额。他们的单笔交易会一直隐藏，直到比赛结束。"
       }
     },
-
     "ending": {
       "title": "比赛如何结束",
       "detail": "当计时器结束时，服务器会按照最终价格关闭任何未平仓的仓位。您不需要记得自行平仓。最终资金更多的玩家获胜。如果双方资金完全相同，则比赛为平局。比赛结束后，您可以通过比赛历史查看每笔交易的完整详情。"
     },
-
     "ready": {
       "title": "准备好了吗？",
       "detail": "加入一个开放的房间，或者创建您自己的房间。",
@@ -660,7 +654,12 @@
     "roomForSomeoneElse": "此房间是为其他人准备的。",
     "roomNotOpen": "此房间已不再开放。",
     "alreadyInGameJoin": "你已有一场进行中的对局。请先完成它，再加入其他房间。",
-    "roomTaken": "此房间刚刚被别人加入了。"
+    "roomTaken": "此房间刚刚被别人加入了。",
+    "serverError": "服务器出现问题。请重试。",
+    "roomNotDeletable": "找不到房间，或你没有权限删除它。",
+    "couldNotDelete": "无法删除房间。",
+    "couldNotJoin": "无法加入房间。",
+    "couldNotLoad": "无法加载房间。"
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "加载安全验证因素失败。",
@@ -708,5 +707,59 @@
     "disableWarning": "禁用 2FA 会降低您的账户安全性。您将只需要使用 Google 登录或密码即可访问大厅和交易比赛。",
     "keepEnabled": "保持启用",
     "yesDisable": "是，禁用"
+  },
+  "AvatarErrors": {
+    "loginRequired": "请先登录。",
+    "tooLarge": "图片太大。最大为 5 MB。",
+    "badRequest": "上传请求有误。请重试。",
+    "noFile": "未提供文件。",
+    "emptyFile": "文件为空。",
+    "unsupportedFormat": "不支持的图片格式。请上传 JPEG 或 PNG。",
+    "unreadableImage": "无法将该文件识别为图片。",
+    "couldNotStore": "无法保存图片。请重试。",
+    "couldNotSave": "无法保存你的头像。"
+  },
+  "AuthErrors": {
+    "invalidCredentials": "邮箱或密码错误。",
+    "emailTaken": "该邮箱已注册账户。",
+    "weakPassword": "密码强度太低。请至少使用 6 个字符。",
+    "emailNotConfirmed": "请先验证你的邮箱再登录。",
+    "tooManyRequests": "尝试次数过多。请稍后再试。",
+    "signupDisabled": "当前暂停注册。",
+    "network": "网络错误。请检查你的网络连接。",
+    "oauthFailed": "无法启动 Google 登录。",
+    "logoutFailed": "无法退出登录。请重试。",
+    "loggedOut": "已成功退出登录。",
+    "unknown": "出现了一些问题。请重试。"
+  },
+  "VerifyMfa": {
+    "title": "双重身份验证",
+    "subtitle": "请输入身份验证器应用中的 6 位验证码。",
+    "checkingStatus": "正在检查安全状态...",
+    "codeLabel": "验证码",
+    "verifying": "正在验证...",
+    "verifyContinue": "验证并继续",
+    "cancelSignOut": "取消并退出登录",
+    "failedToLoadFactors": "获取安全验证因素失败。请检查你的网络。",
+    "noFactor": "未找到已启用的双重身份验证因素。",
+    "invalidSixDigitCode": "请输入有效的 6 位验证码。",
+    "networkErrorChallenge": "创建验证挑战时发生网络错误。请检查你的网络连接。",
+    "failedToCreateChallenge": "初始化验证挑战失败。",
+    "challengeExpired": "验证挑战已过期。下次尝试时将生成新的挑战。",
+    "invalidCode": "验证码无效。请检查你的身份验证器应用。",
+    "networkErrorVerify": "网络连接问题。请检查网络后重试。",
+    "failedToVerify": "验证失败。请重试。",
+    "unexpectedNetworkError": "发生意外的网络错误。请重试。"
+  },
+  "TradeErrors": {
+    "matchNotActive": "对局未在进行中。",
+    "invalidSide": "方向必须是做多或做空。",
+    "invalidAmount": "金额必须为正数。",
+    "notInMatch": "你不在此对局中。",
+    "noPriceYet": "暂无价格，请稍后再试。",
+    "notEnoughBalance": "余额不足。",
+    "matchIdRequired": "缺少对局信息。",
+    "matchNotFound": "找不到对局。",
+    "unknown": "出现了一些问题。"
   }
 }

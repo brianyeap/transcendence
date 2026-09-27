@@ -41,6 +41,7 @@ export function LobbyScreen() {
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
   const t = useTranslations("Lobby");
+  const tErrors = useTranslations("RoomErrors");
 
   //  You may only have one room at a time, so this disables "Create Room".
   const hasCurrentUserRoom = openRooms.some((room) => room.ownedByCurrentUser);
@@ -61,16 +62,20 @@ export function LobbyScreen() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error ?? "Could not delete room.");
+        // The API already sends its error in the player's language.
+        toast.error(result.error ?? tErrors("couldNotDelete"));
+        return;
       }
 
       setOpenRooms((rooms) => rooms.filter((existingRoom) => existingRoom.id !== result.roomId));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not delete room.");
+    } catch {
+      // Network problem or a broken response: never show the raw browser
+      // error (it is always English), show our own translated one instead.
+      toast.error(tErrors("couldNotDelete"));
     } finally {
       setDeletingRoomIds((roomIds) => roomIds.filter((roomId) => roomId !== room.id));
     }
-  }, []);
+  }, [tErrors]);
 
   //  Join someone else's room: tell the server, then go to the match page.
   const joinRoom = useCallback(async (room: Room) => {
@@ -85,15 +90,19 @@ export function LobbyScreen() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error ?? "Could not join room.");
+        // The API already sends its error in the player's language.
+        toast.error(result.error ?? tErrors("couldNotJoin"));
+        setJoiningRoomId(null);
+        return;
       }
 
       router.push(`/matches/${result.roomId}`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not join room.");
+    } catch {
+      // Network problem or a broken response: show our own translated message.
+      toast.error(tErrors("couldNotJoin"));
       setJoiningRoomId(null);
     }
-  }, [router]);
+  }, [router, tErrors]);
 
   //  Go back into a room you created and left. No API call needed — you are
   //  already player one, so we just open the match page again.
@@ -109,17 +118,20 @@ export function LobbyScreen() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error ?? "Could not load rooms.");
+        // The API already sends its error in the player's language.
+        toast.error(result.error ?? tErrors("couldNotLoad"));
+        return;
       }
 
       setOpenRooms(ownRoomFirst(result.rooms));
       setActiveMatch(result.activeMatch ?? null);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not load rooms.");
+    } catch {
+      // Network problem or a broken response: show our own translated message.
+      toast.error(tErrors("couldNotLoad"));
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [tErrors]);
 
   useEffect(() => {
     refresh();

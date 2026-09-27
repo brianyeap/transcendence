@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 0009: invite a friend to a private room
+-- Migration 0011: invite a friend to a private room
 -- ----------------------------------------------------------------------------
 -- A room can now be made FOR one friend (invited_user_id). Only the creator
 -- and that friend can see it. null = a normal public room, same as before.

@@ -41,7 +41,7 @@
     "friends": "Friends",
     "profile": "Profile",
     "settings": "Settings",
-	"howtoplay": "How To Play",
+    "howtoplay": "How To Play",
     "logout": "Log out"
   },
   "Lobby": {
@@ -243,7 +243,7 @@
     "weeksAgo": "{count}w ago",
     "monthsAgo": "{count}mo ago",
     "yearsAgo": "{count}y ago",
-	"loadingHistory": "Loading history logs..."
+    "loadingHistory": "Loading history logs..."
   },
   "HistoryDetail": {
     "backToHistory": "Back to History",
@@ -353,7 +353,6 @@
   "HowToPlay": {
     "title": "How to play",
     "intro": "Two players, one BTC/USDT chart, equal starting capital. Whoever finishes the match with more capital wins.",
-
     "facts": {
       "players": "Players",
       "startingCapital": "Starting capital",
@@ -363,7 +362,6 @@
       "matchLengthValue": "30s – 1.5 min",
       "winsByValue": "Higher capital"
     },
-
     "flow": {
       "title": "The flow",
       "steps": {
@@ -385,7 +383,6 @@
         }
       }
     },
-
     "trading": {
       "title": "Placing a trade",
       "intro": "Every trade is a market order. You pick an amount and a direction, and it fills instantly at the current streamed price. There's no limit order, no leverage, and no fees.",
@@ -401,7 +398,6 @@
       "positionDetail": "There's no separate “close” button. An opposite-side trade offsets your existing exposure first, and any leftover amount opens a new position in the other direction.",
       "positionExample": "e.g. holding a $50 Short → a $50 Long trade fully closes it. A $80 Long would close the $50 Short and open a new $30 Long."
     },
-
     "screenGuide": {
       "title": "Reading the match screen",
       "priceTimer": {
@@ -421,12 +417,10 @@
         "detail": "You'll see their capital total live. Their individual trades stay hidden until the match ends."
       }
     },
-
     "ending": {
       "title": "How a match ends",
       "detail": "When the timer runs out, the server closes any open position at the final price. You never have to remember to close a trade yourself. Whoever ends up with more capital wins. If you're tied exactly, it's a draw. Full trade-by-trade detail is available afterward from the match history."
     },
-
     "ready": {
       "title": "Ready?",
       "detail": "Jump into an open room, or start your own.",
@@ -660,7 +654,12 @@
     "roomForSomeoneElse": "This room is for someone else.",
     "roomNotOpen": "This room is no longer open.",
     "alreadyInGameJoin": "You already have an active game. Finish it before joining another.",
-    "roomTaken": "This room was just taken."
+    "roomTaken": "This room was just taken.",
+    "serverError": "Something went wrong on our side. Please try again.",
+    "roomNotDeletable": "Room not found or you do not have permission to delete it.",
+    "couldNotDelete": "Could not delete the room.",
+    "couldNotJoin": "Could not join the room.",
+    "couldNotLoad": "Could not load rooms."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Failed to load security factors.",
@@ -708,5 +707,59 @@
     "disableWarning": "Disabling 2FA reduces your account security. You will only need your Google login or password to access the lobby and trading matches.",
     "keepEnabled": "Keep Enabled",
     "yesDisable": "Yes, Disable"
+  },
+  "AvatarErrors": {
+    "loginRequired": "Please log in first.",
+    "tooLarge": "Image is too large. Maximum size is 5 MB.",
+    "badRequest": "The upload was not sent correctly. Please try again.",
+    "noFile": "No file was provided.",
+    "emptyFile": "The file is empty.",
+    "unsupportedFormat": "Unsupported image format. Please upload a JPEG or PNG.",
+    "unreadableImage": "That file could not be read as an image.",
+    "couldNotStore": "Could not store the image. Please try again.",
+    "couldNotSave": "Could not save your profile photo."
+  },
+  "AuthErrors": {
+    "invalidCredentials": "Wrong email or password.",
+    "emailTaken": "An account with this email already exists.",
+    "weakPassword": "Password is too weak. Use at least 6 characters.",
+    "emailNotConfirmed": "Please confirm your email before logging in.",
+    "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
+    "signupDisabled": "Sign-ups are currently disabled.",
+    "network": "Network error. Please check your connection.",
+    "oauthFailed": "Could not start Google sign-in.",
+    "logoutFailed": "Could not log out. Please try again.",
+    "loggedOut": "Logged out successfully.",
+    "unknown": "Something went wrong. Please try again."
+  },
+  "VerifyMfa": {
+    "title": "Two-Factor Authentication",
+    "subtitle": "Enter the 6-digit code from your authenticator app.",
+    "checkingStatus": "Checking security status...",
+    "codeLabel": "Authentication Code",
+    "verifying": "Verifying...",
+    "verifyContinue": "Verify and Continue",
+    "cancelSignOut": "Cancel and sign out",
+    "failedToLoadFactors": "Failed to retrieve security factors. Please check your network.",
+    "noFactor": "No active two-factor authentication factor found.",
+    "invalidSixDigitCode": "Please enter a valid 6-digit authentication code.",
+    "networkErrorChallenge": "Network error while creating challenge. Please check your connection.",
+    "failedToCreateChallenge": "Failed to initialize verification challenge.",
+    "challengeExpired": "Verification challenge expired. A fresh challenge will be generated on your next try.",
+    "invalidCode": "Invalid verification code. Please check your authenticator app.",
+    "networkErrorVerify": "Network connection issue. Please verify your internet and try again.",
+    "failedToVerify": "Verification failed. Please try again.",
+    "unexpectedNetworkError": "An unexpected network error occurred. Please try again."
+  },
+  "TradeErrors": {
+    "matchNotActive": "Match is not active.",
+    "invalidSide": "Side must be long or short.",
+    "invalidAmount": "Amount must be a positive number.",
+    "notInMatch": "You are not in this match.",
+    "noPriceYet": "No price yet, try again in a moment.",
+    "notEnoughBalance": "Not enough balance.",
+    "matchIdRequired": "Match is missing.",
+    "matchNotFound": "Match not found.",
+    "unknown": "Something went wrong."
   }
 }

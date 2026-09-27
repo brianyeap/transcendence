@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -65,6 +66,9 @@ function detectFormat(bytes: Uint8Array): DetectedFormat {
 }
 
 export async function POST(request: Request) {
+  // Error messages in the player's language (read from their "locale" cookie).
+  const t = await getTranslations("AvatarErrors");
+
   // ---- 1. authenticate from the session, never from the body -------------
   const supabase = await createSupabaseServerClient();
   const {
@@ -73,14 +77,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return Response.json({ error: "Authentication required." }, { status: 401 });
+    return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
   // ---- 2. size ceiling, checked before we parse anything -----------------
   const declaredLength = Number(request.headers.get("content-length") ?? "");
   if (Number.isFinite(declaredLength) && declaredLength > MAX_UPLOAD_BYTES) {
     return Response.json(
-      { error: "Image is too large. Maximum size is 5 MB." },
+      { error: t("tooLarge") },
       { status: 413 }
     );
   }
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.includes("multipart/form-data")) {
     return Response.json(
-      { error: "Expected multipart/form-data." },
+      { error: t("badRequest") },
       { status: 400 }
     );
   }
@@ -97,25 +101,25 @@ export async function POST(request: Request) {
   try {
     formData = await request.formData();
   } catch {
-    return Response.json({ error: "Could not read the upload." }, { status: 400 });
+    return Response.json({ error: t("badRequest") }, { status: 400 });
   }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return Response.json(
-      { error: "No file provided. Send one file part named 'file'." },
+      { error: t("noFile") },
       { status: 400 }
     );
   }
 
   if (file.size === 0) {
-    return Response.json({ error: "The file is empty." }, { status: 400 });
+    return Response.json({ error: t("emptyFile") }, { status: 400 });
   }
 
   // A chunked request can omit content-length, so re-check the real size.
   if (file.size > MAX_UPLOAD_BYTES) {
     return Response.json(
-      { error: "Image is too large. Maximum size is 5 MB." },
+      { error: t("tooLarge") },
       { status: 413 }
     );
   }
@@ -126,7 +130,7 @@ export async function POST(request: Request) {
   const format = detectFormat(inputBytes);
   if (!format) {
     return Response.json(
-      { error: "Unsupported image format. Please upload a JPEG or PNG." },
+      { error: t("unsupportedFormat") },
       { status: 415 }
     );
   }
@@ -147,7 +151,7 @@ export async function POST(request: Request) {
       .toBuffer();
   } catch {
     return Response.json(
-      { error: "That file could not be read as an image." },
+      { error: t("unreadableImage") },
       { status: 415 }
     );
   }
@@ -167,8 +171,9 @@ export async function POST(request: Request) {
     });
 
   if (uploadError) {
+    console.error("avatar upload to storage failed:", uploadError.message);
     return Response.json(
-      { error: "Could not store the image. Please try again." },
+      { error: t("couldNotStore") },
       { status: 500 }
     );
   }
@@ -182,7 +187,7 @@ export async function POST(request: Request) {
   const publicUrl = publicUrlData?.publicUrl;
   if (!publicUrl) {
     return Response.json(
-      { error: "Could not resolve the image URL." },
+      { error: t("couldNotStore") },
       { status: 500 }
     );
   }
@@ -197,8 +202,9 @@ export async function POST(request: Request) {
     .eq("id", user.id);
 
   if (profileError) {
+    console.error("avatar_url profile update failed:", profileError.message);
     return Response.json(
-      { error: "Could not save your profile photo." },
+      { error: t("couldNotSave") },
       { status: 500 }
     );
   }

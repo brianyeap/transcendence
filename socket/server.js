@@ -466,7 +466,8 @@ io.on("connection", (socket) => {
     const userId = socket.data.userId;
 
     if (typeof matchId !== "string") {
-      socket.emit("error", { message: "matchId is required." });
+      // `reason` is a translation key (see "TradeErrors" in messages/*.json).
+      socket.emit("error", { reason: "matchIdRequired" });
       return;
     }
 
@@ -478,14 +479,14 @@ io.on("connection", (socket) => {
       .maybeSingle();
 
     if (!matchRow) {
-      socket.emit("error", { message: "Match not found." });
+      socket.emit("error", { reason: "matchNotFound" });
       return;
     }
 
     const isPlayer =
       matchRow.player_one_user_id === userId || matchRow.player_two_user_id === userId;
     if (!isPlayer) {
-      socket.emit("error", { message: "You are not part of this match." });
+      socket.emit("error", { reason: "notInMatch" });
       return;
     }
 
@@ -535,6 +536,8 @@ io.on("connection", (socket) => {
     console.log("trade:submit from", userId, "->", side, amount, "in match", matchId);
 
     // Send a rejection back to the player, and print it so we can see it in the logs.
+    // `reason` is a translation key (see "TradeErrors" in messages/*.json), so
+    // the browser can show it in the player's language.
     function reject(reason) {
       console.log("trade rejected for", userId, "-", reason);
       socket.emit("trade:rejected", { reason });
@@ -544,32 +547,32 @@ io.on("connection", (socket) => {
 
     // The match must be live (started, not ended).
     if (!match || !match.started || match.ended) {
-      reject("Match is not active.");
+      reject("matchNotActive");
       return;
     }
 
     // Check the order details.
     if (side !== "long" && side !== "short") {
-      reject("Side must be long or short.");
+      reject("invalidSide");
       return;
     }
     const orderAmount = Number(amount);
     if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
-      reject("Amount must be a positive number.");
+      reject("invalidAmount");
       return;
     }
 
     // The player must be in this match.
     const player = match.players[userId];
     if (!player) {
-      reject("You are not in this match.");
+      reject("notInMatch");
       return;
     }
 
     // We need a current price to trade at.
     const price = match.latestPrice;
     if (price === null) {
-      reject("No price yet, try again in a moment.");
+      reject("noPriceYet");
       return;
     }
 

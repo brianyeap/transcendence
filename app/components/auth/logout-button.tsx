@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 export function LogoutButton() {
     const router = useRouter();
     const t = useTranslations("SideNav");
+    const tAuth = useTranslations("AuthErrors");
 
     const handleLogout = async () => {
         const supabase = createSupabaseBrowserClient();
@@ -16,11 +17,12 @@ export function LogoutButton() {
         const { error } = await supabase.auth.signOut();
 
         if (error) {
-            toast.error(error.message);
+            // Supabase's error.message is English only, so show our own text.
+            toast.error(tAuth("logoutFailed"));
             return;
         }
 
-        toast.success("Logged out successfully.");
+        toast.success(tAuth("loggedOut"));
         router.push("/login");
     };
 

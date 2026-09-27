@@ -36,6 +36,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const t = useTranslations("CreateMatch");
+    const tErrors = useTranslations("RoomErrors");
 
     const handleClose = useCallback(() => {
         setIsCreating(false)
@@ -92,15 +93,19 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
             const result = await response.json()
 
             if (!response.ok) {
-                throw new Error(result.error ?? "Could not create room.")
+                // The API already sends its error in the player's language.
+                setError(result.error ?? tErrors("couldNotCreate"))
+                setIsCreating(false)
+                return
             }
 
             handleClose()
             // The creator is player one — send them straight into their room to
             // wait for an opponent (this is where the match screen lives).
             router.push(`/matches/${result.room.id}`)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not create room.")
+        } catch {
+            // Network problem or a broken response: show our own translated message.
+            setError(tErrors("couldNotCreate"))
             setIsCreating(false)
         }
     }

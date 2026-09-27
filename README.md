@@ -12,10 +12,10 @@ The goal of the project was to build a complete, multi-user, real-time web appli
 
 - **Live 1v1 trading matches**: both players see the same real BTC candles, streamed by our own Socket.IO match engine
 - **Server-side trading**: every order is checked on the server, positions and PnL are tracked, and the match is settled fairly
-- **Lobby**: create a match (choose 30s / 60s / 90s and 5K / 10K / 20K starting capital), join an open one, and rejoin a match you left
+- **Lobby**: create a match (choose 30s / 60s / 90s and 5K / 10K / 20K starting capital), join an open one, invite a friend to a private one, and rejoin a match you left
 - **Accounts**: email/password sign-up, Google sign-in (OAuth 2.0) and TOTP two-factor authentication
 - **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements
-- **Friends**: send and accept requests, and see who's online
+- **Friends**: find players by username and send them a request, accept requests, see which friends are online, and challenge a friend to a private match
 - **Leaderboard and match history**, with a detailed page for each past match
 - **3 languages**: English, Bahasa Melayu and Simplified Chinese
 - **Monitoring**: OpenTelemetry → Prometheus → Grafana, with dashboards and email alerts
@@ -75,8 +75,9 @@ The database is Supabase PostgreSQL. The full schema, including RLS policies and
 ```mermaid
 erDiagram
     AUTH_USERS ||--|| PROFILES : "has"
+    AUTH_USERS ||--|| USER_PRESENCE : "online status"
     PROFILES ||--o{ FRIENDS : "sends / receives"
-    AUTH_USERS ||--o{ MATCHES : "creates / joins / wins"
+    AUTH_USERS ||--o{ MATCHES : "creates / joins / wins / is invited to"
     MATCHES ||--|{ MATCH_PLAYERS : "has 2"
     MATCHES ||--o{ MATCH_CANDLES : "shows"
     MATCHES ||--o{ TRADES : "records"
@@ -86,9 +87,11 @@ erDiagram
     PROFILES {
         uuid id PK "= auth.users.id"
         text username UK
-        text email UK "hidden from other players"
         text avatar_url
-        timestamptz last_seen_at "online dot"
+    }
+    USER_PRESENCE {
+        uuid user_id PK "= auth.users.id"
+        timestamptz last_seen_at "online dot, friends only"
     }
     FRIENDS {
         uuid user_id PK "sender"
@@ -103,6 +106,7 @@ erDiagram
         uuid player_one_user_id FK
         uuid player_two_user_id FK
         uuid winner_user_id FK
+        uuid invited_user_id FK "private room for one friend"
         timestamptz starts_at
         timestamptz ends_at
         numeric final_price
@@ -137,17 +141,18 @@ erDiagram
 
 | Table | Purpose |
 | --- | --- |
-| `profiles` | One row per player. Created automatically on sign-up by the `handle_new_user()` trigger (this also covers Google sign-ups). |
+| `profiles` | One row per player: username and avatar. Created automatically on sign-up by the `handle_new_user()` trigger (this also covers Google sign-ups). No email here: emails stay in Supabase's private `auth.users` table. |
+| `user_presence` | When each player was last online (`last_seen_at`), updated by `ping_online()`. Only the player and their accepted friends can read it. |
 | `friends` | Friend requests and friendships. A unique index allows only one row per pair of players. |
-| `matches` | One row per 1v1 match: status, timing, capital, players, winner |
+| `matches` | One row per 1v1 match: status, timing, capital, players, winner. `invited_user_id` makes it a private room that only that one friend can see and join. |
 | `match_players` | Each player's state inside a match: balance, open position, PnL, final result |
 | `match_candles` | The candles shown during a match, so a match can be replayed and a rejoining player sees the same chart |
 | `trades` | Every order a player placed, with the price and the position after it |
-| `friends_with_status` (view) | The logged-in user's friends joined with their profile and online status (`security_invoker`, so RLS still applies) |
+| `friends_with_status` (view) | The logged-in user's friends and requests, joined with their profile and online status (`security_invoker`, so RLS still applies) |
 
-How friend requests and online status work, with diagrams: [How friends work](docs/friends.md).
+How friend requests, online status and private invites work, with diagrams: [How friends work](docs/friends.md).
 
-Row Level Security is on for every table. Players can only change their own data, other players' emails are hidden, and only the match engine (using the service-role key) can write match results.
+Row Level Security is on for every table. Players can only change their own data, online status is only shared with accepted friends, private rooms are only visible to the invited friend, and only the match engine (using the service-role key) can write match results.
 
 ## Features List
 
@@ -160,7 +165,7 @@ Row Level Security is on for every table. Players can only change their own data
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K). The server checks both against `lib/match/rules.ts`. | Amber |
-| Friends | Send, accept and remove friends, with an online status dot | Brian |
+| Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | zep, Raja |
 | Match history | A list of past matches and a detail page for each one | Raja |
@@ -198,7 +203,7 @@ Row Level Security is on for every table. Players can only change their own data
 2. **Real-time (WebSockets).** `socket/server.js` is a Socket.IO server. Each match is a room. Candles, trades, balances and match status are broadcast to both players as they happen. When a player disconnects, the client shows a connection banner and reconnects automatically. A trading duel only works if both players see the same price at the same moment, so we needed this.
 3. **Web-based game.** DUEL is the game. It has clear rules (same capital, same candles, and a trading window of 30, 60 or 90 seconds) and a clear winner (the most capital at the end, or a draw). Rules are on the How-to-Play page.
 4. **Remote players.** Two players on different computers play the same match live. The server is the only source of truth, so every trade is checked there. If a player drops out, they can **rejoin** from the lobby. Saved candles are loaded from the database so their chart continues exactly where the match is.
-5. **Standard user management.** Players can edit their profile and upload an avatar (with a default if they don't), add friends and see their online status (`ping_online()` + `last_seen_at`), and view a profile page with their stats.
+5. **Standard user management.** Players can edit their profile and upload an avatar (with a default if they don't), add friends by username and see their online status (`ping_online()` updates `user_presence.last_seen_at`), and view a profile page with their stats.
 6. **Prometheus and Grafana.** The web app and the socket server export metrics through OpenTelemetry to an OTel collector. Prometheus scrapes them and has alerting rules. Grafana has our custom dashboards and sends alerts by email, and it's protected by an admin login over HTTPS. Everything is set up in `monitoring/`.
 7. **Module of choice: real-market trading engine (Major).**
    - *Why we chose it:* the whole game depends on it. It isn't covered by any listed module, because the "web-based game" module covers rules and win/loss, not a trading simulator running on live market data.
@@ -424,7 +429,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 ### Project docs
 
 - [How DUEL works: architecture diagrams](docs/architecture.md)
-- [How friends work: requests & online status](docs/friends.md)
+- [How friends work: requests, online status & invites](docs/friends.md)
 - [Product requirements & planning](docs/prd/trading-game/README.md)
 - [2FA walkthrough](docs/2fa_walkthrough.md)
 
