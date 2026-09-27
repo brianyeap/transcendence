@@ -540,12 +540,6 @@ CREATE POLICY "Players can view their matches" ON public.matches FOR SELECT TO a
 CREATE POLICY "Users can create their own waiting matches" ON public.matches FOR INSERT TO authenticated WITH CHECK (((player_one_user_id = auth.uid()) AND (player_two_user_id IS NULL) AND (status = 'waiting'::public.match_status)));
 
 
---
--- Name: match_candles authenticated_users_can_read_match_candles; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY authenticated_users_can_read_match_candles ON public.match_candles FOR SELECT USING ((auth.role() = 'authenticated'::text));
-
 
 --
 -- Name: friends; Type: ROW SECURITY; Schema: public; Owner: -
@@ -602,7 +596,7 @@ CREATE POLICY "read all profiles" ON public.profiles FOR SELECT TO authenticated
 -- Name: match_candles read candles for my matches; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "read candles for my matches" ON public.match_candles FOR SELECT USING ((EXISTS ( SELECT 1
+CREATE POLICY "read candles for my matches" ON public.match_candles FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.matches m
   WHERE ((m.id = match_candles.match_id) AND ((m.player_one_user_id = auth.uid()) OR (m.player_two_user_id = auth.uid()))))));
 
