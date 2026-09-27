@@ -197,7 +197,8 @@ Row Level Security is on for every table. Players can only change their own data
 | 12 | Web: Server-Side Rendering (SSR) | Minor | 1 | Everyone |
 | 13 | Web: File upload and management system | Minor | 1 | Raja |
 | 14 | Gaming: Gamification system | Minor | 1 | Zep, Raja |
-| | **Total** | 7 Major + 7 Minor | **21** | (14 required) |
+| 15 | Accessibility: Support for additional browsers | Minor | 1 | Everyone |
+| | **Total** | 7 Major + 8 Minor | **22** | (14 required) |
 
 ### How each module was implemented, and why we chose it
 
@@ -226,6 +227,7 @@ Row Level Security is on for every table. Players can only change their own data
 12. **SSR.** Most pages (home, lobby, leaderboard, profile, match and match detail) are React Server Components rendered on the server, and they load their data there before sending the HTML.
 13. **File upload.** Avatars are checked on both sides: the client checks the file type, and the server caps the size and checks the real format from the file's magic bytes (JPEG/PNG), so a faked file type is rejected. The image is resized, stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
 14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile.
+15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
 
 ## Individual Contributions
 
@@ -282,7 +284,7 @@ The whole stack runs with Docker Compose. There's no need to run `npm run dev` y
 - A **Supabase** project (the free tier is enough). You need its URL, anon key and service-role key.
 - For Google sign-in: a **Google Cloud OAuth client**, added under Supabase → Authentication → Providers → Google, with the Supabase callback URL set as the redirect URL
 - Optional, only if you run things outside Docker: **Node.js 22**
-- The latest stable **Google Chrome**
+- A modern browser: the latest stable **Google Chrome**, **Microsoft Edge** or **Brave**
 
 ### 1. Set up environment files
 
@@ -418,6 +420,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 - Live match state lives in the socket server's memory. If the engine restarts, running matches are lost (stale ones are closed by `closeStaleMatches`).
 - Only BTC-USD is supported.
 - Market data depends on Coinbase's public API being reachable.
+- **Browsers:** tested on the latest Chrome, Edge and Brave. Each browser shows its own warning page for Grafana's self-signed certificate, and you have to accept it once per browser before the dashboards load.
 
 ## Resources
 
