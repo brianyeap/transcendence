@@ -28,7 +28,7 @@ export function MatchResult({
   return (
     <CentredScreen>
       <div className="w-full max-w-lg rounded-xl border border-white/[.07] bg-[#0f131b] p-6 sm:p-7">
-        <p className="mb-4 text-center text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+        <p className="mb-4 text-center text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
           <ResultLabel />
         </p>
         <MatchResultCard

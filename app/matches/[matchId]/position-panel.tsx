@@ -145,7 +145,7 @@ function Figure({
 }) {
   return (
     <div className="rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2.5">
-      <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+      <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
         {label}
       </p>
       <p className={`mt-1 font-mono text-[14.5px] font-semibold tabular-nums ${tone}`}>

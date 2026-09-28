@@ -159,7 +159,7 @@ function ActiveMatch({
       />
       <div className="flex flex-1 flex-col gap-4 xl:flex-row">
         <section
-          className="min-h-[360px] flex-1 xl:min-h-0"
+          className="h-[300px] flex-none sm:h-[400px] xl:h-auto xl:min-h-0 xl:flex-1"
         >
           <MatchChart
             candles={candles}
@@ -170,17 +170,23 @@ function ActiveMatch({
           />
         </section>
         <div className="flex w-full shrink-0 flex-col gap-4 xl:w-[350px]">
-          <PositionPanel player={player} price={price} />
-          <OrderPanel
-            player={player}
-            pendingTrade={pendingTrade}
-            lastFill={lastFill}
-            lastRejection={lastRejection}
-            disabled={ordersDisabled}
-            onSubmit={submitTrade}
-            onDismissFeedback={dismissFeedback}
-          />
-          <RecentTrades trades={trades} />
+          <div className="order-2 xl:order-1">
+            <PositionPanel player={player} price={price} />
+          </div>
+          <div className="order-1 xl:order-2">
+            <OrderPanel
+              player={player}
+              pendingTrade={pendingTrade}
+              lastFill={lastFill}
+              lastRejection={lastRejection}
+              disabled={ordersDisabled}
+              onSubmit={submitTrade}
+              onDismissFeedback={dismissFeedback}
+            />
+          </div>
+          <div className="order-3">
+            <RecentTrades trades={trades} />
+          </div>
         </div>
       </div>
       {ended !== null && viewer !== null && (

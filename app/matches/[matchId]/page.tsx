@@ -19,7 +19,7 @@ export default async function MatchPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#090b10] text-[#eef2f8]">
+    <main className="flex min-h-dvh flex-col bg-[#090b10] text-[#eef2f8]">
       <MatchScreen matchId={matchId} />
     </main>
   );

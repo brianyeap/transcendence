@@ -121,7 +121,7 @@ export function ConnectionBanner({
               <button
                 type="button"
                 onClick={retryNow}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-2.5 py-1.5 text-[12.5px] font-semibold text-[#eef2f8] transition hover:border-white/[.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff]"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-3 py-2.5 text-[12.5px] font-semibold text-[#eef2f8] transition hover:border-white/[.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] sm:px-2.5 sm:py-1.5"
               >
                 <RefreshCw className="size-3.5 text-[#9aa6b6]" />
                 {t("retryNow")}

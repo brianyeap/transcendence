@@ -152,18 +152,18 @@ function PlayerResult({
         <p className="flex items-baseline gap-2 text-[14px] font-semibold text-[#eef2f8]">
           <span className="truncate">{name}</span>
           {isViewer ? (
-            <span className="rounded border border-[#4d86ff]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#4d86ff]">
+            <span className="rounded border border-[#4d86ff]/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#4d86ff]">
               {t("you")}
             </span>
           ) : null}
           {isWinner ? (
-            <span className="inline-flex items-center gap-1 rounded border border-[#1fcb83]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#1fcb83]">
+            <span className="inline-flex items-center gap-1 rounded border border-[#1fcb83]/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#1fcb83]">
               <Trophy className="size-2.5" />
               {t("winner")}
             </span>
           ) : null}
           {isDraw ? (
-            <span className="rounded border border-[#f5a524]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#f5a524]">
+            <span className="rounded border border-[#f5a524]/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#f5a524]">
               {t("drew")}
             </span>
           ) : null}
@@ -209,22 +209,22 @@ function Settlement({
     <div className="mt-5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("settlementPrice")}
           </p>
           <p className="mt-1 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
             {finalPrice === null ? "—" : finalPrice.toFixed(2)}
           </p>
-          <p className="mt-0.5 text-[10.5px] text-[#5d6877]">{symbol}</p>
+          <p className="mt-0.5 text-[11px] text-[#5d6877]">{symbol}</p>
         </div>
         <div>
-          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("startingCapital")}
           </p>
           <p className="mt-1 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
             {fmtUSD(Math.round(startingCapital))}
           </p>
-          <p className="mt-0.5 text-[10.5px] text-[#5d6877]">{t("eachPlayer")}</p>
+          <p className="mt-0.5 text-[11px] text-[#5d6877]">{t("eachPlayer")}</p>
         </div>
       </div>
       <p className="mt-3 text-[12px] leading-relaxed text-[#9aa6b6]">

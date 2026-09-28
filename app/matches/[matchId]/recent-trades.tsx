@@ -20,7 +20,7 @@ export function RecentTrades({ trades }: { trades: TradeFill[] }): React.ReactEl
       <div className="flex items-center justify-between gap-3">
         <p
           id="recent-trades-heading"
-          className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
+          className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]"
         >
           <RecentTradesLabel />
         </p>
@@ -34,10 +34,7 @@ export function RecentTrades({ trades }: { trades: TradeFill[] }): React.ReactEl
       {newestFirst.length === 0 ? (
         <EmptyState />
       ) : (
-        <ul
-          className="mt-3.5 flex flex-col gap-1.5 overflow-y-auto pr-1"
-          style={{ maxHeight: `${VISIBLE_ROWS * 53}px` }}
-        >
+        <ul className="mt-3.5 flex max-h-[212px] flex-col gap-1.5 overflow-y-auto pr-1 sm:max-h-[318px]">
           {newestFirst.map((trade) => (
             <TradeRow key={trade.id} trade={trade} />
           ))}
@@ -123,7 +120,7 @@ function Elapsed({ executedAt }: { executedAt: number }) {
   return (
     <time
       dateTime={new Date(executedAt).toISOString()}
-      className="shrink-0 font-mono text-[10.5px] tabular-nums text-[#5d6877]"
+      className="shrink-0 font-mono text-[11px] tabular-nums text-[#5d6877]"
     >
       {elapsedLabel(now - executedAt, {
         now: t("now"),

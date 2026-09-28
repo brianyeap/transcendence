@@ -30,7 +30,7 @@ export function CountdownScreen({
     <CentredScreen className="relative">
       <LeaveMatch
         needsConfirm={false}
-        className="absolute right-5 top-5 sm:right-7"
+        className="absolute right-3 top-3 sm:right-7 sm:top-5"
       />
 
       <div className="w-full max-w-lg rounded-xl border border-white/[.07] bg-[#0f131b] p-6 sm:p-7">

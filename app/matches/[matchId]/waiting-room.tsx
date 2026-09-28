@@ -61,7 +61,7 @@ function MatchSettings({ match }: { match: Match }) {
     <div className="mt-5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("market")}
           </p>
 
@@ -71,7 +71,7 @@ function MatchSettings({ match }: { match: Match }) {
         </div>
 
         <div>
-          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("startingCapital")}
           </p>
 
@@ -79,7 +79,7 @@ function MatchSettings({ match }: { match: Match }) {
             {fmtUSD(Math.round(match.startingCapital))}
           </p>
 
-          <p className="mt-0.5 text-[10.5px] text-[#5d6877]">
+          <p className="mt-0.5 text-[11px] text-[#5d6877]">
             {t("eachPlayer")}
           </p>
         </div>
