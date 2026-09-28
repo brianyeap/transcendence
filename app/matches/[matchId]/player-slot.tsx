@@ -45,7 +45,7 @@ export function PlayerSlot({
         <p className="flex items-baseline gap-2 text-[14px] font-semibold text-[#eef2f8]">
           <span className="truncate">{player.username}</span>
           {isViewer ? (
-            <span className="rounded border border-[#4d86ff]/30 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-[#4d86ff]">
+            <span className="rounded border border-[#4d86ff]/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#4d86ff]">
               {t("you")}
             </span>
           ) : null}

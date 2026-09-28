@@ -88,7 +88,7 @@ function Fact({
         {value}
       </dd>
 
-      <dt className="mt-0.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+      <dt className="mt-0.5 text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
         {label}
       </dt>
     </div>

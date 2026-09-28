@@ -29,25 +29,37 @@ export function MatchHeader({
   const remaining = useRemainingSeconds(match.endsAt, serverNow);
 
   return (
-    <header className="flex flex-wrap items-stretch gap-x-8 gap-y-5 rounded-xl border border-white/[.07] bg-[#0f131b] px-5 py-4">
-      <MatchupBlock match={match} />
+    <header
+      className={`relative grid grid-cols-2 items-start gap-x-4 gap-y-4 rounded-xl border border-white/[.07] bg-[#0f131b] p-4 md:grid-cols-[auto_auto_1fr] md:gap-x-8 md:p-5 xl:grid-cols-[auto_auto_auto_1fr] ${
+        matchOver ? "" : "xl:pr-32"
+      }`}
+    >
+      <MatchupBlock match={match} matchOver={matchOver} />
       <PriceBlock symbol={match.symbol} price={price} direction={priceDirection} />
       <ClockBlock remaining={remaining} />
-      <div className="grow" />
       <CapitalBlock player={player} />
-      {matchOver ? null : <LeaveMatch needsConfirm className="self-start" />}
+      {matchOver ? null : (
+        <LeaveMatch
+          needsConfirm
+          className="absolute right-4 top-4 md:right-5 md:top-5"
+        />
+      )}
     </header>
   );
 }
 
-function MatchupBlock({ match }: { match: Match }) {
+function MatchupBlock({ match, matchOver }: { match: Match; matchOver: boolean }) {
   const t = useTranslations("MatchHeader");
 
   return (
-    <div className="min-w-[170px]">
+    <div
+      className={`col-span-2 min-w-0 md:col-span-3 xl:col-span-1 xl:min-w-[170px] ${
+        matchOver ? "" : "pr-28 xl:pr-0"
+      }`}
+    >
       <SectionLabel>{t("match")}</SectionLabel>
       <div className="mt-1.5 flex items-center gap-2">
-          <Avatar name={match.playerOne.username} imageUrl={match.playerOne.avatar_url} size="sm" />
+        <Avatar name={match.playerOne.username} imageUrl={match.playerOne.avatar_url} size="sm" />
         <span className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
           {t("vs")}
         </span>
@@ -67,6 +79,7 @@ function MatchupBlock({ match }: { match: Match }) {
     </div>
   );
 }
+
 function PriceBlock({
   symbol,
   price,
@@ -84,15 +97,19 @@ function PriceBlock({
     direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : Minus;
   const directionLabel =
     direction === "up" ? t("rising") : direction === "down" ? t("falling") : t("unchanged");
+
   return (
-    <div className="min-w-[190px]">
+    <div>
       <SectionLabel>{symbol}</SectionLabel>
       <div className="mt-1.5 flex items-center gap-2">
-        <span className="font-mono text-[28px] font-semibold leading-none tracking-[-.02em] tabular-nums">
+        <span className="font-mono text-[22px] font-semibold leading-none tracking-[-.02em] tabular-nums sm:text-[28px]">
           {price === null ? "—" : price.toFixed(2)}
         </span>
         {price !== null && (
-          <span className={`flex items-center gap-1 ${tone}`} title={t("priceDirection", { direction: directionLabel })}>
+          <span
+            className={`flex items-center gap-1 ${tone}`}
+            title={t("priceDirection", { direction: directionLabel })}
+          >
             <DirectionIcon className="size-4" />
           </span>
         )}
@@ -100,15 +117,17 @@ function PriceBlock({
     </div>
   );
 }
+
 function ClockBlock({ remaining }: { remaining: number | null }) {
   const t = useTranslations("MatchHeader");
 
   const urgent = remaining !== null && remaining <= URGENT_SECONDS;
+
   return (
-    <div className="min-w-[120px]">
+    <div>
       <SectionLabel>{t("timeLeft")}</SectionLabel>
       <p
-        className={`mt-1.5 font-mono text-[28px] font-semibold leading-none tracking-[-.02em] tabular-nums ${
+        className={`mt-1.5 font-mono text-[22px] font-semibold leading-none tracking-[-.02em] tabular-nums sm:text-[28px] ${
           urgent ? "text-[#f6485d]" : "text-[#eef2f8]"
         }`}
       >
@@ -116,18 +135,19 @@ function ClockBlock({ remaining }: { remaining: number | null }) {
       </p>
 
       {urgent && (
-        <p className="mt-1.5 text-[10.5px] font-bold uppercase tracking-[.08em] text-[#f6485d]">
+        <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[.08em] text-[#f6485d]">
           {t("closing")}
         </p>
       )}
     </div>
   );
 }
+
 function CapitalBlock({ player }: { player: PlayerState | null }) {
   const t = useTranslations("MatchHeader");
 
   return (
-    <div className="flex flex-wrap items-start gap-x-7 gap-y-4">
+    <div className="col-span-2 flex flex-wrap items-start gap-x-7 gap-y-4 md:col-span-1 md:justify-self-end">
       <div>
         <SectionLabel>{t("yourCapital")}</SectionLabel>
         <p className="mt-1.5 font-mono text-[22px] font-semibold leading-none tracking-[-.02em] tabular-nums">
@@ -146,6 +166,7 @@ function CapitalBlock({ player }: { player: PlayerState | null }) {
     </div>
   );
 }
+
 function StandingLine({ player }: { player: PlayerState | null }) {
   const t = useTranslations("MatchHeader");
 

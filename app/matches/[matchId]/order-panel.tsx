@@ -138,7 +138,7 @@ export function OrderPanel({
           value={raw}
           disabled={locked}
           onChange={(e) => setRaw(sanitise(e.target.value))}
-          className="h-10 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-[14px] text-[#eef2f8] transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
+          className="h-11 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-base text-[#eef2f8] transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-10 sm:text-[14px]"
         />
       </div>
 
@@ -149,7 +149,7 @@ export function OrderPanel({
             type="button"
             disabled={locked}
             onClick={() => applyPreset(fraction)}
-            className="h-8 rounded-[7px] border border-white/[.07] bg-[#151b25] font-mono text-[11.5px] font-semibold text-[#9aa6b6] transition hover:border-white/[.12] hover:text-[#eef2f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50"
+            className="h-10 rounded-[7px] border border-white/[.07] bg-[#151b25] font-mono text-[11.5px] font-semibold text-[#9aa6b6] transition hover:border-white/[.12] hover:text-[#eef2f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-8"
           >
             {fraction * 100}%
           </button>
@@ -212,7 +212,7 @@ function ExposureHint({ player }: { player: PlayerState | null }) {
           </>
         )}
       </p>
-      <p className="mt-1 text-[10.5px] text-[#5d6877]">
+      <p className="mt-1 text-[11px] text-[#5d6877]">
         {t("exposureDetail", {
           opposite,
           amount: fmtUSD(Math.round(player.netAmount)),
@@ -345,20 +345,20 @@ function Feedback({
   }
   if (connecting) {
     return (
-      <p className="mt-3 text-[11.5px] text-[#5d6877]">
+      <p className="mt-3 text-xs text-[#5d6877]">
         {t("connecting")}
       </p>
     );
   }
   if (disabled) {
     return (
-      <p className="mt-3 text-[11.5px] text-[#5d6877]">
+      <p className="mt-3 text-xs text-[#5d6877]">
         {t("tradingUnavailable")}
       </p>
     );
   }
   return (
-    <p className="mt-3 text-[11.5px] text-[#3a434f]">
+    <p className="mt-3 text-xs text-[#3a434f]">
       {t("nothingMoves")}
     </p>
   );

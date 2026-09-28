@@ -167,6 +167,7 @@ export function MatchChart({
       width: size.width,
       height: size.height,
       autoSize: false,
+      handleScroll: {vertTouchDrag: false },
       layout: {
         background: { type: ColorType.Solid, color: PANEL },
         textColor: TEXT_DIM,
