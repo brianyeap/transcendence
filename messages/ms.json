@@ -59,7 +59,15 @@
     "matchStarting": "Perlawanan anda sedang bermula",
     "matchLive": "Perlawanan anda sedang berlangsung",
     "vs": "lwn",
-    "rejoin": "Sertai Semula"
+    "rejoin": "Sertai Semula",
+    "loading": "Memuatkan permainan...",
+    "pageOf": "Halaman {page} daripada {total}",
+    "previousPage": "Halaman sebelumnya",
+    "nextPage": "Halaman seterusnya",
+    "jumpToPage": "Klik untuk melompat ke halaman",
+    "go": "Pergi",
+    "invalidPageRange": "Halaman mesti antara 1 dan {totalPages}",
+    "invalidPageSingle": "Halaman mesti 1"
   },
   "RoomCard": {
     "by": "oleh",
@@ -513,10 +521,10 @@
     "description": "Perlawanan akan bermula sebaik sahaja seseorang mengambil tempat yang tersedia. Anda tidak perlu memuat semula halaman.",
     "market": "Pasaran",
     "startingCapital": "Modal permulaan",
+    "duration": "tempoh masa",
     "eachPlayer": "Setiap pemain",
     "backToGames": "Kembali ke permainan",
-    "awayMessage": "Perlawanan akan kekal terbuka semasa anda tiada. Anda boleh kembali dari lobi pada bila-bila masa.",
-    "duration": "Tempoh"
+    "awayMessage": "Perlawanan akan kekal terbuka semasa anda tiada. Anda boleh kembali dari lobi pada bila-bila masa."
   },
   "PlayerSlot": {
     "waitingForPlayer": "Menunggu pemain",

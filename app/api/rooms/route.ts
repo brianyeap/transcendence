@@ -161,9 +161,16 @@ async function findActiveMatch(
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   // Error messages in the player's language (read from their "locale" cookie).
   const t = await getTranslations("RoomErrors");
+
+  // Parse pagination params from the query string.
+  const url = new URL(request.url);
+  const pageParam = parseInt(url.searchParams.get("page") ?? "0", 10);
+  const pageSizeParam = parseInt(url.searchParams.get("pageSize") ?? "6", 10);
+  const page = Number.isFinite(pageParam) && pageParam >= 0 ? pageParam : 0;
+  const pageSize = Number.isFinite(pageSizeParam) && pageSizeParam > 0 && pageSizeParam <= 50 ? pageSizeParam : 6;
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -175,13 +182,23 @@ export async function GET() {
     return Response.json({ error: t("loginRequired") }, { status: 401 });
   }
 
-  const { data: rooms, error } = await supabase // basically result.data is rooms and result.error is error
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  // Fetch the current page of waiting rooms.
+  // Supabase doesn't support sorting by a computed expression via the JS client,
+  // so we fetch this page ordered purely by creation time. The own-room-first
+  // pinning is handled separately below: if the user owns a room we ensure it
+  // always appears on page 0 regardless of creation order.
+  const { data: rooms, error, count } = await supabase
     .from("matches")
     .select(
-      "id, name, player_one_user_id, player_two_user_id, status, symbol, starting_capital, duration_seconds, starts_at, ends_at, created_at"
+      "id, name, player_one_user_id, player_two_user_id, status, symbol, starting_capital, duration_seconds, starts_at, ends_at, created_at",
+      { count: "exact" }
     )
-    .eq("status", "waiting") // only get waiting
-    .order("created_at", { ascending: false });
+    .eq("status", "waiting")
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (error) {
     // Keep the real database error in the server log, send a friendly one to the player.
@@ -195,17 +212,18 @@ export async function GET() {
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, username, avatar_url")
-    .in("id", creatorIds);
+    .in("id", creatorIds.length > 0 ? creatorIds : ["none"]);
 
-    const creatorProfiles = new Map<string, { username: string; avatar_url: string | null }>(
-      (profiles ?? []).map((profile) => [
-        profile.id,
-        { username: profile.username, avatar_url: profile.avatar_url }
-      ])
-    );
+  const creatorProfiles = new Map<string, { username: string; avatar_url: string | null }>(
+    (profiles ?? []).map((profile) => [
+      profile.id,
+      { username: profile.username, avatar_url: profile.avatar_url }
+    ])
+  );
 
+  // Keep own room first within this page slice.
   const sortedRooms = matchRooms
-    .toSorted((roomA, roomB) => { // sorted func will handlw which to compare i jst have to return - or +
+    .toSorted((roomA, roomB) => {
       const roomAIsMine = roomA.player_one_user_id === user.id;
       const roomBIsMine = roomB.player_one_user_id === user.id;
 
@@ -221,8 +239,9 @@ export async function GET() {
     .map((room) => formatRoom(room, user.id, creatorProfiles));
 
   const activeMatch = await findActiveMatch(supabase, user.id);
+  const totalCount = count ?? 0;
 
-  return Response.json({ rooms: sortedRooms, activeMatch });
+  return Response.json({ rooms: sortedRooms, activeMatch, totalCount, page, pageSize });
 }
 
 export async function POST(request: Request) {
