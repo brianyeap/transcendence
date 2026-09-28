@@ -10,9 +10,9 @@ import { ALLOWED_SYMBOLS, DEFAULT_SYMBOL, ROOM_NAME_MAX_LENGTH, roomNameError } 
 // The match lengths a creator can pick. Values are in seconds and must match
 // ALLOWED_DURATIONS in lib/match/rules.ts, or the server will reject them.
 const DURATION_OPTIONS = [
-    { label: '30s', value: 30 },
-    { label: '1 min', value: 60 },
-    { label: '1.5 min', value: 90 }
+    { key: 'duration30s', value: 30 },
+    { key: 'duration1min', value: 60 },
+    { key: 'duration1_5min', value: 90 }
 ]
 
 const CAPITAL_OPTIONS = [
@@ -198,7 +198,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                                             : 'border-white/[.07] bg-[#0f131b] text-[#9aa6b6] hover:border-white/[.12] hover:text-[#eef2f8]'
                                         }`}
                                 >
-                                    {opt.label}
+                                    {t(opt.key)}
                                 </button>
                             )
                         })}

@@ -80,18 +80,21 @@
     "joining": "Joining"
   },
   "CreateMatch": {
-    "title": "Create Match",
-    "roomName": "Room Name",
-    "roomNamePlaceholder": "eg: Chicken Rice",
-    "matchLength": "Match Length",
-    "startingCapital": "Starting Capital",
-    "cancel": "Cancel",
-    "create": "Create",
-    "creating": "Creating...",
+    "title": "Create a Match",
+    "roomName": "Room name",
+    "roomNamePlaceholder": "e.g. BTC Battle",
     "playWith": "Play with",
     "anyone": "Anyone",
     "market": "Market",
-    "close": "Close"
+    "close": "Close",
+    "matchLength": "Match length",
+    "startingCapital": "Starting capital",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create",
+    "duration30s": "30s",
+    "duration1min": "1 min",
+    "duration1_5min": "1.5 min"
   },
   "Leaderboard": {
     "competition": "Competition",
@@ -277,6 +280,7 @@
     "final": "Final",
     "netPnl": "Net PnL",
     "duration": "Duration",
+	"durationValue": "{minutes}m {seconds}s",
     "justNow": "just now",
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",

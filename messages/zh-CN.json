@@ -80,18 +80,21 @@
     "joining": "正在加入"
   },
   "CreateMatch": {
-    "title": "创建对决",
+    "title": "创建比赛",
     "roomName": "房间名称",
-    "roomNamePlaceholder": "例如：黄金右脚",
-    "matchLength": "对决时长",
-    "startingCapital": "初始资金",
-    "cancel": "取消",
-    "create": "创建",
-    "creating": "正在创建...",
+    "roomNamePlaceholder": "例如：BTC 对战",
     "playWith": "对战对象",
     "anyone": "任何人",
+    "matchLength": "比赛时长",
+    "startingCapital": "初始资金",
+    "cancel": "取消",
+    "creating": "正在创建...",
     "market": "市场",
-    "close": "关闭"
+    "close": "关闭",
+    "create": "创建",
+    "duration30s": "30秒",
+    "duration1min": "1分钟",
+    "duration1_5min": "1.5分钟"
   },
   "Leaderboard": {
     "competition": "竞技排行",
@@ -277,6 +280,7 @@
     "final": "最终资金",
     "netPnl": "净盈亏",
     "duration": "时长",
+	"durationValue": "{minutes} 分 {seconds} 秒",
     "justNow": "刚刚",
     "minutesAgo": "{count} 分钟前",
     "hoursAgo": "{count} 小时前",
@@ -294,7 +298,7 @@
     "vs": "对阵",
     "startTime": "开始时间",
     "endTime": "结束时间",
-    "duration": "持续时间",
+    "duration": "时长",
     "finalPrice": "最终价格",
     "matchChart": "对决走势图",
     "intervals": "{count} 个周期 · {symbol}",
@@ -319,7 +323,7 @@
     "youShort": "你 · 做空",
     "opponentLong": "对手 · 做多",
     "opponentShort": "对手 · 做空",
-    "durationValue": "{minutes}分 {seconds}秒",
+    "durationValue": "{minutes} 分 {seconds} 秒",
     "tradeTooltip": "{username}：{side} {amount} USDT @ ${price}"
   },
   "TermsOfServices": {
@@ -453,7 +457,7 @@
         },
         "live": {
           "title": "比赛开始",
-          "detail": "两名玩家会看到完全相同的实时价格数据。从这里开始，您可以进行 Long 或 Short 交易，直到时间结束。"
+          "detail": "两名玩家会看到完全相同的实时价格数据。从这里开始，您可以进行 做多 或 做空 交易，直到时间结束。"
         },
         "settlement": {
           "title": "结算",
@@ -465,16 +469,16 @@
       "title": "进行交易",
       "intro": "每笔交易都是市价单。您选择交易金额和方向，订单会按照当前实时价格立即成交。没有限价单、没有杠杆，也没有手续费。",
       "long": {
-        "label": "Long",
+        "label": "做多",
         "detail": "如果在您平仓或比赛结束时，价格高于您的入场价格，您将获利。"
       },
       "short": {
-        "label": "Short",
+        "label": "做空",
         "detail": "如果在您平仓或比赛结束时，价格低于您的入场价格，您将获利。"
       },
       "positionTitle": "您始终只能持有一个仓位",
       "positionDetail": "没有单独的“平仓”按钮。反方向的交易会先抵消您现有的仓位，剩余的金额则会在相反方向建立新的仓位。",
-      "positionExample": "例如：持有 $50 的 Short → 一笔 $50 的 Long 交易会将其完全平仓。一笔 $80 的 Long 会先平掉 $50 的 Short，然后建立新的 $30 Long 仓位。"
+      "positionExample": "例如：持有 $50 的 做空 → 一笔 $50 的 做多 交易会将其完全平仓。一笔 $80 的 做多 会先平掉 $50 的 做空，然后建立新的 $30 做多 仓位。"
     },
     "screenGuide": {
       "title": "如何查看比赛画面",
@@ -531,10 +535,10 @@
   },
   "MatchChart": {
     "matchStart": "比赛开始",
-    "long": "Long",
-    "short": "Short",
-    "longEntry": "Long 入场",
-    "shortEntry": "Short 入场",
+    "long": "做多",
+    "short": "做空",
+    "longEntry": "做多 入场",
+    "shortEntry": "做空 入场",
     "waitingForMarketData": "等待市场数据…",
     "preMatch": "赛前",
     "match": "比赛"
@@ -569,8 +573,8 @@
     "placeTrade": "下单",
     "available": "可用资金",
     "amount": "金额",
-    "long": "Long",
-    "short": "Short",
+    "long": "做多",
+    "short": "做空",
     "exposure": "仓位",
     "entry": "入场",
     "exposureDetail": "{amount} 的 {opposite} 将完全抵消当前仓位。较小的订单会减少仓位；较大的订单会反转仓位方向。",
@@ -598,8 +602,8 @@
     "loadingPosition": "正在加载您的仓位…",
     "noExposure": "当前没有持仓",
     "takePosition": "判断价格上涨或下跌并下单以建立仓位。",
-    "long": "Long",
-    "short": "Short",
+    "long": "做多",
+    "short": "做空",
     "entryPrice": "入场价格",
     "reservedBalance": "已保留资金",
     "unrealisedPnl": "未实现盈亏",
@@ -612,8 +616,8 @@
     "recentTrades": "最近交易",
     "noTradesYet": "暂无交易",
     "fillsAppearHere": "您的成交记录将显示在这里和图表上。",
-    "long": "Long",
-    "short": "Short",
+    "long": "做多",
+    "short": "做空",
     "now": "刚刚",
     "seconds": "{value}秒",
     "minutes": "{value}分钟",

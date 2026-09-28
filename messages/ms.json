@@ -81,17 +81,20 @@
   },
   "CreateMatch": {
     "title": "Cipta Perlawanan",
-    "roomName": "Nama Bilik",
-    "roomNamePlaceholder": "cth: Nasi Lemak",
-    "matchLength": "Tempoh Perlawanan",
-    "startingCapital": "Modal Permulaan",
-    "cancel": "Batal",
-    "create": "Cipta",
-    "creating": "Mencipta...",
-    "playWith": "Main dengan",
+    "roomName": "Nama bilik",
+    "roomNamePlaceholder": "cth. Pertarungan BTC",
+    "playWith": "Bermain dengan",
     "anyone": "Sesiapa sahaja",
+    "matchLength": "Tempoh perlawanan",
+    "startingCapital": "Modal permulaan",
+    "cancel": "Batal",
+    "creating": "Sedang mencipta...",
+    "create": "Cipta",
     "market": "Pasaran",
-    "close": "Tutup"
+    "close": "Tutup",
+    "duration30s": "30 saat",
+    "duration1min": "1 minit",
+    "duration1_5min": "1.5 minit"
   },
   "Leaderboard": {
     "competition": "Pertandingan",
@@ -277,6 +280,7 @@
     "final": "Akhir",
     "netPnl": "PnL Bersih",
     "duration": "Tempoh",
+	"durationValue": "{minutes}m {seconds}s",
     "justNow": "baru sahaja",
     "minutesAgo": "{count}m yang lalu",
     "hoursAgo": "{count}j yang lalu",
@@ -313,12 +317,12 @@
     "youLabel": "Anda",
     "unknown": "Tidak diketahui",
     "noOpponent": "Tiada lawan",
-    "long": "Long",
-    "short": "Short",
-    "youLong": "Anda Long",
-    "youShort": "Anda Short",
-    "opponentLong": "Lawan Long",
-    "opponentShort": "Lawan Short",
+    "long": "Naik",
+    "short": "Turun",
+    "youLong": "Anda Naik",
+    "youShort": "Anda Turun",
+    "opponentLong": "Lawan Naik",
+    "opponentShort": "Lawan Turun",
     "durationValue": "{minutes}m {seconds}s",
     "tradeTooltip": "{username}: {side} {amount} USDT @ ${price}"
   },
@@ -453,7 +457,7 @@
         },
         "live": {
           "title": "Perlawanan bermula",
-          "detail": "Kedua-dua pemain akan melihat aliran harga yang sama. Dari sini, anda boleh membuat dagangan Long atau Short sehingga masa tamat."
+          "detail": "Kedua-dua pemain akan melihat aliran harga yang sama. Dari sini, anda boleh membuat dagangan Naik atau Turun sehingga masa tamat."
         },
         "settlement": {
           "title": "Penyelesaian",
@@ -465,16 +469,16 @@
       "title": "Membuat dagangan",
       "intro": "Setiap dagangan ialah pesanan pasaran. Anda memilih jumlah dan arah, dan dagangan akan dilaksanakan serta-merta pada harga semasa yang diterima. Tiada pesanan had, tiada leverage, dan tiada yuran.",
       "long": {
-        "label": "Long",
+        "label": "Naik",
         "detail": "Anda mendapat keuntungan jika harga meningkat melebihi harga kemasukan anda apabila anda menutup posisi atau apabila perlawanan tamat."
       },
       "short": {
-        "label": "Short",
+        "label": "Turun",
         "detail": "Anda mendapat keuntungan jika harga menurun di bawah harga kemasukan anda apabila anda menutup posisi atau apabila perlawanan tamat."
       },
       "positionTitle": "Anda hanya boleh memegang satu posisi",
       "positionDetail": "Tiada butang “tutup” yang berasingan. Dagangan dalam arah bertentangan akan terlebih dahulu mengimbangi posisi sedia ada, dan jumlah yang masih berbaki akan membuka posisi baharu dalam arah yang bertentangan.",
-      "positionExample": "Contohnya, memegang Short bernilai $50 → dagangan Long bernilai $50 akan menutupnya sepenuhnya. Long bernilai $80 akan menutup Short bernilai $50 dan membuka Long baharu bernilai $30."
+      "positionExample": "Contohnya, memegang Turun bernilai $50 → dagangan Naik bernilai $50 akan menutupnya sepenuhnya. Naik bernilai $80 akan menutup Turun bernilai $50 dan membuka Naik baharu bernilai $30."
     },
     "screenGuide": {
       "title": "Memahami skrin perlawanan",
@@ -531,10 +535,10 @@
   },
   "MatchChart": {
     "matchStart": "Mula perlawanan",
-    "long": "Long",
-    "short": "Short",
-    "longEntry": "Kemasukan Long",
-    "shortEntry": "Kemasukan Short",
+    "long": "Naik",
+    "short": "Turun",
+    "longEntry": "Kemasukan Naik",
+    "shortEntry": "Kemasukan Turun",
     "waitingForMarketData": "Menunggu data pasaran…",
     "preMatch": "Pra-perlawanan",
     "match": "Perlawanan"
@@ -569,8 +573,8 @@
     "placeTrade": "Buat Dagangan",
     "available": "Tersedia",
     "amount": "Jumlah",
-    "long": "Long",
-    "short": "Short",
+    "long": "Naik",
+    "short": "Turun",
     "exposure": "Posisi",
     "entry": "kemasukan",
     "exposureDetail": "{opposite} sebanyak {amount} akan menutup posisi ini sepenuhnya. Jumlah yang lebih kecil akan mengurangkannya; jumlah yang lebih besar akan menukar arah posisi.",
@@ -598,8 +602,8 @@
     "loadingPosition": "Memuatkan posisi anda…",
     "noExposure": "Tiada posisi dipegang",
     "takePosition": "Buat dagangan berdasarkan kenaikan atau penurunan harga untuk mengambil posisi.",
-    "long": "Long",
-    "short": "Short",
+    "long": "Naik",
+    "short": "Turun",
     "entryPrice": "Harga kemasukan",
     "reservedBalance": "Baki disimpan",
     "unrealisedPnl": "PnL Belum Direalisasi",
@@ -612,8 +616,8 @@
     "recentTrades": "Dagangan terkini",
     "noTradesYet": "Belum ada dagangan",
     "fillsAppearHere": "Dagangan anda akan dipaparkan di sini dan pada carta.",
-    "long": "Long",
-    "short": "Short",
+    "long": "Naik",
+    "short": "Turun",
     "now": "sekarang",
     "seconds": "{value}s",
     "minutes": "{value}m",

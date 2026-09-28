@@ -194,7 +194,7 @@ export default async function MatchDetailPage({
 								{result === "WIN" ? t("victory") : result === "LOSS" ? t("defeat") : t("draw")}
 							</div>
 							<div className="text-sm text-[#5d6877]">
-								{match.symbol} · {formatDuration(match.starts_at, match.ends_at)}
+								{match.symbol} · {formatDuration(match.starts_at, match.ends_at, t)}
 							</div>
 						</div>
 
@@ -247,7 +247,7 @@ export default async function MatchDetailPage({
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
 								<div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{t("duration")}</div>
-								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at)}</div>
+								<div className="text-sm font-semibold">{formatDuration(match.starts_at, match.ends_at, t)}</div>
 							</div>
 
 							<div className="rounded-[7px] border border-white/[.07] bg-[#0f131b] p-4">
