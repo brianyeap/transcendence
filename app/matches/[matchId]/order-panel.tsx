@@ -120,7 +120,7 @@ export function OrderPanel({
 
       <label
         htmlFor="order-amount"
-        className="mt-3 mb-1.5 block text-[10.5px] font-bold uppercase tracking-[.04em] text-[#5d6877]"
+        className="mt-3 mb-1.5 block text-[11px] font-bold uppercase tracking-[.04em] text-[#5d6877]"
       >
         {t("amount")}
       </label>
@@ -140,7 +140,7 @@ export function OrderPanel({
           value={raw}
           disabled={locked}
           onChange={(e) => setRaw(sanitise(e.target.value))}
-          className="h-11 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-base text-[#eef2f8] transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-10 sm:text-[14px]"
+          className="h-11 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-base text-red transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-10 sm:text-[14px]"
         />
       </div>
 
@@ -252,7 +252,7 @@ function BetButton({
         <Arrow className="size-4" strokeWidth={2.75} />
         {pending ? t("placing") : isLong ? t("long") : t("short")}
       </span>
-      <span className="text-[10.5px] font-semibold opacity-75">
+      <span className="text-[11px] font-semibold opacity-75">
         {isLong ? t("priceRises") : t("priceFalls")}
       </span>
     </button>
@@ -312,7 +312,7 @@ function Feedback({
           {t("filledAt")}{" "}
           <span className="font-mono font-semibold">{fmtPrice(fill.fillPrice)}</span>
         </p>
-        <p className="mt-1 text-[10.5px] text-[#5d6877]">
+        <p className="mt-1 text-[11px] text-[#5d6877]">
           {t("filledAtServerPrice")}
         </p>
         <p className="mt-1 text-[11px] text-[#9aa6b6]">
