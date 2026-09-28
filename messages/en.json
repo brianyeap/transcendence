@@ -65,7 +65,15 @@
     "matchStarting": "Your match is starting",
     "matchLive": "Your match is live",
     "vs": "vs",
-    "rejoin": "Rejoin"
+    "rejoin": "Rejoin",
+    "loading": "Loading games...",
+    "pageOf": "Page {page} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "jumpToPage": "Click to jump to page",
+    "go": "Go",
+    "invalidPageRange": "Page must be between 1 and {totalPages}",
+    "invalidPageSingle": "Page must be 1"
   },
   "RoomCard": {
     "by": "by",
@@ -280,7 +288,7 @@
     "final": "Final",
     "netPnl": "Net PnL",
     "duration": "Duration",
-	"durationValue": "{minutes}m {seconds}s",
+    "durationValue": "{minutes}m {seconds}s",
     "justNow": "just now",
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
@@ -523,10 +531,10 @@
     "description": "The match starts the moment someone takes the open seat. You do not need to refresh.",
     "market": "Market",
     "startingCapital": "Starting capital",
+    "duration": "Duration",
     "eachPlayer": "Each player",
     "backToGames": "Back to games",
-    "awayMessage": "The match stays open while you are away. Return from the lobby at any time.",
-    "duration": "Duration"
+    "awayMessage": "The match stays open while you are away. Return from the lobby at any time."
   },
   "PlayerSlot": {
     "waitingForPlayer": "Waiting for a player",

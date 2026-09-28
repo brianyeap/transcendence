@@ -65,7 +65,15 @@
     "matchStarting": "您的比赛即将开始",
     "matchLive": "您的比赛正在进行中",
     "vs": "对阵",
-    "rejoin": "重新加入"
+    "rejoin": "重新加入",
+    "loading": "正在加载游戏...",
+    "pageOf": "第 {page} 页，共 {total} 页",
+    "previousPage": "上一页",
+    "nextPage": "下一页",
+    "jumpToPage": "点击跳转到指定页",
+    "go": "前往",
+    "invalidPageRange": "页码必须在 1 到 {totalPages} 之间",
+    "invalidPageSingle": "页码必须为 1"
   },
   "RoomCard": {
     "by": "由",
@@ -523,10 +531,10 @@
     "description": "当有人加入空缺的位置后，比赛将立即开始。您无需刷新页面。",
     "market": "市场",
     "startingCapital": "初始资金",
+    "duration": "期间",
     "eachPlayer": "每位玩家",
     "backToGames": "返回游戏",
-    "awayMessage": "您离开期间，比赛仍会保持开放。您可以随时从大厅返回。",
-    "duration": "时长"
+    "awayMessage": "您离开期间，比赛仍会保持开放。您可以随时从大厅返回。"
   },
   "PlayerSlot": {
     "waitingForPlayer": "等待玩家",
