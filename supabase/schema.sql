@@ -294,7 +294,7 @@ CREATE TABLE public.matches (
     player_one_user_id uuid NOT NULL,
     player_two_user_id uuid,
     status public.match_status NOT NULL,
-    symbol text DEFAULT 'BTCUSDT'::text NOT NULL,
+    symbol text DEFAULT 'BTC/USDT'::text NOT NULL,
     starting_capital numeric NOT NULL,
     countdown_starts_at timestamp with time zone,
     starts_at timestamp with time zone,
@@ -304,7 +304,8 @@ CREATE TABLE public.matches (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     duration_seconds integer,
     name text,
-    invited_user_id uuid
+    invited_user_id uuid,
+    CONSTRAINT matches_symbol_check CHECK ((symbol = ANY (ARRAY['BTC/USDT'::text, 'ETH/USDT'::text, 'SOL/USDT'::text])))
 );
 
 

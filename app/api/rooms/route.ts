@@ -1,6 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ALLOWED_DURATIONS, MATCH_DURATION_SECONDS } from "@/lib/match/rules";
+import {
+  ALLOWED_DURATIONS,
+  ALLOWED_SYMBOLS,
+  DEFAULT_SYMBOL,
+  MATCH_DURATION_SECONDS,
+} from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
 const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
@@ -78,7 +83,7 @@ function formatRoom(
     ageMin: getRoomAgeMinutes(room.created_at),
     duration: room.duration_seconds ?? getRoomDuration(room),
     capital: Number(room.starting_capital),
-    symbol: "BTC/USDT",
+    symbol: room.symbol,
     ownedByCurrentUser: isOwner,
   };
 }
@@ -240,7 +245,9 @@ export async function POST(request: Request) {
   const startingCapital = getStartingCapital(body.startingCapital);
   const durationSeconds = getDurationSeconds(body.durationSeconds);
   const name = getRoomName(body.name);
-  const symbol = "BTC/USDT";
+
+  // Market: one of the allowed ones. Not sent at all = the default (BTC).
+  const symbol = body.symbol === undefined ? DEFAULT_SYMBOL : body.symbol;
 
   if (startingCapital === null) {
     return Response.json(
@@ -249,7 +256,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (symbol === null) {
+  if (typeof symbol !== "string" || !ALLOWED_SYMBOLS.includes(symbol)) {
     return Response.json(
       { error: t("invalidSymbol") },
       { status: 400 }

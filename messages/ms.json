@@ -81,7 +81,8 @@
     "create": "Cipta",
     "creating": "Mencipta...",
     "playWith": "Main dengan",
-    "anyone": "Sesiapa sahaja"
+    "anyone": "Sesiapa sahaja",
+    "market": "Pasaran"
   },
   "Leaderboard": {
     "competition": "Pertandingan",
@@ -317,7 +318,7 @@
     "lastUpdated": "Kemas kini terakhir: {date}",
     "intro": "Sila baca ini sebelum bermain. Ia ringkas kerana produk ini mudah: modal maya, tiada wang sebenar, dan beberapa peraturan asas untuk memastikan permainan kekal adil.",
     "section1Title": "1. Mengenai perkhidmatan ini",
-    "section1": "Ini ialah simulasi perdagangan masa nyata yang melibatkan dua pemain. Anda berdagang dalam pasaran BTC/USDT yang disimulasikan menentang pemain lain menggunakan modal maya sahaja. Tiada wang sebenar digunakan, didepositkan, dikeluarkan, atau didagangkan di platform ini pada bila-bila masa. Tiada aktiviti di sini merupakan perdagangan kewangan sebenar, dan tiada apa-apa yang anda lakukan di sini mempunyai nilai kewangan di luar aplikasi ini.",
+    "section1": "Ini ialah simulasi perdagangan masa nyata yang melibatkan dua pemain. Anda berdagang dalam pasaran BTC/USDT, ETH/USDT atau SOL/USDT yang disimulasikan menentang pemain lain menggunakan modal maya sahaja. Tiada wang sebenar digunakan, didepositkan, dikeluarkan, atau didagangkan di platform ini pada bila-bila masa. Tiada aktiviti di sini merupakan perdagangan kewangan sebenar, dan tiada apa-apa yang anda lakukan di sini mempunyai nilai kewangan di luar aplikasi ini.",
     "section2Title": "2. Akaun anda",
     "section2": "Anda memerlukan akaun untuk bermain. Anda bertanggungjawab untuk memastikan kelayakan log masuk anda kekal selamat serta terhadap segala aktiviti yang berlaku di bawah akaun anda. Jangan kongsikan maklumat log masuk anda dengan sesiapa, dan maklumkan kepada kami jika anda mengesyaki seseorang telah mengakses akaun anda tanpa kebenaran.",
     "section3Title": "3. Penggunaan yang dibenarkan",
@@ -383,7 +384,7 @@
   },
   "HowToPlay": {
     "title": "Cara bermain",
-    "intro": "Dua pemain, satu carta BTC/USDT, modal permulaan yang sama. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
+    "intro": "Dua pemain, satu carta (BTC, ETH atau SOL berbanding USDT), modal permulaan yang sama. Carta memainkan semula harga sebenar 1 minit bagi beberapa jam terakhir, dipercepatkan kepada satu lilin setiap setengah saat. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
     "facts": {
       "players": "Pemain",
       "startingCapital": "Modal permulaan",

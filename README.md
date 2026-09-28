@@ -4,16 +4,18 @@
 
 ## Description
 
-**DUEL** is a head-to-head **simulated** Bitcoin trading game. Two players join the same match, watch the same live BTC-USD candle feed, and open long/short positions with virtual capital. The match creator picks the trading window (30, 60 or 90 seconds) and the starting capital (5K, 10K or 20K USDT). After a 10-second countdown and that trading window, the player who finishes with the most capital wins. No real money is involved.
+**DUEL** is a head-to-head **simulated** crypto trading game. Two players join the same match, watch the same price chart, and open long/short positions with virtual capital. The match creator picks the market (BTC, ETH or SOL against USDT), the trading window (30, 60 or 90 seconds) and the starting capital (5K, 10K or 20K USDT). After a 10-second countdown and that trading window, the player who finishes with the most capital wins. No real money is involved.
+
+**The prices are real but not live.** When a match starts, the match engine downloads the most recent 1-minute candles for that market from Coinbase and **replays them sped up**: one candle every 0.5 seconds. A 1-minute match therefore plays through the last 2 hours of real price movement in 60 seconds. Both players see exactly the same candles at the same moment.
 
 The goal of the project was to build a complete, multi-user, real-time web application: a frontend, a backend, a database, live gameplay between two remote players, and the account features around it (profiles, friends, stats and security).
 
 ### Key features
 
-- **Live 1v1 trading matches**: both players see the same real BTC candles, streamed by our own Socket.IO match engine
+- **Real-time 1v1 trading matches**: both players see the same replayed real-market candles (BTC, ETH or SOL), streamed by our own Socket.IO match engine
 - **Server-side trading**: every order is checked on the server, positions and PnL are tracked, and the match is settled fairly
 - **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left
-- **Game customization**: the match creator picks the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (1 min, 10K, public room).
+- **Game customization**: the match creator picks the market (BTC / ETH / SOL), the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (BTC, 1 min, 10K, public room).
 - **Accounts**: email/password sign-up, Google sign-in (OAuth 2.0) and TOTP two-factor authentication
 - **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements
 - **Friends**: find players by username and send them a request, accept requests, see which friends are online, and challenge a friend to a private match
@@ -53,7 +55,7 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Backend (realtime) | **Node.js 22** + **Socket.IO 4** (`socket/`) | A match is a long-running process with state in memory (candles, positions, timers). Socket.IO handles rooms, broadcasting and reconnecting. |
 | Database | **Supabase (PostgreSQL)** | A real relational database with foreign keys, enums and Row Level Security. It also comes with Auth (email/password, OAuth, MFA) and Storage (avatars), so we didn't have to build those ourselves. |
 | Auth | **Supabase Auth** | Salted, hashed passwords, Google OAuth and TOTP 2FA out of the box |
-| Market data | **Coinbase Exchange API** (BTC-USD candles) | Free, public, real price data with no API key needed |
+| Market data | **Coinbase Exchange API** (BTC-USD, ETH-USD, SOL-USD 1-minute candles) | Free, public, real price data with no API key needed |
 | i18n | **next-intl** | Works with Next.js server and client components |
 | Monitoring | **OpenTelemetry**, **Prometheus**, **Grafana** | OTel is the standard way to export metrics. Prometheus stores them, and Grafana shows dashboards and sends alerts. |
 | Containers | **Docker** + **Docker Compose** | The whole stack starts with one command |
@@ -64,7 +66,7 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Part | Where | What it does |
 | --- | --- | --- |
 | Web app | `app/`, `lib/` | Next.js (App Router) UI: login, lobby, match screen, profile, friends, leaderboard, history, settings |
-| Match engine | `socket/` | Node + Socket.IO server on port `4000`. Runs live matches, fetches Coinbase BTC-USD candles, validates trades, saves results |
+| Match engine | `socket/` | Node + Socket.IO server on port `4000`. Runs matches, downloads the room's Coinbase candles and replays them, validates trades, saves results |
 | Database / auth | `supabase/` | Supabase Postgres, Auth (email/password, Google OAuth, TOTP 2FA) and Storage (avatars) |
 | Monitoring | `monitoring/` | OpenTelemetry collector → Prometheus → Grafana |
 | Translations | `messages/` | `en`, `ms`, `zh-CN` via `next-intl` |
@@ -104,7 +106,7 @@ erDiagram
     MATCHES {
         uuid id PK
         match_status status "waiting / countdown / active / completed"
-        text symbol
+        text symbol "BTC/USDT, ETH/USDT or SOL/USDT"
         numeric starting_capital
         int duration_seconds "30 / 60 / 90"
         uuid player_one_user_id FK
@@ -168,8 +170,8 @@ Row Level Security is on for every table. Players can only change their own data
 | Match engine (sockets) | Socket.IO server: rooms, candle streaming, order validation, PnL, settlement, stale-match cleanup, rejoin | Brian |
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
-| Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
-| Game customization (server side) | `/api/rooms` checks the chosen length and capital against `lib/match/rules.ts` and saves them on the match. The match engine then runs the match for that length with that capital. | Brian |
+| Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
+| Game customization (server side) | `/api/rooms` checks the chosen market, length and capital against `lib/match/rules.ts` and saves them on the match. A database CHECK (migration `0013`) refuses an unknown market even if someone skips the API. The match engine then replays that market's candles for that length with that capital. | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
@@ -213,10 +215,10 @@ Row Level Security is on for every table. Players can only change their own data
 5. **Standard user management.** Players can edit their profile and upload an avatar (with a default if they don't), add friends by username and see their online status (`ping_online()` updates `user_presence.last_seen_at`), and view a profile page with their stats.
 6. **Prometheus and Grafana.** The web app and the socket server export metrics through OpenTelemetry to an OTel collector. Prometheus scrapes them and has alerting rules. Grafana has our custom dashboards and sends alerts by email, and it's protected by an admin login over HTTPS. Everything is set up in `monitoring/`.
 7. **Module of choice: real-market trading engine (Major).**
-   - *Why we chose it:* the whole game depends on it. It isn't covered by any listed module, because the "web-based game" module covers rules and win/loss, not a trading simulator running on live market data.
+   - *Why we chose it:* the whole game depends on it. It isn't covered by any listed module, because the "web-based game" module covers rules and win/loss, not a trading simulator running on real market data.
    - *Technical challenges:*
-     - fetching and normalising real Coinbase BTC-USD candles
-     - streaming them in sync to both players
+     - fetching and normalising real Coinbase 1-minute candles for the room's market (BTC-USD, ETH-USD or SOL-USD)
+     - replaying them sped up (one candle every 0.5 s, so a 1-minute match covers the last 2 hours of real prices) and streaming them in sync to both players
      - checking long/short orders on the server
      - tracking net positions, average entry price, and realised and unrealised PnL
      - settling the match at the final price
@@ -233,12 +235,13 @@ Row Level Security is on for every table. Players can only change their own data
 14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile.
 15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
 16. **Game customization.** When creating a match, the creator chooses:
+    - **Market:** Bitcoin, Ethereum or Solana (against USDT). Each one moves differently (SOL is usually the most volatile), so the same strategy doesn't always work.
     - **Match length:** 30 seconds, 1 minute or 1.5 minutes. A short match rewards quick decisions, and a longer one gives the price more time to move.
     - **Starting capital:** 5K, 10K or 20K USDT. Both players always start with the same amount, so the match stays fair.
     - **Who can join:** anyone in the lobby, or one chosen friend (a private room only that friend can see).
     - **Room name:** optional. If left blank, the room is called "&lt;creator&gt;'s Room".
 
-    **Default game:** the modal starts on 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects any capital that isn't in the allowed list, and falls back to the 1-minute default if the length isn't one of the lengths in `lib/match/rules.ts`. They're saved on the `matches` row (`duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values.
+    **Default game:** the modal starts on BTC, 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects any market or capital that isn't in the allowed list, and falls back to the 1-minute default if the length isn't one of the lengths in `lib/match/rules.ts`. They're saved on the `matches` row (`symbol`, `duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values. A database CHECK (`supabase/migrations/0013_match_settings_checks.sql`) also refuses an unknown market, because a logged-in player could otherwise insert a match straight into Supabase.
 
 ## Individual Contributions
 
@@ -441,7 +444,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 ## Known Limitations
 
 - Live match state lives in the socket server's memory. If the engine restarts, running matches are lost (stale ones are closed by `closeStaleMatches`).
-- Only BTC-USD is supported.
+- Prices are **replayed, not live**: each match replays the most recent real 1-minute candles, sped up to one every 0.5 s. Three markets are supported: BTC, ETH and SOL (against USDT).
 - Market data depends on Coinbase's public API being reachable.
 - **Browsers:** tested on the latest Chrome, Edge and Brave. Each browser shows its own warning page for Grafana's self-signed certificate, and you have to accept it once per browser before the dashboards load.
 

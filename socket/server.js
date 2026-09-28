@@ -19,8 +19,15 @@ const ALLOWED_ORIGINS = (
   .split(",")
   .map((origin) => origin.trim());
 
-const TICKER_URL = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
-const CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles";
+const COINBASE_URL = "https://api.exchange.coinbase.com/products";
+
+// The markets a room can pick (matches.symbol) and the Coinbase product
+// we fetch prices from for each one. Same list as lib/match/rules.ts.
+const COINBASE_PRODUCTS = {
+  "BTC/USDT": "BTC-USD",
+  "ETH/USDT": "ETH-USD",
+  "SOL/USDT": "SOL-USD",
+};
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -31,9 +38,14 @@ const liveMatches = new Map();
 
 // Helpers
 
-async function fetchBtcPrice() {
+// e.g. "ETH/USDT" -> "ETH-USD". Unknown or old rows fall back to Bitcoin.
+function coinbaseProduct(symbol) {
+  return COINBASE_PRODUCTS[symbol] ?? "BTC-USD";
+}
+
+async function fetchPrice(product) {
   try {
-    const res = await fetch(TICKER_URL);
+    const res = await fetch(`${COINBASE_URL}/${product}/ticker`);
     if (!res.ok) return null;
     const ticker = await res.json();
     return Number(ticker.price);
@@ -42,9 +54,9 @@ async function fetchBtcPrice() {
   }
 }
 
-async function fetchCandles(count) {
+async function fetchCandles(count, product) {
   try {
-    const res = await fetch(`${CANDLES_URL}?granularity=60`, { // 1 min candle
+    const res = await fetch(`${COINBASE_URL}/${product}/candles?granularity=60`, { // 1 min candle
       headers: { "User-Agent": "transcendence" },
     });
     if (!res.ok) return [];
@@ -207,7 +219,8 @@ async function startMatch(matchRow) {
     endsAt: Date.parse(matchRow.ends_at), // when the match ends (ms)
     started: false,
     ended: false,
-    latestPrice: null, // most recent BTC price
+    product: coinbaseProduct(matchRow.symbol), // which coin, e.g. "ETH-USD"
+    latestPrice: null, // most recent price
     sequence: 0, // how many price ticks we have sent
     candles: [], // the pre-fetched candles we replay during the match
     fallbackBaseTime: Math.floor(Date.now() / 1000), // fallback path if candles never load
@@ -221,7 +234,7 @@ async function startMatch(matchRow) {
   // so 120 one minute candles = 2 hours of  history
   const durationMs = match.endsAt - match.startsAt;
   const candlesNeeded = Math.ceil(durationMs / TICK_MS);
-  fetchCandles(candlesNeeded).then((candles) => {
+  fetchCandles(candlesNeeded, match.product).then((candles) => {
     match.candles = candles;
   });
 
@@ -267,7 +280,7 @@ async function onTick(match) {
 
     // Fallback: if the candles never loaded then live prices
     if (!candle && match.candles.length === 0) {
-      const livePrice = await fetchBtcPrice();
+      const livePrice = await fetchPrice(match.product);
       if (livePrice !== null) {
         candle = { open: livePrice, high: livePrice, low: livePrice, close: livePrice };
       }
@@ -474,7 +487,7 @@ io.on("connection", (socket) => {
     // Load the match and make sure this user is really one of its two players.
     const { data: matchRow } = await supabase
       .from("matches")
-      .select("id, player_one_user_id, player_two_user_id, status, starting_capital, starts_at, ends_at, winner_user_id, final_price")
+      .select("id, player_one_user_id, player_two_user_id, status, symbol, starting_capital, starts_at, ends_at, winner_user_id, final_price")
       .eq("id", matchId)
       .maybeSingle();
 

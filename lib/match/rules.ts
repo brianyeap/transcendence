@@ -8,3 +8,6 @@ export const ALLOWED_DURATIONS = [30, 60, 90];
 
 //  The starting capital a creator can pick.
 export const ALLOWED_CAPITAL = [5000, 10000, 20000];
+
+export const ALLOWED_SYMBOLS = ["BTC/USDT", "ETH/USDT", "SOL/USDT"];
+export const DEFAULT_SYMBOL = "BTC/USDT";

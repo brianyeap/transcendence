@@ -81,7 +81,8 @@
     "create": "Create",
     "creating": "Creating...",
     "playWith": "Play with",
-    "anyone": "Anyone"
+    "anyone": "Anyone",
+    "market": "Market"
   },
   "Leaderboard": {
     "competition": "Competition",
@@ -317,7 +318,7 @@
     "lastUpdated": "Last updated: {date}",
     "intro": "Please read this before playing. It's short, because the product is simple: virtual capital, no real money, and a couple of ground rules for fair play.",
     "section1Title": "1. What this is",
-    "section1": "This is a real-time, two-player trading simulation. You trade a simulated BTC/USDT market against another player using virtual capital only. No real money is used, deposited, withdrawn, or traded on this platform at any point. Nothing here is real financial trading, and nothing you do here has any monetary value outside the app.",
+    "section1": "This is a real-time, two-player trading simulation. You trade a simulated BTC/USDT, ETH/USDT or SOL/USDT market against another player using virtual capital only. No real money is used, deposited, withdrawn, or traded on this platform at any point. Nothing here is real financial trading, and nothing you do here has any monetary value outside the app.",
     "section2Title": "2. Your account",
     "section2": "You need an account to play. You're responsible for keeping your login credentials secure and for anything that happens under your account. Don't share your login with anyone else, and let us know if you think someone's accessed your account without permission.",
     "section3Title": "3. Acceptable use",
@@ -383,7 +384,7 @@
   },
   "HowToPlay": {
     "title": "How to play",
-    "intro": "Two players, one BTC/USDT chart, equal starting capital. Whoever finishes the match with more capital wins.",
+    "intro": "Two players, one chart (BTC, ETH or SOL against USDT), equal starting capital. The chart replays the last few hours of real 1-minute prices, sped up to one candle every half second. Whoever finishes the match with more capital wins.",
     "facts": {
       "players": "Players",
       "startingCapital": "Starting capital",

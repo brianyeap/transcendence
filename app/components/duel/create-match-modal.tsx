@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ALLOWED_SYMBOLS, DEFAULT_SYMBOL } from "@/lib/match/rules";
 
 // The match lengths a creator can pick. Values are in seconds and must match
 // ALLOWED_DURATIONS in lib/match/rules.ts, or the server will reject them.
@@ -31,6 +32,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     const [name, setName] = useState('') // optional: blank falls back to "<creator>'s Room"
     const [capital, setCapital] = useState(10000)
     const [duration, setDuration] = useState(60) // seconds
+    const [symbol, setSymbol] = useState(DEFAULT_SYMBOL) // which market to trade
     const [friends, setFriends] = useState<{ id: string; username: string }[]>([])
     const [invitedUserId, setInvitedUserId] = useState('') // '' = anyone can join
     const [isCreating, setIsCreating] = useState(false)
@@ -42,6 +44,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
         setIsCreating(false)
         setError(null)
         setName('') // start fresh next time the modal opens
+        setSymbol(DEFAULT_SYMBOL)
         setInvitedUserId('')
         onClose()
     }, [onClose])
@@ -87,6 +90,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     name,
                     startingCapital: capital,
                     durationSeconds: duration,
+                    symbol,
                     invitedUserId,
                 }),
             })
@@ -150,6 +154,27 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                             <option key={friend.id} value={friend.id}>{friend.username}</option>
                         ))}
                     </select>
+                </div>
+
+                {/* Market: which coin both players trade. Same button style as below. */}
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-[13px] font-semibold text-[#9aa6b6]">{t("market")}</span>
+                    <div className="flex gap-2">
+                        {ALLOWED_SYMBOLS.map((option) => {
+                            const selected = symbol === option
+                            return (
+                                <button
+                                    key={option} onClick={() => setSymbol(option)} disabled={isCreating}
+                                    className={`flex-1 rounded-lg border py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${selected
+                                            ? 'border-transparent bg-[#4d86ff] text-white'
+                                            : 'border-white/[.07] bg-[#0f131b] text-[#9aa6b6] hover:border-white/[.12] hover:text-[#eef2f8]'
+                                        }`}
+                                >
+                                    {option.split("/")[0]} {/* "ETH/USDT" -> "ETH" */}
+                                </button>
+                            )
+                        })}
+                    </div>
                 </div>
 
                 {/* Match length: same button style as starting capital below. */}
