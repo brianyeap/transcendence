@@ -1,7 +1,7 @@
 -- ============================================================================
 -- supabase/schema.sql: snapshot of the LIVE database (public schema only)
 -- ----------------------------------------------------------------------------
--- Made with pg_dump on 2026-09-28, after migrations 0000-0014 were applied.
+-- Made with pg_dump on 2026-09-29, after migrations 0000-0015 were applied.
 -- It is for reading, not for running: to build a database, run the files in
 -- supabase/migrations/ in order.
 --
@@ -116,9 +116,12 @@ begin
     -- 1. One request at a time per player. The lock is released by itself
     --    when the transaction ends. hashtext() turns the text into the number
     --    the lock function needs.
+    -- prevents the rest of the code from running, it waits
     perform pg_advisory_xact_lock(hashtext('one_open_match:' || new_player::text));
 
     -- 2 + 3. Already in another open match? Refuse.
+    -- 1 measn data isnt needed just returns 1 if exists, 0 if not
+    -- <> means not equal to
     if exists (
         select 1
         from public.matches m
@@ -463,6 +466,14 @@ ALTER TABLE ONLY public.matches
 
 
 --
+-- Name: matches matches_waiting_has_no_result; Type: CHECK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE public.matches
+    ADD CONSTRAINT matches_waiting_has_no_result CHECK (((status <> 'waiting'::public.match_status) OR ((winner_user_id IS NULL) AND (final_price IS NULL) AND (starts_at IS NULL) AND (ends_at IS NULL) AND (countdown_starts_at IS NULL)))) NOT VALID;
+
+
+--
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -673,7 +684,7 @@ CREATE POLICY "Players can view their matches" ON public.matches FOR SELECT TO a
 -- Name: matches Users can create their own waiting matches; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "Users can create their own waiting matches" ON public.matches FOR INSERT TO authenticated WITH CHECK (((player_one_user_id = auth.uid()) AND (player_two_user_id IS NULL) AND (status = 'waiting'::public.match_status) AND ((invited_user_id IS NULL) OR (EXISTS ( SELECT 1
+CREATE POLICY "Users can create their own waiting matches" ON public.matches FOR INSERT TO authenticated WITH CHECK (((player_one_user_id = auth.uid()) AND (player_two_user_id IS NULL) AND (status = 'waiting'::public.match_status) AND (winner_user_id IS NULL) AND (final_price IS NULL) AND (starts_at IS NULL) AND (ends_at IS NULL) AND (countdown_starts_at IS NULL) AND ((invited_user_id IS NULL) OR (EXISTS ( SELECT 1
    FROM public.friends f
   WHERE ((f.status = 'accepted'::text) AND (((f.user_id = auth.uid()) AND (f.friend_id = matches.invited_user_id)) OR ((f.user_id = matches.invited_user_id) AND (f.friend_id = auth.uid())))))))));
 

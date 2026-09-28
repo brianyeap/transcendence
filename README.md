@@ -209,7 +209,8 @@ Row Level Security is on for every table. Players can only change their own data
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
-| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match. | Amber, Brian || HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
+| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match. | Amber, Brian |
+| HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges. A toast announces a newly unlocked one at the end of a match, with a link to your progress. | Zep, Raja |

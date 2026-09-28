@@ -138,6 +138,7 @@
     "changePhoto": "Tukar foto",
     "removePhoto": "Buang foto",
     "removingPhoto": "Membuang…",
+    "removingDone": "Berjaya Dibuang!",
     "removeFailed": "Gagal membuang foto anda. Cuba lagi.",
     "email": "E-mel",
     "readOnly": "Baca sahaja",
@@ -159,6 +160,7 @@
     "usernameMaxLength": "Nama pengguna tidak boleh melebihi 20 aksara.",
     "usernameInvalidChars": "Hanya huruf, nombor, ruang, garis bawah dan sengkang dibenarkan.",
     "usernameTaken": "Nama pengguna tersebut telah digunakan.",
+    "usernameSaved": "Nama pengguna disimpan!",
     "usernameSaveFailed": "Tidak dapat menyimpan nama pengguna."
   },
   "ApiErrors": {
@@ -221,14 +223,38 @@
     "performanceStats": "Statistik Prestasi",
     "winRateSuffix": "% Kadar Kemenangan",
     "traderTier": "Pedagang {tier}",
+    "tierLabel": {
+      "rookie": "Pedagang Pemula",
+      "beginner": "Pedagang Baru Mula",
+      "amateur": "Pedagang Amatur",
+      "pro": "Pedagang Pro",
+      "elite": "Pedagang Elit"
+    },
+    "tierProgress": {
+      "title": "Perkembangan Pedagang",
+      "subtitle": "Pangkat anda naik apabila anda menang. Setiap pangkat yang telah dilalui kekal menyala.",
+      "current": "Semasa",
+      "unlocked": "Dibuka",
+      "locked": "Berkunci",
+      "nextTier": "Seterusnya: {tier}",
+      "needsWinRate": "Menang {rate}% daripada {count} perlawanan seterusnya",
+      "needsMatches": "Main {count} perlawanan lagi",
+      "maxTier": "Anda telah mencapai pangkat tertinggi"
+    },
+    "provisional": "Sementara",
     "winsLeft": "{count, plural, =1 {# Kemenangan Lagi} other {# Kemenangan Lagi}}",
     "tiers": {
+      "rookie": "Pemula",
       "novice": "Novis",
       "bronze": "Gangsa",
       "silver": "Perak",
       "special": "Istimewa",
       "crypto": "Kripto",
-      "legendary": "Legenda"
+      "legendary": "Legenda",
+      "beginner": "Baru Mula",
+      "amateur": "Amatur",
+      "pro": "Pro",
+      "elite": "Elit"
     },
     "achievements": {
       "create_an_account": {
