@@ -114,6 +114,11 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (updateError) {
+    // 23505 = the database's "one open match per player" rule (migration 0014)
+    // said no: another request put this player in a match a moment ago.
+    if (updateError.code === "23505") {
+      return Response.json({ error: t("alreadyInGameJoin") }, { status: 409 });
+    }
     console.error("POST /api/rooms/join update failed:", updateError.message);
     return Response.json({ error: t("serverError") }, { status: 500 });
   }

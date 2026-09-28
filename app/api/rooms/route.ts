@@ -333,7 +333,9 @@ export async function POST(request: Request) {
   const { error: insertError } = await supabase.from("matches").insert(insertPayload); // creating new match
 
   if (insertError) {
-    if (insertError.code === "23505") { // unique_violation code, unique constraint
+    // 23505 = the database's "one open match per player" rule (migration 0014)
+    // said no: another request put this player in a match a moment ago.
+    if (insertError.code === "23505") {
       return Response.json(
         { error: t("alreadyInGameCreate") },
         { status: 409 }
