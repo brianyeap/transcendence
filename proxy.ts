@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/terms-services", "/privacy-policy", "/auth/callback"];
+const PUBLIC_PATHS = ["/login", "/terms-services", "/privacy-policy", "/auth/callback", "/auth/verify-mfa"];
 
 // prevent loginhack work
 function isPublicPaths(pathname: string) {
@@ -50,6 +50,21 @@ export async function proxy(request: NextRequest)
 		const url = request.nextUrl.clone();
 		url.pathname = "/login";
 		return NextResponse.redirect(url);
+	}
+
+	// AAL2 gate: if the user is logged in but has MFA enrolled and has not
+	// completed the second factor yet, force them to /auth/verify-mfa.
+	// This prevents bypassing 2FA by navigating directly to protected pages.
+	if (user && !isPublicPaths(request.nextUrl.pathname)) {
+		const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+		if (aalData?.currentLevel === "aal1" && aalData?.nextLevel === "aal2") {
+			const url = request.nextUrl.clone();
+			const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+			url.pathname = "/auth/verify-mfa";
+			url.search = `?next=${next}`;
+			return NextResponse.redirect(url);
+		}
 	}
 
 	return response;
