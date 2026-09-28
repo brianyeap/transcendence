@@ -105,7 +105,8 @@ export default function HistoryPage() {
 
 		const matchIds = matches.map((m) => m.id);
 		const { data: playerStats } = await supabase.from("match_players").select("*").in("match_id", matchIds);
-		const userIds = [...new Set(matches.flatMap((m) => [m.player_one_user_id, m.player_two_user_id]))];
+		// Drop nulls (a match with no second player): a literal "null" in the id list is not a valid uuid, so Postgres rejects the whole query
+		const userIds = [...new Set(matches.flatMap((m) => [m.player_one_user_id, m.player_two_user_id]))].filter(Boolean) as string[];
 		const { data: profiles } = await supabase.from("profiles").select("id, username").in("id", userIds);
 		const usernameMap = new Map(profiles?.map((p) => [p.id, p.username]) ?? []);
 
