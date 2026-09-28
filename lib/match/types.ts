@@ -28,6 +28,7 @@ export type Match = {
   status: MatchStatus;
   symbol: string;
   startingCapital: number;
+  durationSeconds: number;
   startsAt: string | null;
   endsAt: string | null;
   playerOne: PlayerRef;

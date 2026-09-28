@@ -140,7 +140,7 @@ export function createSocketTransport(): MatchTransport {
         const { data: matchRow } = await supabase
           .from("matches")
           .select(
-            "id, status, symbol, starting_capital, starts_at, ends_at, player_one_user_id, player_two_user_id"
+            "id, status, symbol, starting_capital, duration_seconds, starts_at, ends_at, player_one_user_id, player_two_user_id"
           )
           .eq("id", matchId)
           .maybeSingle();
@@ -247,6 +247,7 @@ export function createSocketTransport(): MatchTransport {
           status: toMatchStatus(matchRow.status),
           symbol: matchRow.symbol,
           startingCapital,
+          durationSeconds: Number(matchRow.duration_seconds),
           startsAt: matchRow.starts_at,
           endsAt: matchRow.ends_at,
           playerOne: {

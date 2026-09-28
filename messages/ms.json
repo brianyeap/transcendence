@@ -517,7 +517,8 @@
     "startingCapital": "Modal permulaan",
     "eachPlayer": "Setiap pemain",
     "backToGames": "Kembali ke permainan",
-    "awayMessage": "Perlawanan akan kekal terbuka semasa anda tiada. Anda boleh kembali dari lobi pada bila-bila masa."
+    "awayMessage": "Perlawanan akan kekal terbuka semasa anda tiada. Anda boleh kembali dari lobi pada bila-bila masa.",
+    "duration": "Tempoh"
   },
   "PlayerSlot": {
     "waitingForPlayer": "Menunggu pemain",
