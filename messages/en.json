@@ -278,7 +278,15 @@
     "weeksAgo": "{count}w ago",
     "monthsAgo": "{count}mo ago",
     "yearsAgo": "{count}y ago",
-    "loadingHistory": "Loading history logs..."
+    "loadingHistory": "Loading history logs...",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "showingMatchesRange": "{from}–{to} of {total}",
+    "pageNumber": "Page {page}",
+    "jumpToPage": "Click to jump to page",
+    "go": "Go",
+    "invalidPageRange": "Page must be between 1 and {totalPages}",
+    "invalidPageSingle": "Page must be 1"
   },
   "HistoryDetail": {
     "backToHistory": "Back to History",

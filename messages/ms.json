@@ -43,8 +43,8 @@
     "settings": "Tetapan",
     "howtoplay": "Cara Bermain",
     "logout": "Log keluar",
-	"privacy": "Privasi",
-	"terms": "Terma"
+    "privacy": "Privasi",
+    "terms": "Terma"
   },
   "Lobby": {
     "title": "Permainan",
@@ -270,7 +270,7 @@
     "final": "Akhir",
     "netPnl": "PnL Bersih",
     "duration": "Tempoh",
-	"durationValue": "{minutes}m {seconds}s",
+    "durationValue": "{minutes}m {seconds}s",
     "justNow": "baru sahaja",
     "minutesAgo": "{count}m yang lalu",
     "hoursAgo": "{count}j yang lalu",
@@ -278,7 +278,15 @@
     "weeksAgo": "{count}mg yang lalu",
     "monthsAgo": "{count}bln yang lalu",
     "yearsAgo": "{count}thn yang lalu",
-    "loadingHistory": "Memuatkan log sejarah..."
+    "loadingHistory": "Memuatkan log sejarah...",
+    "previousPage": "Halaman sebelumnya",
+    "nextPage": "Halaman seterusnya",
+    "showingMatchesRange": "{from}–{to} daripada {total}",
+    "pageNumber": "Halaman {page}",
+    "jumpToPage": "Klik untuk melompat ke halaman",
+    "go": "Pergi",
+    "invalidPageRange": "Halaman mesti antara 1 dan {totalPages}",
+    "invalidPageSingle": "Halaman mesti 1"
   },
   "HistoryDetail": {
     "backToHistory": "Kembali ke Sejarah",
