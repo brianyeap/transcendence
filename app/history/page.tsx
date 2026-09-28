@@ -55,14 +55,12 @@ function CumulativeChart({ data }: { data: { value: number; result: string }[] }
 	const zeroY = padY + (1 - (0 - min) / range) * (height - padY * 2);
 	return (
 		<div className="relative w-full">
-			<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-40" preserveAspectRatio="none">
+			<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32 md:h-40" preserveAspectRatio="none">
 				<defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={stroke} stopOpacity="0.35" /><stop offset="100%" stopColor={stroke} stopOpacity="0" /></linearGradient></defs>
-				{[0.25, 0.5, 0.75].map((t) => (<line key={t} x1={padX} x2={width - padX} y1={padY + t * (height - padY * 2)} y2={padY + t * (height - padY * 2)} stroke="#ffffff" strokeOpacity="0.04" strokeDasharray="2 4" />))}
-				<line x1={padX} x2={width - padX} y1={zeroY} y2={zeroY} stroke="#ffffff" strokeOpacity="0.1" strokeDasharray="3 3" />
-				<path d={areaD} fill={`url(#${gradId})`} /><path d={pathD} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-				{points.map((p, i) => (<circle key={i} cx={p.x} cy={p.y} r="3" fill="#0f131b" stroke={stroke} strokeWidth="2" />))}
-				<circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="5" fill={stroke} opacity="0.9" /><circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="10" fill={stroke} opacity="0.2" />
-			</svg>
+				{[0.25, 0.5, 0.75].map((t) => (<line key={t} x1={padX} x2={width - padX} y1={padY + t * (height - padY * 2)} y2={padY + t * (height - padY * 2)} stroke="#ffffff" strokeOpacity="0.04" strokeDasharray="2 4" vectorEffect="non-scaling-stroke" />))}
+				<line x1={padX} x2={width - padX} y1={zeroY} y2={zeroY} stroke="#ffffff" strokeOpacity="0.1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+				<path d={areaD} fill={`url(#${gradId})`} /><path d={pathD} fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+							</svg>
 		</div>
 	);
 }
@@ -71,10 +69,10 @@ type StatCardProps = { label: string; value: string; sub?: string; icon: React.R
 function StatCard({ label, value, sub, icon, accent = "blue" }: StatCardProps) {
 	const accentMap = { emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20", rose: "text-rose-400 bg-rose-500/10 border-rose-500/20", blue: "text-blue-400 bg-blue-500/10 border-blue-500/20", gray: "text-gray-400 bg-gray-500/10 border-gray-500/20", amber: "text-amber-400 bg-amber-500/10 border-amber-500/20" };
 	return (
-		<div className="relative rounded-[10px] border border-white/[.07] bg-[#0f131b] p-4 overflow-hidden group hover:border-white/[.14] transition-all">
+		<div className="relative min-w-0 rounded-[10px] border border-white/[.07] bg-[#0f131b] p-3 md:p-4 overflow-hidden group hover:border-white/[.14] transition-all">
 			<div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-gradient-to-br from-white/[.03] to-transparent blur-2xl group-hover:from-white/[.06] transition-all" />
-			<div className="flex items-center justify-between mb-3"><span className="text-[10px] uppercase tracking-wider text-[#5d6877] font-medium">{label}</span><div className={`w-7 h-7 rounded-md border flex items-center justify-center ${accentMap[accent]}`}>{icon}</div></div>
-			<div className="text-xl font-bold text-[#eef2f8] tracking-tight">{value}</div>{sub && <div className="text-[11px] text-[#5d6877] mt-1">{sub}</div>}
+			<div className="flex items-center justify-between mb-3"><span className="text-[10px] uppercase tracking-wider text-[#5d6877] font-medium truncate pr-2">{label}</span><div className={`w-7 h-7 rounded-md border flex items-center justify-center shrink-0 ${accentMap[accent]}`}>{icon}</div></div>
+			<div className="text-lg md:text-xl font-bold text-[#eef2f8] tracking-tight truncate">{value}</div>{sub && <div className="text-[11px] text-[#5d6877] mt-1 truncate">{sub}</div>}
 		</div>
 	);
 }
@@ -340,17 +338,17 @@ export default function HistoryPage() {
 
 	return (
 		<SideNav>
-			<div className="relative min-h-screen">
+			<div className="relative min-h-screen overflow-x-clip">
 				<div className="pointer-events-none absolute inset-0 overflow-hidden">
 					<div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-blue-600/[.07] blur-3xl" />
 					<div className="absolute top-1/3 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-600/[.05] blur-3xl" />
 				</div>
 
-				<div className="relative p-6 md:p-8 text-[#eef2f8] max-w-6xl mx-auto">
-					<div className="mb-8 flex items-end justify-between flex-wrap gap-4">
+				<div className="relative p-4 md:p-8 text-[#eef2f8] max-w-6xl mx-auto min-w-0">
+					<div className="mb-6 md:mb-8 flex items-end justify-between flex-wrap gap-4">
 						<div>
 							<div className="flex items-center gap-2 mb-2"><div className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" /><span className="text-[11px] uppercase tracking-[0.2em] text-[#5d6877] font-medium">{t("performance")}</span></div>
-							<h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#eef2f8] to-[#8a95a8] bg-clip-text text-transparent">{t("title")}</h1>
+							<h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#eef2f8] to-[#8a95a8] bg-clip-text text-transparent">{t("title")}</h1>
 							<p className="text-sm text-[#5d6877] mt-1.5">{t("subtitle")}</p>
 						</div>
 					</div>
@@ -363,7 +361,7 @@ export default function HistoryPage() {
 					</div>
 
 					{/* PINNED CUMULATIVE PNL CHART */}
-					<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-5 mb-6">
+					<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-3 md:p-5 mb-6">
 						<div className="flex items-center justify-between mb-4">
 							<div className="flex items-center gap-2">
 								<TrendingUp className="w-4 h-4 text-blue-400" />
@@ -376,9 +374,9 @@ export default function HistoryPage() {
 						<CumulativeChart data={cumulativeData} />
 					</div>
 
-					<div className="flex items-center gap-1 mb-4 p-1 rounded-lg bg-[#0f131b] border border-white/[.07] w-fit">
+					<div className="flex items-center gap-1 mb-4 p-1 rounded-lg bg-[#0f131b] border border-white/[.07] w-full sm:w-fit overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 						{filters.map((f) => (
-							<button key={f.key} onClick={() => setFilter(f.key)} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${filter === f.key ? "bg-white/[.08] text-[#eef2f8] shadow-sm" : "text-[#5d6877] hover:text-[#eef2f8]"}`}>
+							<button key={f.key} onClick={() => setFilter(f.key)} className={`flex-1 sm:flex-none shrink-0 justify-center whitespace-nowrap px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${filter === f.key ? "bg-white/[.08] text-[#eef2f8] shadow-sm" : "text-[#5d6877] hover:text-[#eef2f8]"}`}>
 								{f.label}<span className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === f.key ? "bg-white/[.08]" : "bg-white/[.04]"}`}>{f.count}</span>
 							</button>
 						))}
@@ -401,17 +399,17 @@ export default function HistoryPage() {
 											onClick={() => handleMatchClick(match.id)}
 											className={`group relative rounded-[10px] border border-white/[.07] bg-[#0f131b] p-4 transition-all duration-200 hover:border-white/[.14] hover:-translate-y-[1px] cursor-pointer ${getResultGlow(match.result)} ${isExpanded ? 'rounded-b-none border-b-0' : ''}`}
 										>
-											<div className="flex items-center justify-between gap-4">
+											<div className="flex items-center justify-between gap-3 md:gap-4">
 												<div className="flex items-center gap-3 min-w-0">
 													<div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${getResultBadgeStyle(match.result)}`}>
 														{match.result === "WIN" ? <TrendingUp className="w-4 h-4" /> : match.result === "LOSS" ? <TrendingDown className="w-4 h-4" /> : <span>—</span>}
 													</div>
 													<div className="min-w-0">
-														<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent ?? tDetail("unknown")}</span></div>
-														<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877]"><span className="font-mono">{match.symbol}</span><span className="opacity-40">•</span><span>{getRelativeTime(match.starts_at, t)}</span></div>
+														<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent}</span></div>
+														<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877] min-w-0"><span className="font-mono shrink-0">{match.symbol}</span><span className="opacity-40 shrink-0">•</span><span className="truncate">{getRelativeTime(match.starts_at, t)}</span></div>
 													</div>
 												</div>
-												<div className="flex items-center gap-6">
+												<div className="flex items-center gap-2 md:gap-6 shrink-0">
 													<div className="hidden md:flex items-center gap-6">
 														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-sm font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-sm font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div><div className={`text-[10px] font-mono ${getResultColor(match.result)} opacity-70`}>{formatPct(match.realized_pnl, match.starting_capital)}</div></div>
@@ -420,7 +418,7 @@ export default function HistoryPage() {
 													{isExpanded ? <ChevronDown className="w-4 h-4 text-[#5d6877] transition-all shrink-0" /> : <ChevronRight className="w-4 h-4 text-[#5d6877] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />}
 												</div>
 											</div>
-											<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
+											<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04] [&>div]:min-w-0 [&_.text-xs]:truncate">
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-xs font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div></div>
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at, t)}</div></div>
@@ -429,7 +427,7 @@ export default function HistoryPage() {
 
 										{/* EXPANDED DETAILS & MATCH CHART DROPDOWN */}
 										{isExpanded && (
-											<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-5 animate-in slide-in-from-top-2 duration-200">
+											<div className="rounded-b-[10px] border border-white/[.07] border-t-0 bg-[#0f131b] p-3 md:p-5 animate-in slide-in-from-top-2 duration-200">
 												{loadingDetails ? (
 													<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>
 												) : detailsError || !matchDetails ? (
@@ -443,24 +441,24 @@ export default function HistoryPage() {
 												) : (
 													<div className="space-y-6">
 														{/* Player Breakdown */}
-														<div className="flex items-center justify-center gap-8">
+														<div className="flex items-start justify-center gap-4 md:gap-8 [&>div]:min-w-0 [&>div:nth-child(odd)]:flex-1">
 															<div className="text-right">
-																<div className="text-sm font-semibold">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
-																<div className={`text-xl font-bold font-mono ${pnlTone(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className="text-sm font-semibold break-words">{matchDetails.currentPlayer?.username ?? tDetail("unknown")} <span className="text-[9px] text-blue-400 border border-blue-400/30 rounded px-1 py-0.5 ml-1">{tDetail("you")}</span></div>
+																<div className={`text-lg md:text-xl font-bold font-mono ${pnlTone(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>${(matchDetails.currentPlayer?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
 																<div className={`text-xs font-mono ${pnlTone(matchDetails.currentPlayer?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.currentPlayer?.realized_pnl ?? 0)}</div>
 															</div>
 															<div className="flex flex-col items-center"><Swords className="w-5 h-5 text-[#5d6877]" /><span className="text-[10px] text-[#5d6877] mt-1">{t("vs")}</span></div>
 															<div className="text-left">
-																<div className="text-sm font-semibold">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
-																<div className={`text-xl font-bold font-mono ${pnlTone(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+																<div className="text-sm font-semibold break-words">{matchDetails.opponent?.username ?? tDetail("unknown")}</div>
+																<div className={`text-lg md:text-xl font-bold font-mono ${pnlTone(matchDetails.opponent?.realized_pnl ?? 0)}`}>${(matchDetails.opponent?.final_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
 																<div className={`text-xs font-mono ${pnlTone(matchDetails.opponent?.realized_pnl ?? 0)}`}>{formatMoney(matchDetails.opponent?.realized_pnl ?? 0)}</div>
 															</div>
 														</div>
 
 														{/* Metadata Cards */}
 														<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
-															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-[11px] md:text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-[11px] md:text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
 															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at, t)}</div></div>
 															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 														</div>
