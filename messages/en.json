@@ -42,7 +42,9 @@
     "profile": "Profile",
     "settings": "Settings",
     "howtoplay": "How To Play",
-    "logout": "Log out"
+    "logout": "Log out",
+	"privacy": "Privacy",
+	"terms": "Terms"
   },
   "Lobby": {
     "title": "Games",

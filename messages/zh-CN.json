@@ -42,7 +42,9 @@
     "profile": "个人资料",
     "settings": "设置",
     "howtoplay": "如何游玩",
-    "logout": "退出登录"
+    "logout": "退出登录",
+	"privacy": "隐私",
+	"terms": "条款"
   },
   "Lobby": {
     "title": "游戏",

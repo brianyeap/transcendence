@@ -42,7 +42,9 @@
     "profile": "Profil",
     "settings": "Tetapan",
     "howtoplay": "Cara Bermain",
-    "logout": "Log keluar"
+    "logout": "Log keluar",
+	"privacy": "Privasi",
+	"terms": "Terma"
   },
   "Lobby": {
     "title": "Permainan",
