@@ -1,103 +1,53 @@
+import { CandlestickSvg } from "./candlestick-svg";
+
+// --- Legend marker (plain HTML so it wraps on small screens) ---
+function LegendMarker({ long, mine }: { long: boolean; mine: boolean }) {
+	const fill = mine ? (long ? "#10b981" : "#ef4444") : "none";
+	const stroke = mine ? "#ffffff" : long ? "#34d399" : "#f87171";
+	const d = long ? "M 6 1 L 1 9 L 11 9 Z" : "M 6 11 L 1 3 L 11 3 Z";
+	return (
+		<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className="shrink-0">
+			<path d={d} fill={fill} stroke={stroke} strokeWidth={mine ? 1 : 1.5} />
+		</svg>
+	);
+}
+
 // --- Candlestick Chart Component ---
-export function CandlestickChart({ candles, trades, currentUserId, t }: any) {
+// Stays a plain (non-"use client") component so server pages can pass `t` in.
+// It translates everything here and hands only plain data to the client-side SVG.
+// `fill`: stretch to the height of the flex-column parent (used by the one-screen match page on mobile).
+export function CandlestickChart({ candles, trades, currentUserId, t, fill = false }: any) {
 	if (!candles || candles.length === 0) return null;
 
-	const sequences = candles.map((c: any) => c.sequence);
-	const minSequence = Math.min(...sequences, 0);
-	const maxSequence = Math.max(...sequences, 1);
-
-	const tradePrices = trades.map((tr: any) => tr.execution_price);
-	const allPrices = [...candles.map((c: any) => c.low), ...candles.map((c: any) => c.high), ...tradePrices];
-	const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-	const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
-
-	const priceRange = maxPrice - minPrice || 1;
-	const padPriceMin = minPrice - priceRange * 0.1;
-	const padPriceMax = maxPrice + priceRange * 0.1;
-	const paddedRange = padPriceMax - padPriceMin;
-
-	const svgWidth = 1000;
-	const svgHeight = 320;
-	const padLeft = 70, padRight = 30, padTop = 30, padBottom = 30;
-	const chartWidth = svgWidth - padLeft - padRight;
-	const chartHeight = svgHeight - padTop - padBottom;
-
-	const getX = (seq: number) => padLeft + ((seq - minSequence) / (maxSequence - minSequence || 1)) * chartWidth;
-	const getY = (price: number) => padTop + (1 - (price - padPriceMin) / paddedRange) * chartHeight;
-
-	const gridCount = 5;
-	const gridLines = Array.from({ length: gridCount }).map((_, i) => {
-		const price = padPriceMin + (i / (gridCount - 1)) * paddedRange;
-		return { price, y: getY(price) };
-	});
-
-	const candleWidth = Math.max(1.5, (chartWidth / (candles.length || 1)) * 0.6);
+	const chartTrades = (trades ?? []).map((trade: any) => ({
+		id: trade.id,
+		user_id: trade.user_id,
+		side: trade.side,
+		candle_sequence: trade.candle_sequence,
+		execution_price: trade.execution_price,
+		tooltip: t("tradeTooltip", {
+			username: trade.username,
+			side: trade.side === "long" ? t("long") : t("short"),
+			amount: trade.amount_usdt,
+			price: trade.execution_price,
+		}),
+	}));
 
 	return (
-		<div className="relative w-full overflow-x-auto">
-			<svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full min-w-[700px] h-80" preserveAspectRatio="none">
-				<g transform="translate(80, 15)">
-					<path d="M 0 -4 L -4 2 L 4 2 Z" fill="#10b981" stroke="#ffffff" strokeWidth="1" />
-					<text x="8" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youLong")}</text>
-					<path transform="translate(75, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="#ef4444" stroke="#ffffff" strokeWidth="1" />
-					<text x="83" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("youShort")}</text>
-					<path transform="translate(155, 0)" d="M 0 -4 L -4 2 L 4 2 Z" fill="none" stroke="#34d399" strokeWidth="1.5" />
-					<text x="163" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentLong")}</text>
-					<path transform="translate(255, 0)" d="M 0 4 L -4 -2 L 4 -2 Z" fill="none" stroke="#f87171" strokeWidth="1.5" />
-					<text x="263" y="1" fill="#9aa6b6" fontSize="10" fontFamily="sans-serif">{t("opponentShort")}</text>
-				</g>
+		<div className={fill ? "flex flex-col flex-1 min-h-0 w-full min-w-0 md:flex-none" : "w-full min-w-0"}>
+			<div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2 text-[10px] text-[#9aa6b6] shrink-0">
+				<span className="inline-flex items-center gap-1.5"><LegendMarker long mine />{t("youLong")}</span>
+				<span className="inline-flex items-center gap-1.5"><LegendMarker long={false} mine />{t("youShort")}</span>
+				<span className="inline-flex items-center gap-1.5"><LegendMarker long mine={false} />{t("opponentLong")}</span>
+				<span className="inline-flex items-center gap-1.5"><LegendMarker long={false} mine={false} />{t("opponentShort")}</span>
+			</div>
 
-				{gridLines.map((line, i) => (
-					<g key={i}>
-						<line x1={padLeft} y1={line.y} x2={svgWidth - padRight} y2={line.y} stroke="#ffffff" strokeOpacity="0.08" strokeDasharray="3 3" />
-						<text x={padLeft - 8} y={line.y + 4} fill="#5d6877" fontSize="10" fontFamily="monospace" textAnchor="end">
-							${line.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-						</text>
-					</g>
-				))}
-
-				{candles.map((c: any) => {
-					const cx = getX(c.sequence);
-					const cyOpen = getY(c.open), cyClose = getY(c.close), cyHigh = getY(c.high), cyLow = getY(c.low);
-					const isGreen = c.close >= c.open;
-					const color = isGreen ? "#10b981" : "#ef4444";
-					return (
-						<g key={c.sequence}>
-							<line x1={cx} y1={cyHigh} x2={cx} y2={cyLow} stroke={color} strokeWidth="1.5" />
-							<rect x={cx - candleWidth / 2} y={Math.min(cyOpen, cyClose)} width={candleWidth} height={Math.max(1.2, Math.abs(cyOpen - cyClose))} fill={color} />
-						</g>
-					);
-				})}
-
-				{trades.map((trade: any) => {
-					const tx = getX(trade.candle_sequence);
-					const ty = getY(trade.execution_price);
-					const isCurrentUser = trade.user_id === currentUserId;
-					const isLong = trade.side === "long";
-					let markerFill = "", markerStroke = "", markerStrokeWidth = "1.5";
-					let markerPath = isLong
-						? `M ${tx} ${ty - 7} L ${tx - 6} ${ty + 3} L ${tx + 6} ${ty + 3} Z`
-						: `M ${tx} ${ty + 7} L ${tx - 6} ${ty - 3} L ${tx + 6} ${ty - 3} Z`;
-
-					if (isCurrentUser) {
-						markerFill = isLong ? "#10b981" : "#ef4444";
-						markerStroke = "#ffffff";
-					} else {
-						markerFill = "none";
-						markerStroke = isLong ? "#34d399" : "#f87171";
-						markerStrokeWidth = "2";
-					}
-
-					return (
-						<g key={trade.id}>
-							<circle cx={tx} cy={ty} r="9" fill={isLong ? "#10b981" : "#ef4444"} fillOpacity="0.1" />
-							<path d={markerPath} fill={markerFill} stroke={markerStroke} strokeWidth={markerStrokeWidth}>
-								<title>{t("tradeTooltip", { username: trade.username, side: isLong ? t("long") : t("short"), amount: trade.amount_usdt, price: trade.execution_price })}</title>
-							</path>
-						</g>
-					);
-				})}
-			</svg>
+			<CandlestickSvg
+				candles={candles}
+				trades={chartTrades}
+				currentUserId={currentUserId}
+				className={fill ? "flex-1 min-h-[140px] md:flex-none md:h-[300px]" : undefined}
+			/>
 		</div>
 	);
 }
