@@ -15,9 +15,15 @@
     "emailPlaceholder": "you@example.com",
     "password": "Password",
     "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Enter your password again",
+    "passwordsDontMatch": "Passwords do not match.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "validEmail": "Enter a valid email address.",
     "usernameMinLength": "Pick a username with at least 3 characters.",
     "accountCreated": "Account created.",
+    "checkEmail": "Account created. Check your email to confirm it, then log in.",
     "somethingWentWrong": "Something went wrong.",
     "loading": "Loading...",
     "createAccount": "Create account",
@@ -30,7 +36,8 @@
     "continueWithGoogle": "Continue with Google",
     "alreadyHaveAccount": "Already have an account?",
     "newHere": "New here?",
-    "createAnAccount": "Create an account"
+    "createAnAccount": "Create an account",
+    "passwordRules": "At least 8 characters, with at least one letter and one number."
   },
   "SideNav": {
     "newMatch": "New Match",
@@ -43,8 +50,8 @@
     "settings": "Settings",
     "howtoplay": "How To Play",
     "logout": "Log out",
-    "privacy": "Privacy",
-    "terms": "Terms"
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "Lobby": {
     "title": "Games",
@@ -87,12 +94,13 @@
     "roomNamePlaceholder": "e.g. BTC Battle",
     "playWith": "Play with",
     "anyone": "Anyone",
+    "market": "Market",
+    "close": "Close",
     "matchLength": "Match length",
     "startingCapital": "Starting capital",
     "cancel": "Cancel",
     "creating": "Creating...",
     "create": "Create",
-    "close": "Close",
     "duration30s": "30s",
     "duration1min": "1 min",
     "duration1_5min": "1.5 min"
@@ -141,6 +149,7 @@
     "privacyPolicy": "Privacy Policy",
     "chooseImageFile": "Please choose an image file.",
     "uploading": "Uploading...",
+    "uploadingDone": "Successfully Saved!",
     "signInAgainUpload": "Please sign in again before uploading.",
     "uploadFailed": "Upload failed. Try again.",
     "profilePhotoUpdateFailed": "Could not update your profile photo.",
@@ -203,6 +212,8 @@
     "equilibriumCores": "Equilibrium Cores",
     "achievementsLabel": "Achievements",
     "unlocked": "Unlocked",
+    "unlockedShort": "✓",
+    "lockedShort": "🔒",
     "winsProgress": "{wins}/{requirement} wins",
     "unknownUser": "Unknown",
     "performanceStats": "Performance Stats",
@@ -338,7 +349,7 @@
     "lastUpdated": "Last updated: {date}",
     "intro": "Please read this before playing. The product is simple: virtual capital, no real money, and a few ground rules for fair play.",
     "section1Title": "1. What this is",
-    "section1": "DUEL is a two-player simulated BTC/USDT trading game. It uses virtual balances and market data to calculate simulated orders and results. You can't buy, sell, deposit, withdraw, or hold cryptocurrency or any real asset here. Virtual balances, rankings, and results have no cash value and can't be redeemed or transferred. Market data may come from historical candles, and may be delayed, incomplete, or different from a live trading venue.",
+    "section1": "This is a real-time, two-player trading simulation. You trade a simulated BTC/USDT, ETH/USDT or SOL/USDT market against another player using virtual capital only. No real money is used, deposited, withdrawn, or traded on this platform at any point. Nothing here is real financial trading, and nothing you do here has any monetary value outside the app.",
     "section2Title": "2. Eligibility and your account",
     "section2": "You must be at least 18 and able to legally agree to these terms where you live. Give accurate account information, keep your login secure, and tell us promptly if you think someone has accessed your account. You're responsible for activity under your account, except where the law says otherwise. Don't share, sell, or transfer your account.",
     "section3Title": "3. Acceptable use",
@@ -440,7 +451,7 @@
   },
   "HowToPlay": {
     "title": "How to play",
-    "intro": "Two players, one BTC/USDT chart, equal starting capital. Whoever finishes the match with more capital wins.",
+    "intro": "Two players, one chart (BTC, ETH or SOL against USDT), equal starting capital. The chart replays the last few hours of real 1-minute prices, sped up to one candle every half second. Whoever finishes the match with more capital wins.",
     "facts": {
       "players": "Players",
       "startingCapital": "Starting capital",
@@ -600,6 +611,7 @@
     "nothingMoves": "Nothing moves until the server confirms your Trade.",
     "enterAmount": "Enter an amount.",
     "amountGreaterThanZero": "Amount must be greater than zero.",
+    "amountBelowMinimum": "The smallest order is {amount}.",
     "amountExceedsLimit": "More than you can trade — at most {amount}."
   },
   "PositionPanel": {
@@ -660,7 +672,8 @@
         "detail": "You and {opponent} finished on exactly the same capital.",
         "footnote": "The match is over. No further trades can be placed."
       }
-    }
+    },
+    "opponent": "Opponent"
   },
   "MatchResult": {
     "finalResult": "Final result",
@@ -733,6 +746,8 @@
     "invalidRequest": "Invalid request.",
     "invalidCapital": "Invalid starting capital.",
     "invalidSymbol": "Invalid symbol.",
+    "invalidDuration": "Pick a match length from the list.",
+    "invalidRoomId": "That room link is not valid.",
     "loginRequired": "Please log in first.",
     "friendsOnly": "You can only invite your friends.",
     "alreadyInGameCreate": "You already have an active game. End or delete it before creating another.",
@@ -748,7 +763,9 @@
     "roomNotDeletable": "Room not found or you do not have permission to delete it.",
     "couldNotDelete": "Could not delete the room.",
     "couldNotJoin": "Could not join the room.",
-    "couldNotLoad": "Could not load rooms."
+    "couldNotLoad": "Could not load rooms.",
+    "roomNameTooLong": "Room name is too long (40 characters max).",
+    "roomNameInvalidChars": "Room name can only use letters, numbers, spaces and - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Failed to load security factors.",
@@ -811,7 +828,7 @@
   "AuthErrors": {
     "invalidCredentials": "Wrong email or password.",
     "emailTaken": "An account with this email already exists.",
-    "weakPassword": "Password is too weak. Use at least 6 characters.",
+    "weakPassword": "Password is too weak. Use 8 to 72 characters, with at least one letter and one number.",
     "emailNotConfirmed": "Please confirm your email before logging in.",
     "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
     "signupDisabled": "Sign-ups are currently disabled.",
@@ -844,11 +861,17 @@
     "matchNotActive": "Match is not active.",
     "invalidSide": "Side must be long or short.",
     "invalidAmount": "Amount must be a positive number.",
+    "amountTooSmall": "The smallest order is $1.",
+    "tooManyDecimals": "Use at most 2 decimal places.",
     "notInMatch": "You are not in this match.",
     "noPriceYet": "No price yet, try again in a moment.",
     "notEnoughBalance": "Not enough balance.",
     "matchIdRequired": "Match is missing.",
     "matchNotFound": "Match not found.",
     "unknown": "Something went wrong."
+  },
+  "AchievementToast": {
+    "unlocked": "Achievement unlocked: {name}!",
+    "seeProgress": "See your progress"
   }
 }

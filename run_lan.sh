@@ -6,31 +6,29 @@
 
 cd "$(dirname "$0")" # run from the repo root
 
-LOCAL_SOCKET=http://localhost:4000
-LOCAL_ORIGINS=http://localhost:3000,http://localhost:3003,http://localhost:3300
+LOCAL_ORIGINS=https://localhost:3000,https://localhost:3003,https://localhost:3300
 
-# Write a socket URL and allowed origins into .env.local, then restart
-# the containers so they read the new values.
+# Write the allowed origins into .env.local, then recreate the match engine
+# so it reads the new value (it only reads .env.local when it is created).
 # -i.bak creates a backup of the original file, which we delete after.
-use_urls() {
-  sed -i.bak \
-    -e "s|^NEXT_PUBLIC_SOCKET_URL=.*|NEXT_PUBLIC_SOCKET_URL=$1|" \
-    -e "s|^SOCKET_ALLOWED_ORIGINS=.*|SOCKET_ALLOWED_ORIGINS=$2|" \
-    .env.local
+use_origins() {
+  sed -i.bak -e "s|^SOCKET_ALLOWED_ORIGINS=.*|SOCKET_ALLOWED_ORIGINS=$1|" .env.local
   rm .env.local.bak
-  docker compose up -d --force-recreate --no-deps socket web
+  docker compose up -d --force-recreate --no-deps socket
 }
 
 # 0. Find this machine's IP on the local network.
 #    Linux: ask which source address would be used to reach the internet.
 #    macOS has no `ip` command, so find the network interface used for
 #    the internet (e.g. en0) and ask for its address instead.
+# checks if `ip` command exists, if not, use `route` and `ipconfig` to get the LAN IP address
 if command -v ip > /dev/null; then
   LAN_IP=$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
 else
   IFACE=$(route -n get 1.1.1.1 | awk '/interface:/ {print $2}')
   LAN_IP=$(ipconfig getifaddr "$IFACE")
 fi
+# check if zero length
 if [ -z "$LAN_IP" ]; then
   echo "Couldn't find your local IP. Are you connected to a network?"
   exit 1
@@ -45,17 +43,19 @@ fi
 docker compose up -d --build || exit 1
 
 # 2. When the script ends (Ctrl+C), switch back to localhost.
-trap 'use_urls $LOCAL_SOCKET $LOCAL_ORIGINS' EXIT
+trap 'use_origins $LOCAL_ORIGINS' EXIT
 
-# 3. Point the app at our LAN IP, so other machines' browsers
-#    connect to the match engine on this machine, not their own.
-use_urls "http://$LAN_IP:4000" "$LOCAL_ORIGINS,http://$LAN_IP:3000"
+# 3. Allow the LAN address too. The browser reaches the match engine through
+#    the same https address as the website, so nothing else has to change.
+use_origins "$LOCAL_ORIGINS,https://$LAN_IP:3000"
 
 # 4. Wait until the web app answers, so the link works when you share it.
 #    curl fails while the container is still starting, so keep retrying.
+#    -k: accept our self-signed certificate.
 echo "Waiting for the web app to start..."
-until curl -s -o /dev/null http://localhost:3000; do sleep 2; done
+until curl -sk -o /dev/null https://localhost:3000; do sleep 2; done
 
-echo "Both players open: http://$LAN_IP:3000"
+echo "Both players open: https://$LAN_IP:3000"
+echo "(Accept the browser's certificate warning once: the certificate is self-signed.)"
 # keep running until Ctrl+C
 while true; do sleep 1; done

@@ -1,0 +1,5 @@
+# Serve SOCKET_DOMAIN over HTTPS and pass everything (including
+# websockets) to the match engine container.
+{$SOCKET_DOMAIN} {
+	reverse_proxy socket:4000
+}

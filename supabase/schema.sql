@@ -1,7 +1,7 @@
 -- ============================================================================
 -- supabase/schema.sql: snapshot of the LIVE database (public schema only)
 -- ----------------------------------------------------------------------------
--- Made with pg_dump on 2026-09-28, after migrations 0000-0011 were applied.
+-- Made with pg_dump on 2026-09-28, after migrations 0000-0014 were applied.
 -- It is for reading, not for running: to build a database, run the files in
 -- supabase/migrations/ in order.
 --
@@ -9,7 +9,6 @@
 --   - the on_auth_user_created trigger (it lives on auth.users, see 0006)
 --   - the supabase_realtime publication, which includes public.matches (0011)
 -- ============================================================================
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -86,41 +85,125 @@ $$;
 
 
 --
+-- Name: enforce_one_open_match(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.enforce_one_open_match() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+    new_player uuid;
+begin
+    -- A finished match never blocks anything.
+    if new.status = 'completed' then
+        return new;
+    end if;
+
+    -- Which player is this write adding?
+    --   INSERT: the creator (player one).
+    --   UPDATE: player two, but only when it was just filled in (a join).
+    if tg_op = 'INSERT' then
+        new_player := new.player_one_user_id;
+    elsif new.player_two_user_id is distinct from old.player_two_user_id then
+        new_player := new.player_two_user_id;
+    end if;
+
+    if new_player is null then
+        return new;  -- nobody new in this match: nothing to check
+    end if;
+
+    -- 1. One request at a time per player. The lock is released by itself
+    --    when the transaction ends. hashtext() turns the text into the number
+    --    the lock function needs.
+    perform pg_advisory_xact_lock(hashtext('one_open_match:' || new_player::text));
+
+    -- 2 + 3. Already in another open match? Refuse.
+    if exists (
+        select 1
+        from public.matches m
+        where m.id <> new.id
+          and m.status <> 'completed'
+          and (m.player_one_user_id = new_player or m.player_two_user_id = new_player)
+    ) then
+        raise exception 'player % is already in an open match', new_player
+            using errcode = '23505';
+    end if;
+
+    return new;
+end;
+$$;
+
+
+--
 -- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_new_user() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$
+    AS $_$
 declare
-  default_username text;
+  typed_username text;  -- the name the player typed on the register page
+  clean_username text;  -- the name we will actually save
 begin
-  default_username := coalesce(
-    new.raw_user_meta_data->>'username',
-    new.raw_user_meta_data->>'name',
-    new.raw_user_meta_data->>'full_name',
-    split_part(new.email, '@', 1)
-  );
+  typed_username := btrim(new.raw_user_meta_data->>'username');
+
+  if typed_username is not null then
+    -- ---- 1. Email signup: the player chose a name, so it must be valid ----
+    if typed_username !~ '^[A-Za-z0-9_ -]{3,20}$' then
+      -- errcode 23514 = check_violation. Raising here cancels the insert into
+      -- auth.users, so the account is never created.
+      raise exception 'Invalid username: must be 3-20 characters of A-Z a-z 0-9 _ - or space'
+        using errcode = '23514';
+    end if;
+
+    clean_username := typed_username;
+  else
+    -- ---- 2. Google / no name: build a valid name ourselves ---------------
+    clean_username := coalesce(
+      new.raw_user_meta_data->>'name',
+      new.raw_user_meta_data->>'full_name',
+      split_part(new.email, '@', 1),
+      ''
+    );
+
+    -- Remove every character that is not allowed.
+    clean_username := regexp_replace(clean_username, '[^A-Za-z0-9_ -]', '', 'g');
+
+    -- Cut to 20 characters, then trim spaces from both ends (trimming after the
+    -- cut so the name cannot end with a space).
+    clean_username := btrim(left(btrim(clean_username), 20));
+
+    -- Too short after cleaning (e.g. a name written only in Chinese).
+    if length(clean_username) < 3 then
+      clean_username := 'player';
+    end if;
+
+    -- Name already used by someone else? Add part of the user id to make it
+    -- unique: 13 chars of name + "_" + 6 chars of id = 20 chars max.
+    if exists (
+      select 1 from public.profiles
+      where username = clean_username and id <> new.id
+    ) then
+      clean_username := rtrim(left(clean_username, 13))
+        || '_' || left(replace(new.id::text, '-', ''), 6);
+    end if;
+  end if;
 
   insert into public.profiles (id, username)
-  values (
-    new.id,
-    default_username
-  )
+  values (new.id, clean_username)
   on conflict (id) do update set
     username = coalesce(excluded.username, profiles.username);
 
+  -- Unchanged from before: every new user gets a presence row.
   insert into public.user_presence (user_id, last_seen_at)
-  values (
-    new.id,
-    now()
-  )
+  values (new.id, now())
   on conflict (user_id) do nothing;
 
   return new;
 end;
-$$;
+$_$;
 
 
 --
@@ -294,7 +377,7 @@ CREATE TABLE public.matches (
     player_one_user_id uuid NOT NULL,
     player_two_user_id uuid,
     status public.match_status NOT NULL,
-    symbol text DEFAULT 'BTCUSDT'::text NOT NULL,
+    symbol text DEFAULT 'BTC/USDT'::text NOT NULL,
     starting_capital numeric NOT NULL,
     countdown_starts_at timestamp with time zone,
     starts_at timestamp with time zone,
@@ -304,7 +387,11 @@ CREATE TABLE public.matches (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     duration_seconds integer,
     name text,
-    invited_user_id uuid
+    invited_user_id uuid,
+    CONSTRAINT matches_duration_seconds_check CHECK (((duration_seconds IS NULL) OR (duration_seconds = ANY (ARRAY[30, 60, 90])))),
+    CONSTRAINT matches_name_check CHECK (((name IS NULL) OR (((char_length(name) >= 1) AND (char_length(name) <= 40)) AND (name ~ '^[A-Za-z0-9 _''!?.-]+$'::text)))),
+    CONSTRAINT matches_starting_capital_check CHECK ((starting_capital = ANY (ARRAY[(5000)::numeric, (10000)::numeric, (20000)::numeric]))),
+    CONSTRAINT matches_symbol_check CHECK ((symbol = ANY (ARRAY['BTC/USDT'::text, 'ETH/USDT'::text, 'SOL/USDT'::text])))
 );
 
 
@@ -384,6 +471,14 @@ ALTER TABLE ONLY public.profiles
 
 
 --
+-- Name: profiles profiles_username_format_check; Type: CHECK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE public.profiles
+    ADD CONSTRAINT profiles_username_format_check CHECK ((username ~ '^[A-Za-z0-9_ -]{3,20}$'::text)) NOT VALID;
+
+
+--
 -- Name: profiles profiles_username_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -440,6 +535,13 @@ CREATE INDEX trades_match_idx ON public.trades USING btree (match_id);
 --
 
 CREATE INDEX trades_user_idx ON public.trades USING btree (user_id);
+
+
+--
+-- Name: matches one_open_match_per_player; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER one_open_match_per_player BEFORE INSERT OR UPDATE OF player_two_user_id ON public.matches FOR EACH ROW EXECUTE FUNCTION public.enforce_one_open_match();
 
 
 --

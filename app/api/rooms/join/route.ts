@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { MATCH_DURATION_SECONDS } from "@/lib/match/rules";
+import { MATCH_DURATION_SECONDS, isRoomId } from "@/lib/match/rules";
 
 const COUNTDOWN_SECONDS = 10;
 
@@ -27,6 +27,11 @@ export async function POST(request: Request) {
   }
 
   const roomId = body.roomId.trim();
+
+  // Not even shaped like a room id? Say so now (400), don't ask the database.
+  if (!isRoomId(roomId)) {
+    return Response.json({ error: t("invalidRoomId") }, { status: 400 });
+  }
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -109,6 +114,11 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (updateError) {
+    // 23505 = the database's "one open match per player" rule (migration 0014)
+    // said no: another request put this player in a match a moment ago.
+    if (updateError.code === "23505") {
+      return Response.json({ error: t("alreadyInGameJoin") }, { status: 409 });
+    }
     console.error("POST /api/rooms/join update failed:", updateError.message);
     return Response.json({ error: t("serverError") }, { status: 500 });
   }

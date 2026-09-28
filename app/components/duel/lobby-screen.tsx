@@ -23,6 +23,7 @@ type ActiveMatch = {
 };
 
 const PAGE_SIZE = 6;
+const AUTO_REFRESH_MS = 3000;
 
 export function LobbyScreen() {
   const router = useRouter();
@@ -60,7 +61,8 @@ export function LobbyScreen() {
 
   // ---- Data fetching -------------------------------------------------------
 
-  const loadPage = useCallback(async (targetPage: number, bustCache = false) => {
+  //  quiet means no spinner and no error toasts (used by the auto-refresh)
+  const loadPage = useCallback(async (targetPage: number, bustCache = false, quiet = false) => {
     // Serve from cache if available (and not busting).
     if (!bustCache && pageCacheRef.current[targetPage]) {
       // Invalidate any in-flight request so it can't overwrite this page.
@@ -77,12 +79,17 @@ export function LobbyScreen() {
     if (!bustCache && fetchingPageRef.current !== null) return;
 
     const requestId = ++requestIdRef.current;
-    fetchingPageRef.current = targetPage;
 
-    if (targetPage === 0 && !bustCache) {
-      setLoading(true);
-    } else {
-      setPageLoading(true);
+    // A quiet load doesn't block the page buttons: if you click one while it
+    // runs, your click wins and this response is dropped as stale.
+    if (!quiet) {
+      fetchingPageRef.current = targetPage;
+
+      if (targetPage === 0 && !bustCache) {
+        setLoading(true);
+      } else {
+        setPageLoading(true);
+      }
     }
 
     try {
@@ -95,7 +102,7 @@ export function LobbyScreen() {
       if (requestId !== requestIdRef.current) return; // stale response
 
       if (!response.ok) {
-        toast.error(result.error ?? tErrors("couldNotLoad"));
+        if (!quiet) toast.error(result.error ?? tErrors("couldNotLoad"));
         return;
       }
 
@@ -113,7 +120,7 @@ export function LobbyScreen() {
       setOpenRooms(result.rooms ?? []);
       setPage(targetPage);
     } catch {
-      if (requestId === requestIdRef.current) {
+      if (requestId === requestIdRef.current && !quiet) {
         toast.error(tErrors("couldNotLoad"));
       }
     } finally {
@@ -173,6 +180,25 @@ export function LobbyScreen() {
   useEffect(() => {
     loadPage(0);
   }, [loadPage]);
+
+  //  Auto-refresh: quietly re-fetch the page you're looking at every few
+  //  seconds (and when you come back to the tab) so new rooms just show up.
+  useEffect(() => {
+    function poll() {
+      if (document.visibilityState === "hidden") return;
+      if (fetchingPageRef.current !== null) return; // a normal load is running
+      pageCacheRef.current = {}; // the other cached pages may be out of date too
+      loadPage(page, true, true);
+    }
+
+    const timer = setInterval(poll, AUTO_REFRESH_MS);
+    document.addEventListener("visibilitychange", poll);
+
+    return () => {  // cleanup when the lobby is closed or the page changes
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", poll);
+    };
+  }, [loadPage, page]);
 
   // ---- Mutations -----------------------------------------------------------
 

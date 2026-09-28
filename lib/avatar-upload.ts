@@ -19,6 +19,12 @@
  * in sync with detectFormat() in app/api/profile/avatar/route.ts, which is the
  * real check.
  */
+/**
+ * Biggest avatar file we accept: 5 MB. The settings page checks it before
+ * uploading (quick message), and the API route checks it again (real check).
+ */
+export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+
 export const AVATAR_MIME_TYPES = [
 	"image/jpeg",
 	"image/png",

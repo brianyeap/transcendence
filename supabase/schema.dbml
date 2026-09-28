@@ -77,7 +77,7 @@ Table matches {
   id uuid [primary key, default: `gen_random_uuid()`]
   name text
   status match_status [not null]
-  symbol text [not null, default: 'BTCUSDT']
+  symbol text [not null, default: 'BTC/USDT', note: 'BTC/USDT, ETH/USDT or SOL/USDT']
   starting_capital numeric [not null]
   duration_seconds integer
   player_one_user_id uuid [not null, note: 'Who created the room']

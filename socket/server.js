@@ -11,16 +11,26 @@ const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
 const { gamesStarted, gamesCompleted, activeGames, matchesPlayed } = require("./metrics");
 
 // Settings
-const PORT = 4000;
+// Hosting services tell us which port to use via PORT so we can listen on the right one.
+// Locally and in Docker it isn't set, so we fall back to 4000.
+const PORT = process.env.PORT || 4000;
 const TICK_MS = 500;
+const MIN_TRADE_AMOUNT = 1;
 const ALLOWED_ORIGINS = (
-  process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000"
+  process.env.SOCKET_ALLOWED_ORIGINS ?? "https://localhost:3000"
 )
   .split(",")
   .map((origin) => origin.trim());
 
-const TICKER_URL = "https://api.exchange.coinbase.com/products/BTC-USD/ticker";
-const CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles";
+const COINBASE_URL = "https://api.exchange.coinbase.com/products";
+
+// The markets a room can pick (matches.symbol) and the Coinbase product
+// we fetch prices from for each one. Same list as lib/match/rules.ts.
+const COINBASE_PRODUCTS = {
+  "BTC/USDT": "BTC-USD",
+  "ETH/USDT": "ETH-USD",
+  "SOL/USDT": "SOL-USD",
+};
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -31,9 +41,14 @@ const liveMatches = new Map();
 
 // Helpers
 
-async function fetchBtcPrice() {
+// fall back to btc
+function coinbaseProduct(symbol) {
+  return COINBASE_PRODUCTS[symbol] ?? "BTC-USD";
+}
+
+async function fetchPrice(product) {
   try {
-    const res = await fetch(TICKER_URL);
+    const res = await fetch(`${COINBASE_URL}/${product}/ticker`);
     if (!res.ok) return null;
     const ticker = await res.json();
     return Number(ticker.price);
@@ -42,9 +57,9 @@ async function fetchBtcPrice() {
   }
 }
 
-async function fetchCandles(count) {
+async function fetchCandles(count, product) {
   try {
-    const res = await fetch(`${CANDLES_URL}?granularity=60`, { // 1 min candle
+    const res = await fetch(`${COINBASE_URL}/${product}/candles?granularity=60`, { // 1 min candle
       headers: { "User-Agent": "transcendence" },
     });
     if (!res.ok) return [];
@@ -207,7 +222,8 @@ async function startMatch(matchRow) {
     endsAt: Date.parse(matchRow.ends_at), // when the match ends (ms)
     started: false,
     ended: false,
-    latestPrice: null, // most recent BTC price
+    product: coinbaseProduct(matchRow.symbol), // which coin, e.g. "ETH-USD"
+    latestPrice: null, // most recent price
     sequence: 0, // how many price ticks we have sent
     candles: [], // the pre-fetched candles we replay during the match
     fallbackBaseTime: Math.floor(Date.now() / 1000), // fallback path if candles never load
@@ -221,7 +237,7 @@ async function startMatch(matchRow) {
   // so 120 one minute candles = 2 hours of  history
   const durationMs = match.endsAt - match.startsAt;
   const candlesNeeded = Math.ceil(durationMs / TICK_MS);
-  fetchCandles(candlesNeeded).then((candles) => {
+  fetchCandles(candlesNeeded, match.product).then((candles) => {
     match.candles = candles;
   });
 
@@ -267,7 +283,7 @@ async function onTick(match) {
 
     // Fallback: if the candles never loaded then live prices
     if (!candle && match.candles.length === 0) {
-      const livePrice = await fetchBtcPrice();
+      const livePrice = await fetchPrice(match.product);
       if (livePrice !== null) {
         candle = { open: livePrice, high: livePrice, low: livePrice, close: livePrice };
       }
@@ -459,10 +475,23 @@ io.use(async (socket, next) => {
   next();
 });
 
+// Prevent crashing the whole server because submitting one trade with socket.emit("trade:submit") with no data at all can crash the ntire the server
+function safeHandler(socket, eventName, handler) {
+  return async (payload) => {
+    try {
+      await handler(payload ?? {});
+    } catch (err) {
+      console.error(`${eventName} failed:`, err);
+      // `reason` is a translation key (see "TradeErrors" in messages/*.json).
+      socket.emit("error", { reason: "unknown" });
+    }
+  };
+}
+
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
 
-  socket.on("match:join", async ({ matchId }) => {
+  socket.on("match:join", safeHandler(socket, "match:join", async ({ matchId }) => {
     const userId = socket.data.userId;
 
     if (typeof matchId !== "string") {
@@ -474,7 +503,7 @@ io.on("connection", (socket) => {
     // Load the match and make sure this user is really one of its two players.
     const { data: matchRow } = await supabase
       .from("matches")
-      .select("id, player_one_user_id, player_two_user_id, status, starting_capital, starts_at, ends_at, winner_user_id, final_price")
+      .select("id, player_one_user_id, player_two_user_id, status, symbol, starting_capital, starts_at, ends_at, winner_user_id, final_price")
       .eq("id", matchId)
       .maybeSingle();
 
@@ -527,10 +556,10 @@ io.on("connection", (socket) => {
     sendPlayerState(socket, match, userId);
     // Give the newcomer both capitals straight away so the header isn't blank.
     broadcastCapitals(match);
-  });
+  }));
 
   // buy and sell orders
-  socket.on("trade:submit", async ({ matchId, side, amount }) => {
+  socket.on("trade:submit", safeHandler(socket, "trade:submit", async ({ matchId, side, amount }) => {
     // Same rule as match:join - the trader is whoever the token says they are.
     const userId = socket.data.userId;
     console.log("trade:submit from", userId, "->", side, amount, "in match", matchId);
@@ -556,9 +585,21 @@ io.on("connection", (socket) => {
       reject("invalidSide");
       return;
     }
-    const orderAmount = Number(amount);
-    if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+    // The amount must be a real number (not a string, not `true`)...
+    if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
       reject("invalidAmount");
+      return;
+    }
+    const orderAmount = amount;
+    // ...of at least MIN_TRADE_AMOUNT USDT (tiny orders round to a 0 position)...
+    if (orderAmount < MIN_TRADE_AMOUNT) {
+      reject("amountTooSmall");
+      return;
+    }
+    // ...with at most 2 decimals (whole cents). toFixed(2) rounds to cents,
+    // so if that changes the number, it had more than 2 decimals.
+    if (Number(orderAmount.toFixed(2)) !== orderAmount) {
+      reject("tooManyDecimals");
       return;
     }
 
@@ -605,9 +646,16 @@ io.on("connection", (socket) => {
     sendPlayerState(socket, match, userId);
     // The trade changed this player's capital — refresh it for both of them.
     broadcastCapitals(match);
-  });
+  }));
 
   socket.on("disconnect", () => console.log("client disconnected:", socket.id));
+});
+
+// Last safety net: a promise that fails with nobody catching it (e.g. a
+// database call deep inside a timer) is logged instead of stopping Node.
+// If the engine does still crash, docker-compose.yml restarts it.
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandled promise rejection:", reason);
 });
 
 server.listen(PORT, "0.0.0.0", () => {

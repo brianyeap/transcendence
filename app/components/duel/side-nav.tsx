@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Avatar } from "./avatar";
-import { navItems, legalLinks } from "./data";
+import { navItems } from "./data";
 import { Icon } from "./duel-icon";
 import { Logo } from "./logo";
 import { LogoutButton } from "../auth/logout-button";
@@ -92,21 +92,6 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 				{/* mt-auto pushes this block to the bottom of the menu */}
 				<div className="mt-auto">
-					<div className="mt-3 flex items-center gap-1.5 px-3 pb-1 text-[12px] text-dim">
-						{legalLinks.map((link, i) => (
-							<span key={link.href} className="flex items-center gap-1.5">
-								{i > 0 ? <span aria-hidden>·</span> : null}
-								<Link
-									href={link.href}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="transition-colors hover:text-dim hover:underline"
-								>
-									{t(link.key)}
-								</Link>
-							</span>
-						))}
-					</div>
 					<div className="my-3 h-px bg-line" />
 					<Link
 						href="/profile"
@@ -117,7 +102,15 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 					</Link>
 					<LogoutButton />
 
-					{/* Legal links: small and muted so they don't compete with the main nav */}
+					{/* Legal pages, reachable from every page that has the menu. */}
+					<div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-2 text-[11px] text-faint">
+						<Link href="/privacy-policy" className="hover:text-ink hover:underline">
+							{t("privacyPolicy")}
+						</Link>
+						<Link href="/terms-services" className="hover:text-ink hover:underline">
+							{t("termsOfService")}
+						</Link>
+					</div>
 				</div>
 			</aside>
 
@@ -131,17 +124,23 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 				On smaller screens, the sidebar is hidden and this
 				navigation bar appears fixed at the bottom. */}
 
-			<nav className="fixed inset-x-0 bottom-0 z-40 flex h-[62px] border-t border-white/[.07] bg-[#0f131b]/95 px-1.5 backdrop-blur lg:hidden">
+			{/* There are 7 items, which is too many for labels on a phone: they would
+				squeeze the icons. So the labels only appear from md upwards and below
+				that the bar is just icons, spaced evenly with a slight gap. */}
+			<nav className="fixed inset-x-0 bottom-0 z-40 flex h-[62px] justify-around gap-1 border-t border-white/[.07] bg-[#0f131b]/95 px-1.5 backdrop-blur md:gap-2 lg:hidden">
 				{navItems.map((item) => (
 					<Link
 						key={item.label}
 						href={item.page}
-						className={`flex flex-1 flex-col items-center justify-center gap-1 text-xs font-semibold ${
+						aria-label={t(item.label.toLowerCase())}
+						className={`flex flex-1 flex-col items-center justify-center gap-1 text-xs font-semibold md:flex-none md:px-2 ${
 							pathname === item.page ? "text-brand" : "text-dim"
 						}`}
 					>
 						<Icon name={item.icon} className="size-5" />
-						{t(item.label.toLowerCase())}
+						{/* Hidden on phones so the icons get the full width; from md up the
+						    label sits under the icon exactly as before. */}
+						<span className="hidden md:block">{t(item.label.toLowerCase())}</span>
 					</Link>
 				))}
 			</nav>

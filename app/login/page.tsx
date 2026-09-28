@@ -9,9 +9,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
 import { authErrorKey } from "@/lib/auth/auth-error-key";
 import { validateUsername, USERNAME_MAX_LENGTH } from "@/lib/validation/username";
+import { isValidPassword, PASSWORD_MAX_LENGTH } from "@/lib/validation/password";
 import { messageKeyFor } from "@/lib/i18n/error-codes";
 import Link from "next/link";
-import { Languages } from "lucide-react";
+import { Eye, EyeOff, Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 function LoginForm() {
@@ -20,6 +21,8 @@ function LoginForm() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Second copy of the password, only used when registering.
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,6 +69,18 @@ function LoginForm() {
       setError(tErrors(messageKeyFor(checked.code) ?? "generic"));
       return;
     }
+    // Password rules (8-72 characters, a letter and a number) live in
+    // lib/validation/password.ts. Supabase Auth checks them again on its side.
+    if (isRegister && !isValidPassword(password)) {
+      setError(tAuth("weakPassword"));
+      return;
+    }
+    // Both password boxes must match, so a typo can't lock the user out.
+    if (isRegister && password !== confirmPassword) {
+      setError(t("passwordsDontMatch"));
+      return;
+    }
+
     // Trimmed version of the name, so no leading/trailing spaces get saved.
     const cleanUsername = checked.ok ? checked.username : "";
 
@@ -87,10 +102,18 @@ function LoginForm() {
           return;
         }
 
-        if (data.user) {
-          await supabase
-            .from("profiles")
-            .upsert({ id: data.user.id, username: cleanUsername }, { onConflict: "id" });
+        // When email confirmation is on, Supabase does NOT return an error for
+        // an email that is already Instead it returns a fake user with no identities.
+        if (data.user && data.user.identities?.length === 0) {
+          setError(tAuth("emailTaken"));
+          return;
+        }
+
+        // No session means Supabase sent a confirmation email first.
+        if (!data.session) {
+          toast.success(t("checkEmail"));
+          setMode("login");
+          return;
         }
 
         toast.success(t("accountCreated"));
@@ -198,13 +221,31 @@ function LoginForm() {
             placeholder={t("emailPlaceholder")}
           />
 
-          <Field
+          <PasswordField
             label={t("password")}
-            type="password"
             value={password}
             onChange={setPassword}
             placeholder={t("passwordPlaceholder")}
+            showLabel={t("showPassword")}
+            hideLabel={t("hidePassword")}
           />
+
+          {/* Ask for the password twice when creating an account. */}
+          {isRegister && (
+            <PasswordField
+              label={t("confirmPassword")}
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder={t("confirmPasswordPlaceholder")}
+              showLabel={t("showPassword")}
+              hideLabel={t("hidePassword")}
+            />
+          )}
+
+          {/* Show the password rules while creating an account. */}
+          {isRegister && (
+            <p className="-mt-2 mb-4 text-xs text-muted">{t("passwordRules")}</p>
+          )}
 
           {error && (
             <p className="mb-4 rounded-md border border-loss px-3 py-2 text-sm text-loss">
@@ -317,6 +358,53 @@ function Field({
         suppressHydrationWarning
         className="h-12 w-full rounded-md border border-line bg-raised px-3 text-sm text-ink outline-none placeholder:text-faint focus:border-brand"
       />
+    </label>
+  );
+}
+// Password input with an eye button that toggles between hidden and visible.
+function PasswordField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  showLabel,
+  hideLabel,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  // Translated text for screen readers ("Show password" / "Hide password").
+  showLabel: string;
+  hideLabel: string;
+}) {
+  // Each field remembers on its own whether it is revealed.
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <label className="mb-4 block">
+      <span className="mb-2 block text-xs font-semibold text-muted">{label}</span>
+      <div className="relative">
+        <input
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          maxLength={PASSWORD_MAX_LENGTH}
+          suppressHydrationWarning
+          // pr-11 leaves room on the right for the eye button.
+          className="h-12 w-full rounded-md border border-line bg-raised pl-3 pr-11 text-sm text-ink outline-none placeholder:text-faint focus:border-brand"
+        />
+        {/* type="button" so clicking it doesn't submit the form. */}
+        <button
+          type="button"
+          onClick={() => setVisible(!visible)}
+          aria-label={visible ? hideLabel : showLabel}
+          className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center text-muted hover:text-ink"
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
     </label>
   );
 }

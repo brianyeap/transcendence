@@ -4,23 +4,26 @@
 
 ## Description
 
-**DUEL** is a head-to-head **simulated** Bitcoin trading game. Two players join the same match, watch the same live BTC-USD candle feed, and open long/short positions with virtual capital. The match creator picks the trading window (30, 60 or 90 seconds) and the starting capital (5K, 10K or 20K USDT). After a 10-second countdown and that trading window, the player who finishes with the most capital wins. No real money is involved.
+**DUEL** is a head-to-head **simulated** crypto trading game. Two players join the same match, watch the same price chart, and open long/short positions with virtual capital. The match creator picks the market (BTC, ETH or SOL against USDT), the trading window (30, 60 or 90 seconds) and the starting capital (5K, 10K or 20K USDT). After a 10-second countdown and that trading window, the player who finishes with the most capital wins. No real money is involved.
+
+**The prices are real but not live.** When a match starts, the match engine downloads the most recent 1-minute candles for that market from Coinbase and **replays them sped up**: one candle every 0.5 seconds. A 1-minute match therefore plays through the last 2 hours of real price movement in 60 seconds. Both players see exactly the same candles at the same moment.
 
 The goal of the project was to build a complete, multi-user, real-time web application: a frontend, a backend, a database, live gameplay between two remote players, and the account features around it (profiles, friends, stats and security).
 
 ### Key features
 
-- **Live 1v1 trading matches**: both players see the same real BTC candles, streamed by our own Socket.IO match engine
+- **Real-time 1v1 trading matches**: both players see the same replayed real-market candles (BTC, ETH or SOL), streamed by our own Socket.IO match engine
 - **Server-side trading**: every order is checked on the server, positions and PnL are tracked, and the match is settled fairly
-- **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left
-- **Game customization**: the match creator picks the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (1 min, 10K, public room).
+- **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left. The room list refreshes itself every 3 seconds, so new rooms appear and taken ones disappear without reloading.
+- **Game customization**: the match creator picks the market (BTC / ETH / SOL), the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (BTC, 1 min, 10K, public room).
 - **Accounts**: email/password sign-up, Google sign-in (OAuth 2.0) and TOTP two-factor authentication
-- **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements
+- **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements. Winning a match that unlocks an achievement shows a toast with a link to your progress.
 - **Friends**: find players by username and send them a request, accept requests, see which friends are online, and challenge a friend to a private match
 - **Leaderboard and match history**, with a detailed page for each past match
 - **3 languages**: English, Bahasa Melayu and Simplified Chinese
 - **Monitoring**: OpenTelemetry → Prometheus → Grafana, with dashboards and email alerts
-- **Privacy Policy, Terms of Service and a How-to-Play page**
+- **Privacy Policy, Terms of Service and a How-to-Play page**, linked from the side menu on every page
+- **HTTPS everywhere**: the browser only talks to an nginx proxy over HTTPS, which forwards to the web app and the match engine inside Docker
 
 ## Team Information
 
@@ -53,7 +56,8 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Backend (realtime) | **Node.js 22** + **Socket.IO 4** (`socket/`) | A match is a long-running process with state in memory (candles, positions, timers). Socket.IO handles rooms, broadcasting and reconnecting. |
 | Database | **Supabase (PostgreSQL)** | A real relational database with foreign keys, enums and Row Level Security. It also comes with Auth (email/password, OAuth, MFA) and Storage (avatars), so we didn't have to build those ourselves. |
 | Auth | **Supabase Auth** | Salted, hashed passwords, Google OAuth and TOTP 2FA out of the box |
-| Market data | **Coinbase Exchange API** (BTC-USD candles) | Free, public, real price data with no API key needed |
+| Market data | **Coinbase Exchange API** (BTC-USD, ETH-USD, SOL-USD 1-minute candles) | Free, public, real price data with no API key needed |
+| HTTPS | **nginx** reverse proxy with a self-signed certificate (`docker/nginx/`) | One HTTPS entry point for the web app and the match engine, so every browser connection is encrypted |
 | i18n | **next-intl** | Works with Next.js server and client components |
 | Monitoring | **OpenTelemetry**, **Prometheus**, **Grafana** | OTel is the standard way to export metrics. Prometheus stores them, and Grafana shows dashboards and sends alerts. |
 | Containers | **Docker** + **Docker Compose** | The whole stack starts with one command |
@@ -64,12 +68,48 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Part | Where | What it does |
 | --- | --- | --- |
 | Web app | `app/`, `lib/` | Next.js (App Router) UI: login, lobby, match screen, profile, friends, leaderboard, history, settings |
-| Match engine | `socket/` | Node + Socket.IO server on port `4000`. Runs live matches, fetches Coinbase BTC-USD candles, validates trades, saves results |
+| HTTPS proxy | `docker/nginx/` | nginx on `https://localhost:3000`. Sends `/socket.io/` to the match engine and everything else to the web app. Plain `http://` is redirected to `https://`. |
+| Match engine | `socket/` | Node + Socket.IO server on port `4000` (inside Docker only). Runs matches, downloads the room's Coinbase candles and replays them, validates trades, saves results |
 | Database / auth | `supabase/` | Supabase Postgres, Auth (email/password, Google OAuth, TOTP 2FA) and Storage (avatars) |
 | Monitoring | `monitoring/` | OpenTelemetry collector → Prometheus → Grafana |
 | Translations | `messages/` | `en`, `ms`, `zh-CN` via `next-intl` |
 
 More detail, with diagrams: [How DUEL works](docs/architecture.md).
+
+### How HTTPS works
+
+The browser only talks to nginx, always over HTTPS. nginx decrypts each request, looks at its path, and passes it on to the right server inside Docker, where plain HTTP is fine because that traffic never leaves the machine. The `web` and `socket` containers have no public ports, so nginx is the only way in.
+
+```mermaid
+flowchart LR
+    B["Browser<br/>https://localhost:3000"] -- "1. HTTPS 🔒" --> N["nginx (proxy)<br/>2. decrypt with key.pem<br/>3. check the path"]
+    N -- "/socket.io/...<br/>plain HTTP" --> K["Match engine<br/>socket:4000"]
+    N -- "everything else<br/>plain HTTP" --> W["Next.js<br/>web:3000"]
+    W -. "4. response" .-> N
+    K -. "4. response" .-> N
+    N -. "5. encrypt, send back 🔒" .-> B
+```
+
+Websockets (live matches) take the same path. They start as a normal HTTPS request that asks to "Upgrade". nginx passes the `Upgrade` and `Connection` headers on to the match engine, and after that the connection stays open for messages in both directions. The browser side is `wss://` (encrypted). The nginx-to-engine side is `ws://` (plain, inside Docker).
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant N as nginx
+    participant K as socket:4000
+
+    B->>N: 🔒 GET /socket.io/ (Upgrade: websocket)
+    N->>K: GET /socket.io/ (Upgrade: websocket)
+    K-->>N: 101 Switching Protocols
+    N-->>B: 🔒 101 Switching Protocols
+    Note over B,K: Connection stays open
+    B->>N: 🔒 trade
+    N->>K: trade
+    K-->>N: game state
+    N-->>B: 🔒 game state
+```
+
+The browser finds the match engine on its own: `NEXT_PUBLIC_SOCKET_URL` is left empty, so Socket.IO connects to the same address as the page. Because that address is `https://`, the socket uses `wss://`, and the browser never has to open an unencrypted connection.
 
 ## Database Schema
 
@@ -104,7 +144,7 @@ erDiagram
     MATCHES {
         uuid id PK
         match_status status "waiting / countdown / active / completed"
-        text symbol
+        text symbol "BTC/USDT, ETH/USDT or SOL/USDT"
         numeric starting_capital
         int duration_seconds "30 / 60 / 90"
         uuid player_one_user_id FK
@@ -168,11 +208,12 @@ Row Level Security is on for every table. Players can only change their own data
 | Match engine (sockets) | Socket.IO server: rooms, candle streaming, order validation, PnL, settlement, stale-match cleanup, rejoin | Brian |
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
-| Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
-| Game customization (server side) | `/api/rooms` checks the chosen length and capital against `lib/match/rules.ts` and saves them on the match. The match engine then runs the match for that length with that capital. | Brian |
+| Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
+| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match.
+| HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
-| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
+| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges. A toast announces a newly unlocked one at the end of a match, with a link to your progress. | Zep, Raja |
 | Match history | A list of past matches and a detail page for each one | Raja |
 | Settings | Username, avatar upload (through a secure server route), 2FA settings | Raja |
 | Shared components | Most of the reusable UI components | Raja |
@@ -213,10 +254,10 @@ Row Level Security is on for every table. Players can only change their own data
 5. **Standard user management.** Players can edit their profile and upload an avatar (with a default if they don't), add friends by username and see their online status (`ping_online()` updates `user_presence.last_seen_at`), and view a profile page with their stats.
 6. **Prometheus and Grafana.** The web app and the socket server export metrics through OpenTelemetry to an OTel collector. Prometheus scrapes them and has alerting rules. Grafana has our custom dashboards and sends alerts by email, and it's protected by an admin login over HTTPS. Everything is set up in `monitoring/`.
 7. **Module of choice: real-market trading engine (Major).**
-   - *Why we chose it:* the whole game depends on it. It isn't covered by any listed module, because the "web-based game" module covers rules and win/loss, not a trading simulator running on live market data.
+   - *Why we chose it:* the whole game depends on it. It isn't covered by any listed module, because the "web-based game" module covers rules and win/loss, not a trading simulator running on real market data.
    - *Technical challenges:*
-     - fetching and normalising real Coinbase BTC-USD candles
-     - streaming them in sync to both players
+     - fetching and normalising real Coinbase 1-minute candles for the room's market (BTC-USD, ETH-USD or SOL-USD)
+     - replaying them sped up (one candle every 0.5 s, so a 1-minute match covers the last 2 hours of real prices) and streaming them in sync to both players
      - checking long/short orders on the server
      - tracking net positions, average entry price, and realised and unrealised PnL
      - settling the match at the final price
@@ -226,19 +267,20 @@ Row Level Security is on for every table. Players can only change their own data
    - *Why Major:* it's a complete server-side subsystem with its own state machine, maths (`socket/engine-math.js`) and persistence. It's about as much work as any other Major module.
 8. **OAuth 2.0.** "Sign in with Google" through Supabase Auth. The redirect URL is set up in the Google Cloud project, and a database trigger creates the profile row for new Google users.
 9. **2FA.** TOTP (authenticator app) through Supabase MFA. Players enrol from Settings, and have to pass `/auth/verify-mfa` when they log in.
-10. **Multiple languages.** `next-intl` with `messages/en.json`, `ms.json` and `zh-CN.json`, plus a language switcher in the UI. All the text players see comes from the message files.
+10. **Multiple languages.** `next-intl` with `messages/en.json`, `ms.json` and `zh-CN.json`, plus a language switcher in the UI. All the text players see comes from the message files. `npm run check:locales` (also run before every build) fails if `ms.json` or `zh-CN.json` is missing a key from `en.json`, has a leftover key, or uses different `{placeholders}`.
 11. **Game statistics and match history.** Wins, losses, draws and win rate on the profile. A history list with a detail page for each match (trades and chart). A global leaderboard.
 12. **SSR.** Most pages (home, lobby, leaderboard, profile, match and match detail) are React Server Components rendered on the server, and they load their data there before sending the HTML.
-13. **File upload.** Avatars are checked on both sides: the client checks the file type, and the server caps the size and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
-14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile.
+13. **File upload.** Avatars are checked on both sides: the client checks the file type and the 5 MB size limit, and the server checks the size again and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
+14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile (each locked achievement shows how many wins are left). When a win unlocks an achievement, a toast pops up at the end of the match with a "See your progress" link to the profile.
 15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
 16. **Game customization.** When creating a match, the creator chooses:
+    - **Market:** Bitcoin, Ethereum or Solana (against USDT). Each one moves differently (SOL is usually the most volatile), so the same strategy doesn't always work.
     - **Match length:** 30 seconds, 1 minute or 1.5 minutes. A short match rewards quick decisions, and a longer one gives the price more time to move.
     - **Starting capital:** 5K, 10K or 20K USDT. Both players always start with the same amount, so the match stays fair.
     - **Who can join:** anyone in the lobby, or one chosen friend (a private room only that friend can see).
-    - **Room name:** optional. If left blank, the room is called "&lt;creator&gt;'s Room".
+    - **Room name:** optional, at most 40 characters: letters, numbers, spaces and `- _ ' ! ? .` If left blank, the room is called "&lt;creator&gt;'s Room". The form, `/api/rooms` and a database CHECK all enforce these rules.
 
-    **Default game:** the modal starts on 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects any capital that isn't in the allowed list, and falls back to the 1-minute default if the length isn't one of the lengths in `lib/match/rules.ts`. They're saved on the `matches` row (`duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values.
+    **Default game:** the modal starts on BTC, 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects (400) any room name, market, capital or length that breaks the rules in `lib/match/rules.ts`; only a length that isn't sent at all gets the 1-minute default. They're saved on the `matches` row (`symbol`, `duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values.
 
 ## Individual Contributions
 
@@ -287,7 +329,7 @@ Row Level Security is on for every table. Players can only change their own data
 
 ## Instructions
 
-The whole stack runs with Docker Compose. There's no need to run `npm run dev` yourself: the `web` container runs it for you.
+The whole stack runs with Docker Compose. The `web` image is a **production build**: `docker compose up --build` runs `next build` once while it builds the image, and the container then only runs `next start`. Pages are already compiled, so they load fast and nothing is rebuilt while you use the app.
 
 ### Prerequisites
 
@@ -314,8 +356,8 @@ Fill in `.env.local`:
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same page. Only the socket server uses it, and it must never reach the browser. |
 | `SUPABASE_DB_PASSWORD` | Supabase → Project Settings → Database |
-| `NEXT_PUBLIC_SOCKET_URL` | `http://localhost:4000` locally |
-| `SOCKET_ALLOWED_ORIGINS` | The web app origins the match engine accepts |
+| `NEXT_PUBLIC_SOCKET_URL` | **Leave empty.** The browser then reaches the match engine through the same HTTPS address as the website (the proxy forwards `/socket.io/`). Only set it if the engine runs somewhere else. |
+| `SOCKET_ALLOWED_ORIGINS` | The web app origins the match engine accepts, e.g. `https://localhost:3000` |
 
 The socket container reads `.env.local` directly, so the stack won't start without it.
 
@@ -330,9 +372,13 @@ Fill in `monitoring/.env`:
 
 Both files are git-ignored.
 
-### 2. Set up the database
+### 2. Set up Supabase
 
 Run the SQL files in `supabase/migrations/` **in order** in the Supabase SQL editor.
+
+Then, in the Supabase dashboard:
+
+- **Password rules** (the server-side half of the sign-up check in `lib/validation/password.ts`): Authentication → Sign In / Providers → Email → *Minimum password length* `8`, *Password requirements* "Letters and digits".
 
 ### 3. Start the stack
 
@@ -342,19 +388,25 @@ docker compose up --build
 
 | Service | URL |
 | --- | --- |
-| Web app | http://localhost:3000 |
-| Match engine (Socket.IO) | http://localhost:4000 |
+| Web app | **https://localhost:3000** (self-signed certificate: accept the browser warning once) |
+| Match engine (Socket.IO) | Same address, path `/socket.io/` (the proxy forwards it; port `4000` is only open inside Docker) |
 | Grafana | https://localhost:3001 (self-signed certificate, so accept the browser warning) |
-| Prometheus | http://localhost:9090 |
-| OTel collector | `4318` (HTTP), `8889` (Prometheus metrics) |
 
-The `web` container reinstalls npm dependencies when `node_modules` is missing or older than `package.json` / `package-lock.json`. All services share the `transcendence_dev` network, so they reach each other by service name (e.g. `otel-collector:4318`).
+Only two things are reachable from the browser, and both use HTTPS: the `proxy` container (nginx) for the app, and Grafana. nginx serves everything over HTTPS with a self-signed certificate made when its image is built, and redirects `http://localhost:3000` to `https://`. The `web`, `socket`, `prometheus` and `otel-collector` containers have **no public ports**: they only talk to each other inside Docker, over the `transcendence_dev` network, by service name (e.g. `otel-collector:4318`, `prometheus:9090`). To look at the metrics, use Grafana (it reads Prometheus for you).
 
-The match engine **does not hot reload**. After editing `socket/server.js`, restart it:
+`proxy`, `web` and `socket` have `restart: unless-stopped`, so if one of them ever crashes, Docker starts it again by itself.
+
+Neither the web app nor the match engine hot reloads: their code is copied into their images. After changing code, rebuild the one you changed:
 
 ```bash
-docker compose restart socket
+docker compose up -d --build web
 ```
+
+```bash
+docker compose up -d --build socket
+```
+
+For day-to-day coding with hot reload, run `npm run dev` outside Docker instead.
 
 ### Using a different web port
 
@@ -369,16 +421,16 @@ WEB_PORT=3003 docker compose up --build
 This is the default setup. In `.env.local`:
 
 ```
-NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
-SOCKET_ALLOWED_ORIGINS=http://localhost:3000
+NEXT_PUBLIC_SOCKET_URL=
+SOCKET_ALLOWED_ORIGINS=https://localhost:3000
 ```
 
-Open http://localhost:3000 in two browser windows (one of them incognito) and sign in as two different players.
+Open https://localhost:3000 in two browser windows (one of them incognito), accept the certificate warning, and sign in as two different players.
 
-If you change `.env.local` while the stack is running, **recreate** the containers. A plain `restart` doesn't work here: the socket container only reads `.env.local` when it's created, and the web app only reads `NEXT_PUBLIC_*` values when it starts.
+If you change `.env.local` while the stack is running, **rebuild and recreate** the containers. A plain `restart` doesn't work here: the containers only read `.env.local` when they're created, and the `NEXT_PUBLIC_*` values are written into the web app's browser code when its image is built.
 
 ```bash
-docker compose up -d --force-recreate --no-deps socket web
+docker compose up -d --build --force-recreate --no-deps socket web
 ```
 
 ### Playing across two computers (ngrok)
@@ -401,20 +453,20 @@ Open Docker Desktop, then run the tunnel script. It starts the Docker stack for 
 The script:
 
 1. Builds and starts the whole stack in the background (`docker compose up -d --build`).
-2. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml) (web, socket, and Grafana).
-3. Writes the new URLs into `.env.local` (`NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS`). This happens every run because free-tier URLs change each time ngrok restarts.
-4. Recreates the `socket` and `web` containers so they pick up the new values.
+2. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml): the web app (which also carries the match engine, through the proxy) and Grafana.
+3. Adds the tunnel URL to `SOCKET_ALLOWED_ORIGINS` in `.env.local`. This happens every run because free-tier URLs change each time ngrok restarts.
+4. Recreates the `socket` container so it picks up the new value.
 5. Waits for the web app to respond, then prints the web URL. **Both players open that URL.**
 
-Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the containers again. The stack keeps running afterwards; stop it with `docker compose down`.
+Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the `socket` container again. The stack keeps running afterwards; stop it with `docker compose down`.
 
 Things already set up in the code for ngrok:
 
-- `next.config.ts` has `allowedDevOrigins` for `*.ngrok-free.app` and `*.ngrok-free.dev`, so the dev server accepts requests from the tunnel.
+- `next.config.ts` has `allowedDevOrigins` for `*.ngrok-free.app` and `*.ngrok-free.dev`. This only matters if you run `npm run dev` instead of Docker: the dev server would otherwise refuse requests from the tunnel.
 - The socket client uses `transports: ["websocket"]` (`lib/match/socket-transport.ts`). ngrok's free tier answers normal browser HTTP requests with a warning page, which breaks Socket.IO's polling handshake. WebSocket connections aren't affected.
 - The OAuth callback (`app/auth/callback/route.ts`) builds its redirect from the `x-forwarded-host` / `x-forwarded-proto` headers, so you land back on the tunnel URL after login.
 
-**If a match never connects or hangs in the countdown**, check that `.env.local` has the *current* tunnel URLs (the script prints them), and that no other ngrok agent is already running. The free tier allows only one at a time.
+**If a match never connects or hangs in the countdown**, check that no other ngrok agent is already running. The free tier allows only one at a time.
 
 ### Playing on the same network (LAN)
 
@@ -424,9 +476,9 @@ If both computers are on the same network (e.g. the 42 cluster), you don't need 
 ./run_lan.sh
 ```
 
-The script finds this machine's local IP (`ip route` on Linux, `ipconfig getifaddr` on macOS), points `NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS` at it, recreates the containers, and prints the URL. **Both players open that URL**, including the host. Press **Ctrl+C** to switch `.env.local` back to localhost.
+The script finds this machine's local IP (`ip route` on Linux, `ipconfig getifaddr` on macOS), adds `https://<your-ip>:3000` to `SOCKET_ALLOWED_ORIGINS`, recreates the `socket` container, and prints the URL. **Both players open that URL**, including the host, and accept the certificate warning once. Press **Ctrl+C** to switch `.env.local` back to localhost.
 
-`next.config.ts` allows private IP ranges (`10.*`, `172.*`, `192.168.*`) in `allowedDevOrigins`; without that, the dev server blocks its own JS and login does nothing. For Google login, add `http://<your-ip>:3000/**` to the Supabase redirect URLs. If the other computer can't connect at all, check the host's firewall.
+`next.config.ts` allows private IP ranges (`10.*`, `172.*`, `192.168.*`) in `allowedDevOrigins`. That only matters for `npm run dev` (the dev server blocks its own JS for other addresses and login does nothing); the Docker production build doesn't need it. For Google login, add `https://<your-ip>:3000/**` to the Supabase redirect URLs. If the other computer can't connect at all, check the host's firewall.
 
 ### Stop the stack
 
@@ -438,11 +490,23 @@ docker compose down
 
 The Next.js web app is deployed on **Vercel**. Vercel can't host the match engine, because it's a long-running process that keeps live matches in memory. To make matches playable fully online, deploy `socket/` to a VPS and point `NEXT_PUBLIC_SOCKET_URL` at it. That server's `SOCKET_ALLOWED_ORIGINS` must include the Vercel domain.
 
+`deploy/socket/` runs just the match engine on a cloud server (we use AWS Lightsail), behind Caddy for automatic HTTPS. Full walkthrough: [docs/deploy-socket-aws.md](docs/deploy-socket-aws.md). On the server:
+
+```bash
+git clone https://github.com/brianyeap/transcendence.git
+cd transcendence/deploy/socket
+cp .env.example .env   # fill in SOCKET_DOMAIN, Supabase values, Vercel origin
+docker compose up -d --build
+```
+
+To ship a new version later: `git pull && docker compose up -d --build` (this restarts the engine, so running matches end).
+
 ## Known Limitations
 
 - Live match state lives in the socket server's memory. If the engine restarts, running matches are lost (stale ones are closed by `closeStaleMatches`).
-- Only BTC-USD is supported.
+- Prices are **replayed, not live**: each match replays the most recent real 1-minute candles, sped up to one every 0.5 s. Three markets are supported: BTC, ETH and SOL (against USDT).
 - Market data depends on Coinbase's public API being reachable.
+- The HTTPS certificate is self-signed (made by `docker/nginx/Dockerfile`), so each browser shows a warning once before the app loads. The built-in browsers of some tools refuse self-signed certificates entirely.
 - **Browsers:** tested on the latest Chrome, Edge and Brave. Each browser shows its own warning page for Grafana's self-signed certificate, and you have to accept it once per browser before the dashboards load.
 
 ## Resources

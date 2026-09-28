@@ -27,7 +27,7 @@ function round2(n) {
 //
 //   side   : 'long' or 'short'  (the direction the player is ordering)
 //   amount : USDT size of the order
-//   price  : the current BTC price the order fills at
+//   price  : the current price the order fills at
 //
 // Rules:
 //   * Same direction     -> add to the position.

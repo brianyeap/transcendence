@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { SideNav } from "../components/duel/side-nav";
 import { LogoutButton } from "../components/auth/logout-button";
 import { Avatar } from "../components/duel/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { resizeImage, AVATAR_MIME_TYPES } from "@/lib/avatar-upload";
+import { resizeImage, AVATAR_MIME_TYPES, AVATAR_MAX_BYTES } from "@/lib/avatar-upload";
 import { messageKeyFor } from "@/lib/i18n/error-codes";
 import {
   USERNAME_MIN_LENGTH,
@@ -136,6 +137,13 @@ export default function SettingsPage() {
       return;
     }
 
+    // Too big? Say so now instead of uploading it first.
+    // The server checks the same 5 MB limit again.
+    if (file.size > AVATAR_MAX_BYTES) {
+      setStatusMessage(tErrors("fileTooLarge"));
+      return;
+    }
+
     setStatusMessage("");
 
     // Preview only. This blob is never uploaded — the ORIGINAL file is sent
@@ -152,16 +160,24 @@ export default function SettingsPage() {
   // The browser no longer talks to Storage and no longer writes avatar_url.
   // It posts the original file to our own route, which validates it and
   // returns the URL it derived itself.
+  //
+  // toast.promise reports the three states. The rejection carries the
+  // TRANSLATED message (not the raw server code), so the `error` callback can
+  // surface it unchanged and we keep the i18n mapping we already had.
   async function handleConfirmUpload() {
     if (!pendingFile) return;
 
+    // Captured here, not read inside the promise: by the time the request
+    // settles this state may already be cleared, and `pendingFile` is what we
+    // are actually uploading.
+    const file = pendingFile;
+
     setUploading(true);
     setUploadError(null);
-    setStatusMessage(t("uploading"));
 
-    try {
+    const upload = async () => {
       const formData = new FormData();
-      formData.append("file", pendingFile);
+      formData.append("file", file);
 
       const response = await fetch("/api/profile/avatar", {
         method: "POST",
@@ -172,19 +188,28 @@ export default function SettingsPage() {
 
       if (!response.ok) {
         const key = messageKeyFor(payload?.code);
-        setUploadError(key ? tErrors(key) : t("uploadFailed"));
-        setStatusMessage("");
-        return;
+        throw new Error(key ? tErrors(key) : t("uploadFailed"));
       }
 
       setAvatarUrl(payload?.avatarUrl ?? null);
       setPreviewUrl(null);
       setPendingFile(null);
       setUploadError(null);
-      setStatusMessage("");
+
+      return t("uploadingDone");
+    };
+
+    try {
+      await toast.promise(upload(), {
+        loading: t("saving"),
+        success: (message) => message,
+        error: (err) =>
+          err instanceof Error ? err.message : t("uploadFailed"),
+      });
     } catch {
+      // toast.promise re-throws the rejection so we can also keep the inline
+      // error text that already renders under the avatar row.
       setUploadError(t("uploadFailed"));
-      setStatusMessage("");
     } finally {
       setUploading(false);
     }
@@ -366,8 +391,33 @@ export default function SettingsPage() {
                   <button
                     onClick={handleConfirmUpload}
                     disabled={uploading}
-                    className="text-xs font-semibold px-3 py-2 rounded-[7px] bg-[#4d86ff] text-white hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-[7px] bg-[#4d86ff] text-white hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
+                    {/* Indeterminate spinner: an SVG ring that spins. We use
+                        fetch(), which gives no upload progress events, so a
+                        filling bar here would be a lie — this just says "busy". */}
+                    {uploading && (
+                      <svg
+                        className="h-3.5 w-3.5 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-90"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                    )}
                     {uploading ? t("saving") : t("confirm")}
                   </button>
                 </div>

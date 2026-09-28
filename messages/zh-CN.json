@@ -15,9 +15,15 @@
     "emailPlaceholder": "you@example.com",
     "password": "密码",
     "passwordPlaceholder": "请输入您的密码",
+    "confirmPassword": "确认密码",
+    "confirmPasswordPlaceholder": "请再次输入您的密码",
+    "passwordsDontMatch": "两次输入的密码不一致。",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
     "validEmail": "请输入有效的电子邮箱地址。",
     "usernameMinLength": "用户名至少需要 3 个字符。",
     "accountCreated": "账户创建成功。",
+    "checkEmail": "账户创建成功。请查收邮件完成验证，然后登录。",
     "somethingWentWrong": "出现了一些问题。",
     "loading": "正在加载...",
     "createAccount": "创建账户",
@@ -30,7 +36,8 @@
     "continueWithGoogle": "使用 Google 继续",
     "alreadyHaveAccount": "已经有账户？",
     "newHere": "新用户？",
-    "createAnAccount": "创建账户"
+    "createAnAccount": "创建账户",
+    "passwordRules": "至少 8 个字符，并且至少包含一个字母和一个数字。"
   },
   "SideNav": {
     "newMatch": "新建对决",
@@ -43,8 +50,8 @@
     "settings": "设置",
     "howtoplay": "如何游玩",
     "logout": "退出登录",
-    "privacy": "隐私",
-    "terms": "条款"
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款"
   },
   "Lobby": {
     "title": "游戏",
@@ -91,8 +98,9 @@
     "startingCapital": "初始资金",
     "cancel": "取消",
     "creating": "正在创建...",
-    "create": "创建",
+    "market": "市场",
     "close": "关闭",
+    "create": "创建",
     "duration30s": "30秒",
     "duration1min": "1分钟",
     "duration1_5min": "1.5分钟"
@@ -141,6 +149,7 @@
     "privacyPolicy": "隐私政策",
     "chooseImageFile": "请选择图片文件。",
     "uploading": "正在上传...",
+    "uploadingDone": "保存成功！",
     "signInAgainUpload": "请重新登录后再上传。",
     "uploadFailed": "上传失败。请重试。",
     "profilePhotoUpdateFailed": "无法更新您的头像。",
@@ -203,6 +212,8 @@
     "equilibriumCores": "平衡核心",
     "achievementsLabel": "成就",
     "unlocked": "已解锁",
+    "unlockedShort": "✓",
+    "lockedShort": "🔒",
     "winsProgress": "{wins}/{requirement} 场胜场",
     "unknownUser": "未知",
     "performanceStats": "战绩统计",
@@ -338,7 +349,7 @@
     "lastUpdated": "最后更新：{date}",
     "intro": "请在开始游戏前阅读这些条款。DUEL 很简单：使用虚拟资金，不涉及真实资金，并遵守一些基本规则以确保公平游戏。",
     "section1Title": "1. 关于本服务",
-    "section1": "DUEL 是一款供两名玩家进行的 BTC/USDT 模拟交易游戏。它使用虚拟余额和市场数据来计算模拟订单和结果。您无法在这里购买、出售、存入、提取或持有加密货币或任何真实资产。虚拟余额、排名和比赛结果没有现金价值，也无法兑换或转让。市场数据可能来自历史 K 线，并且可能存在延迟、不完整，或与实时交易平台的数据有所不同。",
+    "section1": "这是一个实时双人交易模拟游戏。您将使用虚拟资金，与另一名玩家在模拟的 BTC/USDT、ETH/USDT 或 SOL/USDT 市场中进行交易。本平台在任何情况下都不会使用、存入、提取或交易真实货币。本平台上的任何内容都不属于真实的金融交易，您在这里进行的任何操作在应用程序之外均不具有任何货币价值。",
     "section2Title": "2. 使用资格和您的账户",
     "section2": "您必须年满 18 岁，并且在您居住的地区具有合法同意这些条款的能力。请提供准确的账户信息，保护您的登录信息安全，并在怀疑有人访问过您的账户时及时通知我们。除非法律另有规定，否则您需要对账户下发生的活动负责。请勿分享、出售或转让您的账户。",
     "section3Title": "3. 合理使用",
@@ -440,7 +451,7 @@
   },
   "HowToPlay": {
     "title": "如何游玩",
-    "intro": "两名玩家、一张 BTC/USDT 价格图表，以及相同的初始资金。比赛结束时资金更多的玩家获胜。",
+    "intro": "两名玩家、一张价格图表（BTC、ETH 或 SOL 对 USDT），以及相同的初始资金。图表会以加速方式重放最近几个小时的真实 1 分钟价格，每半秒一根K线。比赛结束时资金更多的玩家获胜。",
     "facts": {
       "players": "玩家",
       "startingCapital": "初始资金",
@@ -600,6 +611,7 @@
     "nothingMoves": "在服务器确认您的交易之前，不会执行任何操作。",
     "enterAmount": "请输入金额。",
     "amountGreaterThanZero": "金额必须大于零。",
+    "amountBelowMinimum": "最小下单金额为 {amount}。",
     "amountExceedsLimit": "超过可交易金额 — 最大为 {amount}。"
   },
   "PositionPanel": {
@@ -660,7 +672,8 @@
         "detail": "您和{opponent}的最终资金完全相同。",
         "footnote": "比赛已结束，无法进行更多交易。"
       }
-    }
+    },
+    "opponent": "对手"
   },
   "MatchResult": {
     "finalResult": "最终结果",
@@ -733,6 +746,8 @@
     "invalidRequest": "请求无效。",
     "invalidCapital": "初始资金无效。",
     "invalidSymbol": "交易对无效。",
+    "invalidDuration": "请从列表中选择对局时长。",
+    "invalidRoomId": "该房间链接无效。",
     "loginRequired": "请先登录。",
     "friendsOnly": "你只能邀请你的好友。",
     "alreadyInGameCreate": "你已有一场进行中的对局。请先结束或删除它，再创建新的房间。",
@@ -748,7 +763,9 @@
     "roomNotDeletable": "找不到房间，或你没有权限删除它。",
     "couldNotDelete": "无法删除房间。",
     "couldNotJoin": "无法加入房间。",
-    "couldNotLoad": "无法加载房间。"
+    "couldNotLoad": "无法加载房间。",
+    "roomNameTooLong": "房间名称太长（最多 40 个字符）。",
+    "roomNameInvalidChars": "房间名称只能包含字母、数字、空格以及 - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "加载安全验证因素失败。",
@@ -811,7 +828,7 @@
   "AuthErrors": {
     "invalidCredentials": "邮箱或密码错误。",
     "emailTaken": "该邮箱已注册账户。",
-    "weakPassword": "密码强度太低。请至少使用 6 个字符。",
+    "weakPassword": "密码强度太低。请使用 8 到 72 个字符，并且至少包含一个字母和一个数字。",
     "emailNotConfirmed": "请先验证你的邮箱再登录。",
     "tooManyRequests": "尝试次数过多。请稍后再试。",
     "signupDisabled": "当前暂停注册。",
@@ -844,11 +861,17 @@
     "matchNotActive": "对局未在进行中。",
     "invalidSide": "方向必须是做多或做空。",
     "invalidAmount": "金额必须为正数。",
+    "amountTooSmall": "最小下单金额为 $1。",
+    "tooManyDecimals": "最多只能有 2 位小数。",
     "notInMatch": "你不在此对局中。",
     "noPriceYet": "暂无价格，请稍后再试。",
     "notEnoughBalance": "余额不足。",
     "matchIdRequired": "缺少对局信息。",
     "matchNotFound": "找不到对局。",
     "unknown": "出现了一些问题。"
+  },
+  "AchievementToast": {
+    "unlocked": "成就解锁：{name}！",
+    "seeProgress": "查看你的进度"
   }
 }

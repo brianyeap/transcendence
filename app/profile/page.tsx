@@ -21,6 +21,17 @@ import { Avatar } from "../components/duel/avatar";
 // Importing for the use of the Avatar.
 import { getTranslations } from "next-intl/server";
 // Server-side translations for next-intl, so every label on this page is locale-aware.
+import {
+	AchievementCard,
+	fireIcon,
+	bronzeMedalIcon,
+	silverMedalIcon,
+	fortyTwoIcon,
+	bitcoinIcon,
+	treasureChestIcon,
+} from "../components/duel/achievement-card";
+// The achievement cards are a client component (they need tap-to-expand state),
+// so the icons are imported from there too and this page stays a server component.
 
 function getRiskRating(wins: number, losses: number): "pro" | "amateur" | "beginner"
 {
@@ -28,430 +39,6 @@ function getRiskRating(wins: number, losses: number): "pro" | "amateur" | "begin
 	if (wins === losses) return "amateur";
 	return "beginner";
 }
-
-function fireIcon({unlocked}: {unlocked: boolean})
-{
-	if(!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	return (
-		<div className="relative flex items-center justify-center w-8 h-8">
-			{/* Animated glowy thinggy particles */}
-			<span className="absolute -top-1 left-2 w-1.5 h-1.5 bg-amber-400 rounded-full animate-ember-1 pointer-events-none" />
-			<span className="absolute -top-2 right-2 w-1 h-1 bg-orange-500 rounded-full animate-ember-2 pointer-events-none" />
-			<span className="absolute -top-1.5 left-4 w-1 h-1 bg-yellow-300 rounded-full animate-ember-3 pointer-events-none" />
-
-			{/* Glowing Orange flame */}
-			<svg className="w-7 h-7 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" viewBox="0 0 24 24" fill="none">
-				<path
-					d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"
-					className="fill-gradient"
-					fill="url(#flameGradient)"
-				/>
-				<defs>
-					<linearGradient id="flameGradient" x1="12" y1="2" x2="12" y2="21" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#fef08a" />
-						<stop offset="40%" stopColor="#f97316" />
-						<stop offset="100%" stopColor="#dc2626" />
-					</linearGradient>
-				</defs>
-			</svg>
-		</div>
-	);
-}
-
-
-// Box 2: Bronze Medal (5 Wins)
-function bronzeMedalIcon({ unlocked }: { unlocked: boolean })
-{
-	if (!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	return (
-		<div className="relative flex items-center justify-center w-9 h-9">
-			{/* DUAL SPARKLE STAR ANIMATION (Using existing animate-medal-sparkle) */}
-			{/* Star 1: Top-Right (Larger) */}
-			<div className="absolute -top-0.0 -right-0.5 w-3.5 h-3.5 animate-medal-sparkle pointer-events-none z-10">
-				<svg viewBox="0 0 24 24" fill="#fbbf24" className="w-full h-full drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]">
-					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-				</svg>
-			</div>
-
-			{/* Star 2: Bottom-Left (Smaller with 1s delay for asynchronous sparkle) */}
-			<div className="absolute bottom-[-0px] -left-[1px] w-2.5 h-2.5 animate-ember-2 [animation-delay:700ms] pointer-events-none z-10">
-				<svg viewBox="0 0 24 24" fill="#f59e0b" className="w-full h-full drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]">
-					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-				</svg>
-			</div>
-
-			{/* METALLIC BRONZE MEDAL SVG */}
-			<svg className="w-8 h-8 drop-shadow-[0_4px_12px_rgba(180,83,9,0.45)]" viewBox="0 0 24 24" fill="none">
-				{/* WIDER FLAT BLUE RIBBON WITH DARK NAVY STRIPES */}
-				<path d="M5 1.5 L8.5 11 H15.5 L19 1.5 Z" fill="url(#blueRibbonBase)" stroke="#1e3a8a" strokeWidth="0.5" strokeLinejoin="miter" />
-				<path d="M7.5 1.5 L10 11 H11 L9 1.5 Z" fill="#0f172a" opacity="0.6" />
-				<path d="M16.5 1.5 L14 11 H13 L15 1.5 Z" fill="#0f172a" opacity="0.6" />
-				<path d="M11.5 1.5 L11.8 11 H12.2 L12.5 1.5 Z" fill="#0f172a" opacity="0.4" />
-
-				{/* OUTER BRONZE MEDAL RIM */}
-				<circle cx="12" cy="15.5" r="6.5" fill="url(#trueBronzeGradient)" stroke="#f97316" strokeWidth="0.5" />
-				<circle cx="12" cy="15.5" r="5.8" fill="none" stroke="#451a03" strokeWidth="0.5" opacity="0.6" />
-
-				{/* INNER DOTTED BRONZE RING DETAIL */}
-				<circle cx="12" cy="15.5" r="4.6" fill="none" stroke="#7c2d12" strokeWidth="0.65" strokeDasharray="1 1" />
-
-				{/* EMBOSSED BRONZE CENTER STAR */}
-				<path d="M12 12.2L12.8 14.1L14.8 14.3L13.3 15.7L13.7 17.7L12 16.6L10.3 17.7L10.7 15.7L9.2 14.3L11.2 14.1L12 12.2Z" fill="#451a03" />
-
-				{/* GRADIENT DEFINITIONS */}
-				<defs>
-					<linearGradient id="trueBronzeGradient" x1="6" y1="9" x2="18" y2="22" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#ea580c" />
-						<stop offset="30%" stopColor="#cd7f32" />
-						<stop offset="70%" stopColor="#9a3412" />
-						<stop offset="100%" stopColor="#451a03" />
-					</linearGradient>
-
-					<linearGradient id="blueRibbonBase" x1="5" y1="1.5" x2="19" y2="11" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#2563eb" />
-						<stop offset="50%" stopColor="#1d4ed8" />
-						<stop offset="100%" stopColor="#1e3a8a" />
-					</linearGradient>
-				</defs>
-			</svg>
-		</div>
-	);
-}
-
-// Box 3: Silver Medal
-function silverMedalIcon({ unlocked }: { unlocked: boolean })
-{
-	if (!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	return (
-		<div className="relative flex items-center justify-center w-9 h-9">
-			{/* DUAL SPARKLE STAR ANIMATION */}
-			{/* Star 1: Top-Right (Cool White / Silver Sparkle) */}
-			<div className="absolute top-[7px] -right-[1px] w-3.5 h-3.5 animate-medal-sparkle pointer-events-none z-10">
-				<svg viewBox="0 0 24 24" fill="#f8fafc" className="w-full h-full drop-shadow-[0_0_6px_rgba(248,250,252,0.9)]">
-					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-				</svg>
-			</div>
-
-			{/* Star 2: Bottom-Left (Cyan-Tinted Sparkle with emberTwo drift) */}
-			<div className="absolute bottom-[-0px] -left-[1px] w-2.5 h-2.5 animate-ember-2 [animation-delay:700ms] pointer-events-none z-10">
-				<svg viewBox="0 0 24 24" fill="#38bdf8" className="w-full h-full drop-shadow-[0_0_4px_rgba(56,189,248,0.8)]">
-					<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-				</svg>
-			</div>
-
-			{/* METALLIC SILVER MEDAL SVG */}
-			<svg className="w-8 h-8 drop-shadow-[0_4px_12px_rgba(148,163,184,0.45)]" viewBox="0 0 24 24" fill="none">
-				{/* WIDER FLAT RED/CRIMSON RIBBON WITH DARK STRIPES */}
-				<path d="M5 1.5 L8.5 11 H15.5 L19 1.5 Z" fill="url(#silverRibbonBase)" stroke="#991b1b" strokeWidth="0.5" strokeLinejoin="miter" />
-				<path d="M7.5 1.5 L10 11 H11 L9 1.5 Z" fill="#450a0a" opacity="0.6" />
-				<path d="M16.5 1.5 L14 11 H13 L15 1.5 Z" fill="#450a0a" opacity="0.6" />
-				<path d="M11.5 1.5 L11.8 11 H12.2 L12.5 1.5 Z" fill="#450a0a" opacity="0.4" />
-
-				{/* OUTER SILVER MEDAL RIM */}
-				<circle cx="12" cy="15.5" r="6.5" fill="url(#trueSilverGradient)" stroke="#e2e8f0" strokeWidth="0.5" />
-				<circle cx="12" cy="15.5" r="5.8" fill="none" stroke="#1e293b" strokeWidth="0.5" opacity="0.5" />
-
-				{/* INNER DOTTED SILVER RING DETAIL */}
-				<circle cx="12" cy="15.5" r="4.6" fill="none" stroke="#475569" strokeWidth="0.65" strokeDasharray="1 1" />
-
-				{/* EMBOSSED SILVER CENTER STAR */}
-				<path d="M12 12.2L12.8 14.1L14.8 14.3L13.3 15.7L13.7 17.7L12 16.6L10.3 17.7L10.7 15.7L9.2 14.3L11.2 14.1L12 12.2Z" fill="#334155" />
-
-				{/* GRADIENT DEFINITIONS */}
-				<defs>
-					{/* Authentic Metallic Silver Gradient */}
-					<linearGradient id="trueSilverGradient" x1="6" y1="9" x2="18" y2="22" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#ffffff" />
-						<stop offset="30%" stopColor="#cbd5e1" />
-						<stop offset="70%" stopColor="#64748b" />
-						<stop offset="100%" stopColor="#334155" />
-					</linearGradient>
-
-					{/* Deep Red Ribbon Gradient */}
-					<linearGradient id="silverRibbonBase" x1="5" y1="1.5" x2="19" y2="11" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#ef4444" />
-						<stop offset="50%" stopColor="#dc2626" />
-						<stop offset="100%" stopColor="#7f1d1d" />
-					</linearGradient>
-				</defs>
-			</svg>
-		</div>
-	);
-}
-
-// Box 4: Official 42 Geometric Logo (Traced from actual logo — pixel-accurate)
-function fortyTwoIcon({ unlocked }: { unlocked: boolean })
-{
-	if (!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	return (
-		<div className="relative flex items-center justify-center w-9 h-9">
-			{/* 42 BLUE ELECTRIC GLOW AURA */}
-			<div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-md animate-pulse pointer-events-none" />
-
-			{/* EXACT 42 SVG — traced from the real logo, viewBox matches its true 840x590 proportions */}
-			<svg className="w-8 h-8 drop-shadow-[0_0_10px_rgba(6,182,212,0.7)] z-10 overflow-visible" viewBox="0 0 840 590" fill="none">
-
-				{/* --- "4" --- */}
-				<path
-					d="M463 0 L309 0 L0 310 L0 434 L309 434 L309 589 L463 589 L463 310 L154 310 Z"
-					fill="url(#official42Gradient)"
-				/>
-
-				{/* --- "2" (main Z-body + the two corner wedges that create the faceted cut look) --- */}
-				<path
-					d="M839 0 L685 0 L685 155 L531 310 L531 464 L685 464 L685 310 L839 155 Z
-					   M685 0 L531 0 L531 155 Z
-					   M839 310 L685 464 L839 464 Z"
-					fill="url(#official42Gradient)"
-				/>
-
-				{/* SHORT CIRCUIT 1: leftmost edge of "4" (its true extremity is the vertical edge at x=0, y 310–434) */}
-				<g className="animate-short-circuit-1">
-					<path d="M0 372 L-70 322 M0 372 L-100 372 M0 372 L-70 422" stroke="#ffffff" strokeWidth="18" strokeLinecap="round" />
-					<circle cx="0" cy="372" r="18" fill="#ffffff" />
-				</g>
-
-				{/* SHORT CIRCUIT 2: top-right corner of "2" — a genuine sharp vertex at (839, 0) */}
-				<g className="animate-short-circuit-2">
-					<path d="M839 0 L909 -70 M839 0 L939 0 M839 0 L889 84" stroke="#ffffff" strokeWidth="18" strokeLinecap="round" />
-					<circle cx="839" cy="0" r="18" fill="#ffffff" />
-				</g>
-
-				{/* GRADIENT DEFINITIONS */}
-				<defs>
-					<linearGradient id="official42Gradient" x1="0" y1="0" x2="840" y2="590" gradientUnits="userSpaceOnUse">
-						<stop offset="0%" stopColor="#38bdf8" />
-						<stop offset="50%" stopColor="#06b6d4" />
-						<stop offset="100%" stopColor="#0284c7" />
-					</linearGradient>
-				</defs>
-			</svg>
-		</div>
-	);
-}
-
-// Box 5 : Floating Bitcoin Icon for Achivement 5.
-function bitcoinIcon({ unlocked }: { unlocked: boolean })
-{
-	if (!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	// Coin geometry — change these two and everything else recalculates
-	const SIZE = 32;		// coin diameter in px (matches w-8/h-8)
-	const THICKNESS = 7;	// how chunky the rim is — bump this up for an even thicker coin
-	const SEGMENTS = 16;	// rim slices — more = smoother curve, more DOM nodes
-	const RADIUS = SIZE / 2;
-	const angleStep = 360 / SEGMENTS;
-	// chord length of each flat slice, padded slightly so slices overlap and hide seams
-	const segmentWidth = 2 * RADIUS * Math.sin(Math.PI / SEGMENTS) * 1.2;
-
-	const CoinFace = () => (
-		<svg className="w-8 h-8 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" viewBox="0 0 100 100" fill="none">
-			<circle cx="50" cy="50" r="46" fill="url(#bitcoinGoldGradient)" stroke="#fde68a" strokeWidth="3" />
-			<circle cx="50" cy="50" r="46" fill="none" stroke="#78350f" strokeWidth="1.5" opacity="0.5" />
-			<circle cx="50" cy="50" r="39" stroke="#78350f" strokeWidth="1.5" strokeDasharray="3 2.5" opacity="0.55" />
-			<circle cx="50" cy="50" r="34" stroke="#fde68a" strokeWidth="1" strokeDasharray="1 3" opacity="0.4" />
-
-			<path
-				d="M38 22 H57 C65 22 71 27 71 35 C71 41 67 45 61 46 C68 48 73 53 73 60 C73 69 66 76 56 76 H38 V22 Z
-					M47 30 V43 H56 C61 43 63 40 63 36 C63 32 61 30 56 30 H47 Z
-					M47 50 V68 H57 C63 68 65 64 65 59 C65 54 63 50 57 50 H47 Z"
-				fill="#fffbeb"
-			/>
-			<path d="M50 10 V19 M50 79 V88" stroke="#fffbeb" strokeWidth="3.5" strokeLinecap="round" />
-
-			<defs>
-				<linearGradient id="bitcoinGoldGradient" x1="10" y1="5" x2="95" y2="98" gradientUnits="userSpaceOnUse">
-					<stop offset="0%" stopColor="#fef9c3" />
-					<stop offset="35%" stopColor="#f59e0b" />
-					<stop offset="70%" stopColor="#b45309" />
-					<stop offset="100%" stopColor="#78350f" />
-				</linearGradient>
-			</defs>
-		</svg>
-	);
-
-	return (
-		<div className="relative flex items-center justify-center w-9 h-9 animate-float" style={{ perspective: "600px" }}>
-			{/* Glow — now phase-locked to the same 3s cycle as the bounce, peaking at the bottom */}
-			<div className="absolute inset-0 rounded-full bg-amber-500/30 blur-md animate-coin-glow pointer-events-none" />
-
-			{/* The 3D coin — front face, back face, and a rim built from thin slices */}
-			<div
-				className="coin-stage relative animate-coin-revolve z-10"
-				style={{ width: SIZE, height: SIZE }}
-			>
-				{/* FRONT */}
-				<div className="coin-face" style={{ transform: `translateZ(${THICKNESS / 2}px)` }}>
-					<CoinFace />
-				</div>
-
-				{/* BACK — flipped 180° so it lands facing the opposite way, mirrored to read correctly */}
-				<div
-					className="coin-face"
-					style={{ transform: `rotateY(180deg) translateZ(${THICKNESS / 2}px)` }}
-				>
-					<CoinFace />
-				</div>
-
-				{/* RIM — a ring of flat slices standing between the two faces */}
-				{Array.from({ length: SEGMENTS }).map((_, i) => (
-					<div
-						key={i}
-						className="coin-edge-segment"
-						style={{
-							width: segmentWidth,
-							height: THICKNESS,
-							marginLeft: -segmentWidth / 2,
-							marginTop: -THICKNESS / 2,
-							transform: `rotateZ(${i * angleStep}deg) rotateX(90deg) translateZ(${RADIUS}px)`,
-							background: i % 2 === 0 ? "#d97706" : "#92400e", // alternating tone = milled-edge look
-						}}
-					/>
-				))}
-			</div>
-		</div>
-	);
-}
-
-// Box 6: Treasure Chest (Tycoon / Ultimate Wealth)
-function treasureChestIcon({ unlocked }: { unlocked: boolean })
-{
-	if (!unlocked)
-	{
-		return (
-			<svg className="w-7 h-7 stroke-gray-600 fill-none" viewBox="0 0 24 24" strokeWidth="1.5">
-				<path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-			</svg>
-		);
-	}
-
-	return (
-		<div className={`relative w-10 h-10 ${unlocked ? "" : "opacity-50 grayscale"}`}>
-			<svg viewBox="0 0 48 48" className="w-full h-full">
-				<defs>
-					<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stopColor="#b45309" />
-						<stop offset="100%" stopColor="#713f12" />
-					</linearGradient>
-					<linearGradient id="woodLid" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stopColor="#92400e" />
-						<stop offset="100%" stopColor="#5c2808" />
-					</linearGradient>
-					<linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stopColor="#fde047" />
-						<stop offset="55%" stopColor="#eab308" />
-						<stop offset="100%" stopColor="#a16207" />
-					</linearGradient>
-					<radialGradient id="coinGrad" cx="35%" cy="30%" r="75%">
-						<stop offset="0%" stopColor="#fef9c3" />
-						<stop offset="55%" stopColor="#facc15" />
-						<stop offset="100%" stopColor="#ca8a04" />
-					</radialGradient>
-				</defs>
-
-				{/* LID — open dome */}
-				<path d="M7 22 A17 14 0 0 1 41 22 Z" fill="url(#woodLid)" />
-				<path d="M15 22 A9 9.5 0 0 1 33 22" fill="none" stroke="#292524" strokeWidth="2.6" />
-				<path d="M24 8.2 V22" stroke="#292524" strokeWidth="2.6" />
-				<path d="M7 22 A17 14 0 0 1 41 22" fill="none" stroke="#eab308" strokeWidth="1" opacity="0.7" />
-
-				{/* dark interior */}
-				<rect x="7" y="20.5" width="34" height="3" rx="1.5" fill="#1c0a02" />
-
-				{/* coin pile spilling out */}
-				<g stroke="#a16207" strokeWidth="0.6">
-					<circle cx="12"   cy="19.5" r="2.6" fill="url(#coinGrad)" />
-					<circle cx="17"   cy="18.6" r="2.8" fill="url(#coinGrad)" />
-					<circle cx="22.5" cy="18"   r="3"   fill="url(#coinGrad)" />
-					<circle cx="28"   cy="18.4" r="2.9" fill="url(#coinGrad)" />
-					<circle cx="33"   cy="19.2" r="2.7" fill="url(#coinGrad)" />
-					<circle cx="37"   cy="20.4" r="2.2" fill="url(#coinGrad)" />
-					<circle cx="14.5" cy="21"   r="2.4" fill="url(#coinGrad)" />
-					<circle cx="20"   cy="21.4" r="2.3" fill="url(#coinGrad)" />
-					<circle cx="24"   cy="20.6" r="2.7" fill="url(#coinGrad)" />
-					<circle cx="30.5" cy="21.2" r="2.4" fill="url(#coinGrad)" />
-				</g>
-
-				{/* chest body */}
-				<rect x="6" y="22" width="36" height="17" rx="2.5" fill="url(#wood)" />
-				<line x1="6" y1="28"   x2="42" y2="28"   stroke="#5c2808" strokeWidth="0.8" opacity="0.8" />
-				<line x1="6" y1="33.5" x2="42" y2="33.5" stroke="#5c2808" strokeWidth="0.8" opacity="0.8" />
-
-				{/* metal bands + rivets */}
-				<rect x="10.5" y="22" width="4" height="17" fill="#292524" />
-				<rect x="33.5" y="22" width="4" height="17" fill="#292524" />
-				<g fill="#57534e">
-					<circle cx="12.5" cy="25"   r="0.7" /><circle cx="12.5" cy="30.5" r="0.7" /><circle cx="12.5" cy="36" r="0.7" />
-					<circle cx="35.5" cy="25"   r="0.7" /><circle cx="35.5" cy="30.5" r="0.7" /><circle cx="35.5" cy="36" r="0.7" />
-				</g>
-
-				{/* gold rim + lock */}
-				<rect x="6" y="21.4" width="36" height="2.6" rx="1.3" fill="url(#brass)" />
-				<rect x="20.6" y="24.5" width="6.8" height="7.5" rx="1.2" fill="url(#brass)" stroke="#a16207" strokeWidth="0.6" />
-				<circle cx="24" cy="27.2" r="1.3" fill="#713f12" />
-				<rect x="23.5" y="27.2" width="1" height="2.6" fill="#713f12" />
-			</svg>
-
-			{/* ✦ sparkles */}
-			{unlocked && (
-				<>
-					<span className="sparkle animate-coin-shine-1" style={{ top: "-8%", left: "2%" }}>✦</span>
-					<span className="sparkle animate-coin-shine-2" style={{ top: "36%", right: "-12%" }}>✦</span>
-				</>
-			)}
-
-			{/* falling coins */}
-			{unlocked && (
-				<>
-					<span className="falling-coin fc-1" style={{ left: "18%", top: "88%" }} />
-					<span className="falling-coin fc-2" style={{ left: "48%", top: "94%" }} />
-					<span className="falling-coin fc-3" style={{ left: "74%", top: "86%" }} />
-				</>
-			)}
-		</div>
-	);
-}
-
-
 
 export default async function ProfilePage()
 {
@@ -549,7 +136,7 @@ export default async function ProfilePage()
 
 				{/* CONTENT AREA */}
 				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
-				<div className="mt-16 px-6 sm:mt-26 flex flex-col items-center text-center">
+				<div className="mt-24 px-6 sm:mt-28 flex flex-col items-center text-center">
 
 					{/* USERNAME WITH MOTION GLOW AURA */}
 					<div className="relative group">
@@ -618,310 +205,84 @@ export default async function ProfilePage()
 							<h2 className="text-lg font-semibold text-gray-200">{t("achievementsLabel")}</h2>
 						</div>
 
-						{/* Stack of Achivement box placeholder */}
-						<div className="grid grid-cols-2 gap-4 w-full">
+						{/* Achievements list.
 
-							{/* Achievement Box 1[Special Fire] */}
-							{/* FIX: stray leading quote removed from the className template (it was invalidating "h-20") */}
-							{/* FIX: card wrapper no longer applies opacity-40/grayscale to the whole box — that
-							     dimming now lives only on the icon container below, so it can't interact with the title. */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 1
-									? "bg-orange-500/[0.03] border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* FIRE ICON CONTAINER */}
-									<div className={`p-2.5 rounded-lg border ${
-										wins >= 1
-											? "bg-orange-500/10 border-orange-500/30"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
+							Follows the same pattern as the Lobby's room grid: one column on
+							phones (where the cards simply do not fit side by side), two only
+							from sm upwards. Every card below is a single component that stacks
+							its own content vertically on mobile, so nothing can overlap. */}
+						<div className="grid grid-cols-1 gap-4 w-full sm:grid-cols-2">
+							{/* Achievement 1 — Special Fire (1 win) */}
+							<AchievementCard
+								icon={fireIcon}
+								name={t("achievements.first_1_win.name")}
+								description={t("achievements.first_1_win.description")}
+								tier={t("tiers.novice")}
+								requirement={1}
+								wins={wins}
+								unlocked={wins >= 1}
+								accent="orange"
+							/>
 
-										{/* Calling the custom fireIcon function */}
-										{fireIcon({unlocked: wins >= 1 })}
-								</div>
+							{/* Achievement 2 — Greenhorn Trader (5 wins, Bronze) */}
+							<AchievementCard
+								icon={bronzeMedalIcon}
+								name={t("achievements.first_5_wins.name")}
+								description={t("achievements.first_5_wins.description")}
+								tier={t("tiers.bronze")}
+								requirement={5}
+								wins={wins}
+								unlocked={wins >= 5}
+								accent="bronze"
+							/>
 
-								{/* Tittle & Description */}
-								{/* FIX (the actual fix, confirmed by the inline-style test): "!" forces Tailwind to
-								     emit this color rule with !important, which is the only thing that beat whatever
-								     global CSS rule (likely a DaisyUI base h3 color or a global reset) was overriding
-								     every plain utility class we tried before. */}
-								<div className="text-left">
-									<div className="flex items-center gap-2">
-										<h3 className={`font-semibold text-sm sm:text-base ${wins >= 1 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-											{t("achievements.first_1_win.name")}
-										</h3>
-										<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-											wins >= 1
-												? "bg-orange-500/30 text-orange-400 bg-orange-500/10"
-												:"border-gray-700 text-gray-500 bg-gray-800/20"
-										}`}>
-											{t("tiers.novice")}
-										</span>
-									</div>
-									<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_1_win.description")}</p>
-								</div>
-							</div>
+							{/* Achievement 3 — Market Competitor (10 wins, Silver) */}
+							<AchievementCard
+								icon={silverMedalIcon}
+								name={t("achievements.first_10_wins.name")}
+								description={t("achievements.first_10_wins.description")}
+								tier={t("tiers.silver")}
+								requirement={10}
+								wins={wins}
+								unlocked={wins >= 10}
+								accent="silver"
+							/>
 
-							{/* UNLOCKED / LOCKED BADGE */}
-							<div className="shrink-0 text-right">
-								{wins >= 1 ? (
-									<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-md">
-										{t("unlocked")}
-									</span>
-								) : (
-									<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-										{t("winsLeft", { count: 1 - wins })}
-									</span>
-								)}
-							</div>
-						</div>
+							{/* Achievement 4 — The Answer to Everything (42 wins) */}
+							<AchievementCard
+								icon={fortyTwoIcon}
+								name={t("achievements.first_42_wins.name")}
+								description={t("achievements.first_42_wins.description")}
+								tier={t("tiers.special")}
+								requirement={42}
+								wins={wins}
+								unlocked={wins >= 42}
+								accent="emerald"
+							/>
 
+							{/* Achievement 5 — BITCOIN / HODL (100 wins) */}
+							<AchievementCard
+								icon={bitcoinIcon}
+								name={t("achievements.first_100_wins.name")}
+								description={t("achievements.first_100_wins.description")}
+								tier={t("tiers.crypto")}
+								requirement={100}
+								wins={wins}
+								unlocked={wins >= 100}
+								accent="amber"
+							/>
 
-
-						{/* ACHIEVEMENT BOX 2: Greenhorn Trader (5 Wins - Bronze) */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 5
-									? "bg-amber-600/[0.03] border-amber-600/30 shadow-[0_0_15px_rgba(217,119,6,0.1)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* BRONZE MEDAL CONTAINER */}
-									<div className={`p-2.5 rounded-lg border ${
-										wins >= 5
-											? "bg-amber-600/10 border-amber-600/30"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
-										{bronzeMedalIcon({ unlocked: wins >= 5 })}
-									</div>
-									{/* TITLE & DESCRIPTION */}
-									<div className="text-left">
-										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 5 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												{t("achievements.first_5_wins.name")}
-											</h3>
-											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 5
-													? "border-amber-600/30 text-amber-500 bg-amber-600/10"
-													: "border-gray-700 text-gray-500 bg-gray-800/20"
-											}`}>
-												{t("tiers.bronze")}
-											</span>
-										</div>
-										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_5_wins.description")}</p>
-									</div>
-								</div>
-								{/* UNLOCKED / LOCKED BADGE */}
-								<div className="shrink-0 text-right">
-									{wins >= 5 ? (
-										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 bg-amber-600/10 border border-amber-600/20 px-2.5 py-1 rounded-md">
-											{t("unlocked")}
-										</span>
-									) : (
-										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{t("winsLeft", { count: 5 - wins })}
-										</span>
-									)}
-								</div>
-							</div>
-
-
-							{/* ACHIEVEMENT BOX 3: Market Competitor (10 Wins - Silver) */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 10
-									? "bg-slate-500/[0.03] border-slate-500/30 shadow-[0_0_15px_rgba(148,163,184,0.1)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* SILVER MEDAL CONTAINER */}
-									<div className={`p-2.5 rounded-lg border ${
-										wins >= 10
-											? "bg-slate-500/10 border-slate-500/30"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
-										{silverMedalIcon({ unlocked: wins >= 10 })}
-									</div>
-
-									{/* TITLE & DESCRIPTION */}
-									<div className="text-left">
-										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 10 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												{t("achievements.first_10_wins.name")}
-											</h3>
-											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 10
-													? "border-slate-500/30 text-slate-300 bg-slate-500/10"
-													: "border-gray-700 text-gray-500 bg-gray-800/20"
-											}`}>
-												{t("tiers.silver")}
-											</span>
-										</div>
-										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_10_wins.description")}</p>
-									</div>
-								</div>
-
-								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
-								<div className="shrink-0 text-right">
-									{wins >= 10 ? (
-										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-slate-500/10 border border-slate-500/20 px-2.5 py-1 rounded-md">
-											{t("unlocked")}
-										</span>
-									) : (
-										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{t("winsLeft", { count: 10 - wins })}
-										</span>
-									)}
-								</div>
-							</div>
-
-
-							{/* ACHIEVEMENT BOX 4: The Answer to Everything (42 Wins) */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 42 // Change to wins >= 42 when done testing
-									? "bg-emerald-500/[0.04] border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* 42 BADGE CONTAINER */}
-									<div className={`p-2.5 rounded-lg border ${
-										wins >= 42
-											? "bg-emerald-500/10 border-emerald-500/30 shadow-[inset_0_0_10px_rgba(16,185,129,0.1)]"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
-										{fortyTwoIcon({ unlocked: wins >= 42 })}
-									</div>
-
-									{/* TITLE & DESCRIPTION */}
-									<div className="text-left">
-										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 42 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												{t("achievements.first_42_wins.name")}
-											</h3>
-											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 42
-													? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-													: "border-gray-700 text-gray-500 bg-gray-800/20"
-											}`}>
-												{t("tiers.special")}
-											</span>
-										</div>
-										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_42_wins.description")}</p>
-									</div>
-								</div>
-
-								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
-								<div className="shrink-0 text-right">
-									{wins >= 42 ? (
-										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-											{t("unlocked")}
-										</span>
-									) : (
-										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{t("winsLeft", { count: 42 - wins })}
-										</span>
-									)}
-								</div>
-							</div>
-
-							{/* ACHIEVEMENT BOX 5: BITCOIN (HODL / Crypto Master) */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 100 // Change trigger condition as needed
-									? "bg-amber-500/[0.04] border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* AMBER CONTAINER */}
-									<div className={`p-2.5 rounded-lg border ${
-										wins >= 100
-											? "bg-amber-500/10 border-amber-500/30 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)]"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
-										{bitcoinIcon({ unlocked: wins >= 100 })}
-									</div>
-
-									{/* TITLE & DESCRIPTION */}
-									<div className="text-left">
-										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 100 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												{t("achievements.first_100_wins.name")}
-											</h3>
-											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 100
-													? "border-amber-500/30 text-amber-400 bg-amber-500/10"
-													: "border-gray-700 text-gray-500 bg-gray-800/20"
-											}`}>
-												{t("tiers.crypto")}
-											</span>
-										</div>
-										<p className="text-xs text-gray-400 mt-0.5">{t("achievements.first_100_wins.description")}</p>
-									</div>
-								</div>
-
-								{/* UNLOCKED / WINS LEFT STATUS BADGE */}
-								<div className="shrink-0 text-right">
-									{wins >= 100 ? (
-										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
-											{t("unlocked")}
-										</span>
-									) : (
-										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{t("winsLeft", { count: 100 - wins })}
-										</span>
-									)}
-								</div>
-							</div>
-
-							{/* ACHIEVEMENT BOX 6: TREASURE CHEST (Tycoon / Ultimate Wealth) */}
-							<div className={`h-20 rounded-lg border transition-all duration-300 flex items-center justify-between px-4 ${
-								wins >= 500
-									? "bg-yellow-500/[0.04] border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.15)]"
-									: "bg-white/[0.01] border-white/5"
-							}`}>
-								<div className="flex items-center gap-4">
-									{/* YELLOW / GOLD CONTAINER */}
-									<div className={`relative overflow-visible p-2.5 rounded-lg border ${
-										wins >= 500
-											? "bg-yellow-500/10 border-yellow-500/30 animate-chest-glow"
-											: "bg-white/[0.02] border-white/10 grayscale opacity-60"
-									}`}>
-										{treasureChestIcon({ unlocked: wins >= 500 })}
-									</div>
-
-									{/* TITLE & DESCRIPTION */}
-									<div className="text-left">
-										<div className="flex items-center gap-2">
-											<h3 className={`font-semibold text-sm sm:text-base ${wins >= 500 ? "!text-[#eef2f8]" : "!text-[#9aa6b6]"}`}>
-												{t("achievements.first_500_wins.name")}
-											</h3>
-											<span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-												wins >= 500
-													? "border-yellow-500/30 text-yellow-400 bg-yellow-500/10"
-													: "border-gray-700 text-gray-500 bg-gray-800/20"
-											}`}>
-												{t("tiers.legendary")}
-											</span>
-										</div>
-										<p className="text-xs text-gray-400 mt-0.5">
-											{t("achievements.first_500_wins.description")}
-											{wins >= 500 ? "" : ` (${Math.min(wins, 500)} / 500)`}
-										</p>
-									</div>
-								</div>
-
-								{/* UNLOCKED / LOCKED STATUS BADGE */}
-								<div className="shrink-0 text-right">
-									{wins >= 500 ? (
-										<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2.5 py-1 rounded-md">
-											{t("unlocked")}
-										</span>
-									) : (
-										<span className="text-xs font-mono text-gray-500 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-md">
-											{t("winsLeft", { count: 500 - wins })}
-										</span>
-									)}
-								</div>
-							</div>
+							{/* Achievement 6 — Treasure Chest / Tycoon (500 wins) */}
+							<AchievementCard
+								icon={treasureChestIcon}
+								name={t("achievements.first_500_wins.name")}
+								description={t("achievements.first_500_wins.description")}
+								tier={t("tiers.legendary")}
+								requirement={500}
+								wins={wins}
+								unlocked={wins >= 500}
+								accent="yellow"
+							/>
 						</div>
 					</div>
 				</div>

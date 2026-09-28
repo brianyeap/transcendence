@@ -13,11 +13,14 @@ const spaceGrotesk = Space_Grotesk({
 const jetBrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  // Not every page uses the mono font. Preloading it everywhere makes Chrome
+  // warn "preloaded but not used" in the console, so load it only when needed.
+  preload: false,
 });
 
 export const metadata: Metadata = {
   title: "DUEL — 1v1 Crypto Trading",
-  description: "A competitive BTC/USDT trading game lobby.",
+  description: "A competitive 1v1 crypto trading game (BTC, ETH, SOL).",
 };
 
 export default async function RootLayout({

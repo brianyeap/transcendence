@@ -15,9 +15,15 @@
     "emailPlaceholder": "anda@example.com",
     "password": "Kata laluan",
     "passwordPlaceholder": "Masukkan kata laluan anda",
+    "confirmPassword": "Sahkan kata laluan",
+    "confirmPasswordPlaceholder": "Masukkan kata laluan anda sekali lagi",
+    "passwordsDontMatch": "Kata laluan tidak sepadan.",
+    "showPassword": "Tunjukkan kata laluan",
+    "hidePassword": "Sembunyikan kata laluan",
     "validEmail": "Masukkan alamat e-mel yang sah.",
     "usernameMinLength": "Pilih nama pengguna dengan sekurang-kurangnya 3 aksara.",
     "accountCreated": "Akaun berjaya dicipta.",
+    "checkEmail": "Akaun berjaya dicipta. Semak e-mel anda untuk mengesahkannya, kemudian log masuk.",
     "somethingWentWrong": "Sesuatu telah berlaku.",
     "loading": "Memuatkan...",
     "createAccount": "Cipta akaun",
@@ -30,7 +36,8 @@
     "continueWithGoogle": "Teruskan dengan Google",
     "alreadyHaveAccount": "Sudah mempunyai akaun?",
     "newHere": "Pengguna baharu?",
-    "createAnAccount": "Cipta akaun"
+    "createAnAccount": "Cipta akaun",
+    "passwordRules": "Sekurang-kurangnya 8 aksara, dengan sekurang-kurangnya satu huruf dan satu nombor."
   },
   "SideNav": {
     "newMatch": "Perlawanan Baru",
@@ -43,8 +50,8 @@
     "settings": "Tetapan",
     "howtoplay": "Cara Bermain",
     "logout": "Log keluar",
-    "privacy": "Privasi",
-    "terms": "Terma"
+    "privacyPolicy": "Dasar Privasi",
+    "termsOfService": "Terma Perkhidmatan"
   },
   "Lobby": {
     "title": "Permainan",
@@ -92,6 +99,7 @@
     "cancel": "Batal",
     "creating": "Sedang mencipta...",
     "create": "Cipta",
+    "market": "Pasaran",
     "close": "Tutup",
     "duration30s": "30 saat",
     "duration1min": "1 minit",
@@ -141,6 +149,7 @@
     "privacyPolicy": "Dasar Privasi",
     "chooseImageFile": "Sila pilih fail imej.",
     "uploading": "Sedang memuat naik...",
+    "uploadingDone": "Berjaya Disimpan!",
     "signInAgainUpload": "Sila log masuk semula sebelum memuat naik.",
     "uploadFailed": "Muat naik gagal. Cuba lagi.",
     "profilePhotoUpdateFailed": "Tidak dapat mengemas kini foto profil anda.",
@@ -203,6 +212,8 @@
     "equilibriumCores": "Teras Keseimbangan",
     "achievementsLabel": "Pencapaian",
     "unlocked": "Dibuka",
+    "unlockedShort": "✓",
+    "lockedShort": "🔒",
     "winsProgress": "{wins}/{requirement} kemenangan",
     "unknownUser": "Tidak Diketahui",
     "performanceStats": "Statistik Prestasi",
@@ -338,7 +349,7 @@
     "lastUpdated": "Kemas kini terakhir: {date}",
     "intro": "Sila baca ini sebelum bermain. Produk ini mudah: modal maya, tiada wang sebenar dan beberapa peraturan asas untuk memastikan permainan yang adil.",
     "section1Title": "1. Mengenai perkhidmatan ini",
-    "section1": "DUEL ialah permainan dagangan BTC/USDT simulasi untuk dua pemain. Ia menggunakan baki maya dan data pasaran untuk mengira pesanan dan keputusan simulasi. Anda tidak boleh membeli, menjual, mendeposit, mengeluarkan atau memiliki mata wang kripto atau mana-mana aset sebenar di sini. Baki maya, kedudukan dan keputusan tidak mempunyai nilai tunai serta tidak boleh ditebus atau dipindahkan. Data pasaran mungkin berasal daripada candlestick sejarah, dan mungkin tertunda, tidak lengkap atau berbeza daripada platform dagangan langsung.",
+    "section1": "Ini ialah simulasi perdagangan masa nyata yang melibatkan dua pemain. Anda berdagang dalam pasaran BTC/USDT, ETH/USDT atau SOL/USDT yang disimulasikan menentang pemain lain menggunakan modal maya sahaja. Tiada wang sebenar digunakan, didepositkan, dikeluarkan, atau didagangkan di platform ini pada bila-bila masa. Tiada aktiviti di sini merupakan perdagangan kewangan sebenar, dan tiada apa-apa yang anda lakukan di sini mempunyai nilai kewangan di luar aplikasi ini.",
     "section2Title": "2. Kelayakan dan akaun anda",
     "section2": "Anda mestilah berumur sekurang-kurangnya 18 tahun dan mempunyai keupayaan untuk bersetuju secara sah dengan terma ini di tempat anda tinggal. Berikan maklumat akaun yang tepat, pastikan maklumat log masuk anda selamat dan maklumkan kepada kami dengan segera jika anda mengesyaki seseorang telah mengakses akaun anda. Anda bertanggungjawab atas aktiviti di bawah akaun anda, kecuali jika undang-undang menetapkan sebaliknya. Jangan kongsi, jual atau pindahkan akaun anda.",
     "section3Title": "3. Penggunaan yang dibenarkan",
@@ -440,7 +451,7 @@
   },
   "HowToPlay": {
     "title": "Cara bermain",
-    "intro": "Dua pemain, satu carta BTC/USDT, modal permulaan yang sama. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
+    "intro": "Dua pemain, satu carta (BTC, ETH atau SOL berbanding USDT), modal permulaan yang sama. Carta memainkan semula harga sebenar 1 minit bagi beberapa jam terakhir, dipercepatkan kepada satu lilin setiap setengah saat. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
     "facts": {
       "players": "Pemain",
       "startingCapital": "Modal permulaan",
@@ -600,6 +611,7 @@
     "nothingMoves": "Tiada apa-apa berlaku sehingga pelayan mengesahkan Dagangan anda.",
     "enterAmount": "Masukkan jumlah.",
     "amountGreaterThanZero": "Jumlah mestilah lebih besar daripada sifar.",
+    "amountBelowMinimum": "Pesanan terkecil ialah {amount}.",
     "amountExceedsLimit": "Melebihi jumlah yang boleh anda dagangkan — maksimum {amount}."
   },
   "PositionPanel": {
@@ -660,7 +672,8 @@
         "detail": "Anda dan {opponent} tamat dengan jumlah modal yang sama.",
         "footnote": "Perlawanan telah tamat. Tiada dagangan lanjut boleh dibuat."
       }
-    }
+    },
+    "opponent": "Lawan"
   },
   "MatchResult": {
     "finalResult": "Keputusan akhir",
@@ -733,6 +746,8 @@
     "invalidRequest": "Permintaan tidak sah.",
     "invalidCapital": "Modal permulaan tidak sah.",
     "invalidSymbol": "Simbol tidak sah.",
+    "invalidDuration": "Pilih tempoh perlawanan daripada senarai.",
+    "invalidRoomId": "Pautan bilik itu tidak sah.",
     "loginRequired": "Sila log masuk dahulu.",
     "friendsOnly": "Anda hanya boleh menjemput rakan anda.",
     "alreadyInGameCreate": "Anda sudah mempunyai permainan aktif. Tamatkan atau padamnya sebelum mencipta yang lain.",
@@ -748,7 +763,9 @@
     "roomNotDeletable": "Bilik tidak dijumpai atau anda tiada kebenaran untuk memadamnya.",
     "couldNotDelete": "Tidak dapat memadam bilik.",
     "couldNotJoin": "Tidak dapat menyertai bilik.",
-    "couldNotLoad": "Tidak dapat memuatkan bilik."
+    "couldNotLoad": "Tidak dapat memuatkan bilik.",
+    "roomNameTooLong": "Nama bilik terlalu panjang (maksimum 40 aksara).",
+    "roomNameInvalidChars": "Nama bilik hanya boleh mengandungi huruf, nombor, ruang dan - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Gagal memuatkan faktor keselamatan.",
@@ -811,7 +828,7 @@
   "AuthErrors": {
     "invalidCredentials": "E-mel atau kata laluan salah.",
     "emailTaken": "Akaun dengan e-mel ini sudah wujud.",
-    "weakPassword": "Kata laluan terlalu lemah. Gunakan sekurang-kurangnya 6 aksara.",
+    "weakPassword": "Kata laluan terlalu lemah. Gunakan 8 hingga 72 aksara, dengan sekurang-kurangnya satu huruf dan satu nombor.",
     "emailNotConfirmed": "Sila sahkan e-mel anda sebelum log masuk.",
     "tooManyRequests": "Terlalu banyak percubaan. Sila tunggu sebentar dan cuba lagi.",
     "signupDisabled": "Pendaftaran dilumpuhkan buat masa ini.",
@@ -844,11 +861,17 @@
     "matchNotActive": "Perlawanan tidak aktif.",
     "invalidSide": "Arah mesti long atau short.",
     "invalidAmount": "Jumlah mesti nombor positif.",
+    "amountTooSmall": "Pesanan terkecil ialah $1.",
+    "tooManyDecimals": "Gunakan paling banyak 2 tempat perpuluhan.",
     "notInMatch": "Anda tiada dalam perlawanan ini.",
     "noPriceYet": "Belum ada harga, cuba lagi sebentar.",
     "notEnoughBalance": "Baki tidak mencukupi.",
     "matchIdRequired": "Perlawanan tidak dinyatakan.",
     "matchNotFound": "Perlawanan tidak dijumpai.",
     "unknown": "Sesuatu telah berlaku."
+  },
+  "AchievementToast": {
+    "unlocked": "Pencapaian dibuka: {name}!",
+    "seeProgress": "Lihat kemajuan anda"
   }
 }

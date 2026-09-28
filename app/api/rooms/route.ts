@@ -1,12 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ALLOWED_DURATIONS, MATCH_DURATION_SECONDS } from "@/lib/match/rules";
+import {
+  ALLOWED_CAPITAL,
+  ALLOWED_DURATIONS,
+  ALLOWED_SYMBOLS,
+  DEFAULT_SYMBOL,
+  MATCH_DURATION_SECONDS,
+  isRoomId,
+  roomNameError,
+} from "@/lib/match/rules";
 
-const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
+const ALLOWED_CAPITAL_SET = new Set(ALLOWED_CAPITAL);
 const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
-
-// max room name
-const MAX_NAME_LENGTH = 40;
 
 type CreateRoomRequest = {
   symbol?: unknown;
@@ -78,7 +83,7 @@ function formatRoom(
     ageMin: getRoomAgeMinutes(room.created_at),
     duration: room.duration_seconds ?? getRoomDuration(room),
     capital: Number(room.starting_capital),
-    symbol: "BTC/USDT",
+    symbol: room.symbol,
     ownedByCurrentUser: isOwner,
   };
 }
@@ -86,28 +91,25 @@ function formatRoom(
 function getStartingCapital(value: unknown) {
   const capital = Number(value);
 
-  if (!Number.isFinite(capital) || !ALLOWED_CAPITAL.has(capital)) {
+  if (!Number.isFinite(capital) || !ALLOWED_CAPITAL_SET.has(capital)) {
     return null;
   }
 
   return capital;
 }
 
-function getRoomName(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
+// Match length: not sent at all = the default (1 minute). Anything else must
+// be one of the allowed lengths, or we return null and the request gets a 400
+// (a bad value is refused, not silently swapped for the default).
+function getDurationSeconds(value: unknown) {
+  if (value === undefined) {
+    return MATCH_DURATION_SECONDS;
   }
 
-  const name = value.trim();
-
-  return name.length === 0 ? null : name.slice(0, MAX_NAME_LENGTH);
-}
-
-function getDurationSeconds(value: unknown) {
   const duration = Number(value);
 
   if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
-    return MATCH_DURATION_SECONDS;
+    return null;
   }
 
   return duration;
@@ -258,8 +260,16 @@ export async function POST(request: Request) {
 
   const startingCapital = getStartingCapital(body.startingCapital);
   const durationSeconds = getDurationSeconds(body.durationSeconds);
-  const name = getRoomName(body.name);
-  const symbol = "BTC/USDT";
+
+  const rawName = typeof body.name === "string" ? body.name : "";
+  const nameError = roomNameError(rawName);
+  if (nameError !== null) {
+    return Response.json({ error: t(nameError) }, { status: 400 });
+  }
+  const name = rawName.trim() || null; // null = user's name room
+
+  // Market: one of the allowed ones. Not sent at all = the default (BTC).
+  const symbol = body.symbol === undefined ? DEFAULT_SYMBOL : body.symbol;
 
   if (startingCapital === null) {
     return Response.json(
@@ -268,7 +278,14 @@ export async function POST(request: Request) {
     );
   }
 
-  if (symbol === null) {
+  if (durationSeconds === null) {
+    return Response.json(
+      { error: t("invalidDuration") },
+      { status: 400 }
+    );
+  }
+
+  if (typeof symbol !== "string" || !ALLOWED_SYMBOLS.includes(symbol)) {
     return Response.json(
       { error: t("invalidSymbol") },
       { status: 400 }
@@ -335,7 +352,9 @@ export async function POST(request: Request) {
   const { error: insertError } = await supabase.from("matches").insert(insertPayload); // creating new match
 
   if (insertError) {
-    if (insertError.code === "23505") { // unique_violation code, unique constraint
+    // 23505 = the database's "one open match per player" rule (migration 0014)
+    // said no: another request put this player in a match a moment ago.
+    if (insertError.code === "23505") {
       return Response.json(
         { error: t("alreadyInGameCreate") },
         { status: 409 }
@@ -395,6 +414,11 @@ export async function DELETE(request: Request) {
   }
 
   const roomId = body.roomId.trim();
+
+  // Not even shaped like a room id? Say so now (400), don't ask the database.
+  if (!isRoomId(roomId)) {
+    return Response.json({ error: t("invalidRoomId") }, { status: 400 });
+  }
 
   const { count, error: deleteError } = await supabase
     .from("matches")
