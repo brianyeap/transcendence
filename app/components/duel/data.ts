@@ -9,3 +9,8 @@ export const navItems: { label: string; icon: IconName; active?: boolean; page: 
   { label: "Settings", icon: "settings", page: "/settings" },
   { label: "HowToPlay", icon: "helpCircle", page: "/instructions" },
 ];
+
+export const legalLinks = [
+	{ href: "/privacy-policy", key: "privacy" },
+	{ href: "/terms-services", key: "terms" },
+];

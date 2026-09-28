@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Avatar } from "./avatar";
-import { navItems } from "./data";
+import { navItems, legalLinks } from "./data";
 import { Icon } from "./duel-icon";
 import { Logo } from "./logo";
 import { LogoutButton } from "../auth/logout-button";
@@ -92,12 +92,29 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 
 				{/* mt-auto pushes this block to the bottom of the menu */}
 				<div className="mt-auto">
+					<div className="mt-3 flex items-center gap-1.5 px-3 pb-1 text-[12px] text-dim">
+						{legalLinks.map((link, i) => (
+							<span key={link.href} className="flex items-center gap-1.5">
+								{i > 0 ? <span aria-hidden>·</span> : null}
+								<Link
+									href={link.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="transition-colors hover:text-dim hover:underline"
+								>
+									{t(link.key)}
+								</Link>
+							</span>
+						))}
+					</div>
 					<div className="my-3 h-px bg-line" />
 					<div className="flex items-center gap-3 px-2 py-2">
-						<Avatar name={displayName} imageUrl={fetchedAvatar} /> 
+						<Avatar name={displayName} imageUrl={fetchedAvatar} />
 						<span className="truncate text-sm font-semibold">{displayName}</span>
 					</div>
 					<LogoutButton />
+
+					{/* Legal links: small and muted so they don't compete with the main nav */}
 				</div>
 			</aside>
 
