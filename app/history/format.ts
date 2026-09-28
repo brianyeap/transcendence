@@ -4,14 +4,30 @@ export function formatMoney(value: number): string {
 	return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export function formatDuration(starts_at?: string | null, ends_at?: string | null): string {
+export function formatDuration(
+	starts_at: string | null | undefined,
+	ends_at: string | null | undefined,
+	t?: (key: string, values?: Record<string, string | number>) => string
+): string {
 	if (!starts_at || !ends_at) return "—";
+
 	const start = new Date(starts_at).getTime();
 	const end = new Date(ends_at).getTime();
+
 	if (Number.isNaN(start) || Number.isNaN(end)) return "—";
+
 	const seconds = Math.max(0, Math.round((end - start) / 1000));
 	const minutes = Math.floor(seconds / 60);
 	const remainingSeconds = seconds % 60;
+
+	if (t) {
+		return t("durationValue", {
+			minutes,
+			seconds: remainingSeconds,
+		});
+	}
+
+	// Fallback if no translation function is provided
 	return `${minutes}m ${remainingSeconds}s`;
 }
 

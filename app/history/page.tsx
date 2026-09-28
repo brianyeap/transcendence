@@ -302,7 +302,7 @@ export default function HistoryPage() {
 													<div className="hidden md:flex items-center gap-6">
 														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-sm font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-sm font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div><div className={`text-[10px] font-mono ${getResultColor(match.result)} opacity-70`}>{formatPct(match.realized_pnl, match.starting_capital)}</div></div>
-														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-sm font-semibold mt-0.5 flex items-center gap-1 justify-end"><Clock className="w-3 h-3 text-[#5d6877]" />{formatDuration(match.starts_at, match.ends_at)}</div></div>
+														<div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-sm font-semibold mt-0.5 flex items-center gap-1 justify-end"><Clock className="w-3 h-3 text-[#5d6877]" />{formatDuration(match.starts_at, match.ends_at, t)}</div></div>
 													</div>
 													{isExpanded ? <ChevronDown className="w-4 h-4 text-[#5d6877] transition-all shrink-0" /> : <ChevronRight className="w-4 h-4 text-[#5d6877] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />}
 												</div>
@@ -310,7 +310,7 @@ export default function HistoryPage() {
 											<div className="md:hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/[.04]">
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("final")}</div><div className="text-xs font-semibold font-mono mt-0.5">${match.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("netPnl")}</div><div className={`text-xs font-bold mt-0.5 font-mono ${getResultColor(match.result)}`}>{formatMoney(match.realized_pnl)}</div></div>
-												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at)}</div></div>
+												<div><div className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("duration")}</div><div className="text-xs font-semibold mt-0.5">{formatDuration(match.starts_at, match.ends_at, t)}</div></div>
 											</div>
 										</div>
 
@@ -348,7 +348,7 @@ export default function HistoryPage() {
 														<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("startTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.starts_at, locale)}</div></div>
 															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("endTime")}</div><div className="text-xs font-semibold">{formatDateTime(matchDetails.match.ends_at, locale)}</div></div>
-															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at)}</div></div>
+															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("duration")}</div><div className="text-xs font-semibold">{formatDuration(matchDetails.match.starts_at, matchDetails.match.ends_at, t)}</div></div>
 															<div className="rounded-[7px] border border-white/[.07] bg-[#090b11] p-3"><div className="text-[10px] uppercase tracking-wide text-[#5d6877] mb-1">{tDetail("finalPrice")}</div><div className="text-xs font-semibold font-mono">${Number(matchDetails.match.final_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div></div>
 														</div>
 
