@@ -7,8 +7,9 @@ services:
     restart: unless-stopped
     environment:
       SUPABASE_METRICS_KEY: ${SUPABASE_METRICS_KEY}
-    ports:
-      - "9090:9090"
+    # No "ports": Prometheus speaks plain HTTP with no login, so it stays
+    # inside Docker. Grafana reaches it as http://prometheus:9090, and people
+    # look at the data through Grafana (HTTPS + login).
     volumes:
       - prometheus_data:/prometheus
     networks:
@@ -66,9 +67,9 @@ services:
       - "--config=/etc/otelcol-contrib/config.yaml"
     volumes:
       - ./otel/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
-    ports:
-      - "4318:4318"
-      - "8889:8889"
+    # No "ports": only containers talk to the collector (web and socket send
+    # to otel-collector:4318, Prometheus scrapes otel-collector:8889), so
+    # nothing plain-HTTP is left open to the browser or the network.
     networks:
       - transcendence
 

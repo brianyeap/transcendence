@@ -11,7 +11,10 @@ import type {
   TradeFill,
 } from "./types";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
+// Where the match engine lives. Left empty in .env.local, so it becomes
+// `undefined` and Socket.IO connects to the same HTTPS address as the page
+// (the proxy passes /socket.io/ on to the engine).
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || undefined;
 
 // A player's raw position
 type EnginePosition = {

@@ -23,6 +23,7 @@ The goal of the project was to build a complete, multi-user, real-time web appli
 - **3 languages**: English, Bahasa Melayu and Simplified Chinese
 - **Monitoring**: OpenTelemetry → Prometheus → Grafana, with dashboards and email alerts
 - **Privacy Policy, Terms of Service and a How-to-Play page**
+- **HTTPS everywhere**: the browser only talks to an nginx proxy over HTTPS, which forwards to the web app and the match engine inside Docker
 
 ## Team Information
 
@@ -56,6 +57,7 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Database | **Supabase (PostgreSQL)** | A real relational database with foreign keys, enums and Row Level Security. It also comes with Auth (email/password, OAuth, MFA) and Storage (avatars), so we didn't have to build those ourselves. |
 | Auth | **Supabase Auth** | Salted, hashed passwords, Google OAuth and TOTP 2FA out of the box |
 | Market data | **Coinbase Exchange API** (BTC-USD, ETH-USD, SOL-USD 1-minute candles) | Free, public, real price data with no API key needed |
+| HTTPS | **nginx** reverse proxy with a self-signed certificate (`docker/nginx/`) | One HTTPS entry point for the web app and the match engine, so every browser connection is encrypted |
 | i18n | **next-intl** | Works with Next.js server and client components |
 | Monitoring | **OpenTelemetry**, **Prometheus**, **Grafana** | OTel is the standard way to export metrics. Prometheus stores them, and Grafana shows dashboards and sends alerts. |
 | Containers | **Docker** + **Docker Compose** | The whole stack starts with one command |
@@ -66,12 +68,48 @@ All four of us worked as developers, reviewed each other's changes and tested ou
 | Part | Where | What it does |
 | --- | --- | --- |
 | Web app | `app/`, `lib/` | Next.js (App Router) UI: login, lobby, match screen, profile, friends, leaderboard, history, settings |
-| Match engine | `socket/` | Node + Socket.IO server on port `4000`. Runs matches, downloads the room's Coinbase candles and replays them, validates trades, saves results |
+| HTTPS proxy | `docker/nginx/` | nginx on `https://localhost:3000`. Sends `/socket.io/` to the match engine and everything else to the web app. Plain `http://` is redirected to `https://`. |
+| Match engine | `socket/` | Node + Socket.IO server on port `4000` (inside Docker only). Runs matches, downloads the room's Coinbase candles and replays them, validates trades, saves results |
 | Database / auth | `supabase/` | Supabase Postgres, Auth (email/password, Google OAuth, TOTP 2FA) and Storage (avatars) |
 | Monitoring | `monitoring/` | OpenTelemetry collector → Prometheus → Grafana |
 | Translations | `messages/` | `en`, `ms`, `zh-CN` via `next-intl` |
 
 More detail, with diagrams: [How DUEL works](docs/architecture.md).
+
+### How HTTPS works
+
+The browser only talks to nginx, always over HTTPS. nginx decrypts each request, looks at its path, and passes it on to the right server inside Docker, where plain HTTP is fine because that traffic never leaves the machine. The `web` and `socket` containers have no public ports, so nginx is the only way in.
+
+```mermaid
+flowchart LR
+    B["Browser<br/>https://localhost:3000"] -- "1. HTTPS 🔒" --> N["nginx (proxy)<br/>2. decrypt with key.pem<br/>3. check the path"]
+    N -- "/socket.io/...<br/>plain HTTP" --> K["Match engine<br/>socket:4000"]
+    N -- "everything else<br/>plain HTTP" --> W["Next.js<br/>web:3000"]
+    W -. "4. response" .-> N
+    K -. "4. response" .-> N
+    N -. "5. encrypt, send back 🔒" .-> B
+```
+
+Websockets (live matches) take the same path. They start as a normal HTTPS request that asks to "Upgrade". nginx passes the `Upgrade` and `Connection` headers on to the match engine, and after that the connection stays open for messages in both directions. The browser side is `wss://` (encrypted). The nginx-to-engine side is `ws://` (plain, inside Docker).
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant N as nginx
+    participant K as socket:4000
+
+    B->>N: 🔒 GET /socket.io/ (Upgrade: websocket)
+    N->>K: GET /socket.io/ (Upgrade: websocket)
+    K-->>N: 101 Switching Protocols
+    N-->>B: 🔒 101 Switching Protocols
+    Note over B,K: Connection stays open
+    B->>N: 🔒 trade
+    N->>K: trade
+    K-->>N: game state
+    N-->>B: 🔒 game state
+```
+
+The browser finds the match engine on its own: `NEXT_PUBLIC_SOCKET_URL` is left empty, so Socket.IO connects to the same address as the page. Because that address is `https://`, the socket uses `wss://`, and the browser never has to open an unencrypted connection.
 
 ## Database Schema
 
@@ -172,6 +210,7 @@ Row Level Security is on for every table. Players can only change their own data
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
 | Game customization (server side) | `/api/rooms` checks the chosen market, length and capital against `lib/match/rules.ts` and saves them on the match. A database CHECK (migration `0013`) refuses an unknown market even if someone skips the API. The match engine then replays that market's candles for that length with that capital. | Brian |
+| HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
@@ -290,7 +329,7 @@ Row Level Security is on for every table. Players can only change their own data
 
 ## Instructions
 
-The whole stack runs with Docker Compose. There's no need to run `npm run dev` yourself: the `web` container runs it for you.
+The whole stack runs with Docker Compose. The `web` image is a **production build**: `docker compose up --build` runs `next build` once while it builds the image, and the container then only runs `next start`. Pages are already compiled, so they load fast and nothing is rebuilt while you use the app.
 
 ### Prerequisites
 
@@ -317,8 +356,8 @@ Fill in `.env.local`:
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same page. Only the socket server uses it, and it must never reach the browser. |
 | `SUPABASE_DB_PASSWORD` | Supabase → Project Settings → Database |
-| `NEXT_PUBLIC_SOCKET_URL` | `http://localhost:4000` locally |
-| `SOCKET_ALLOWED_ORIGINS` | The web app origins the match engine accepts |
+| `NEXT_PUBLIC_SOCKET_URL` | **Leave empty.** The browser then reaches the match engine through the same HTTPS address as the website (the proxy forwards `/socket.io/`). Only set it if the engine runs somewhere else. |
+| `SOCKET_ALLOWED_ORIGINS` | The web app origins the match engine accepts, e.g. `https://localhost:3000` |
 
 The socket container reads `.env.local` directly, so the stack won't start without it.
 
@@ -345,19 +384,25 @@ docker compose up --build
 
 | Service | URL |
 | --- | --- |
-| Web app | http://localhost:3000 |
-| Match engine (Socket.IO) | http://localhost:4000 |
+| Web app | **https://localhost:3000** (self-signed certificate: accept the browser warning once) |
+| Match engine (Socket.IO) | Same address, path `/socket.io/` (the proxy forwards it; port `4000` is only open inside Docker) |
 | Grafana | https://localhost:3001 (self-signed certificate, so accept the browser warning) |
-| Prometheus | http://localhost:9090 |
-| OTel collector | `4318` (HTTP), `8889` (Prometheus metrics) |
 
-The `web` container reinstalls npm dependencies when `node_modules` is missing or older than `package.json` / `package-lock.json`. All services share the `transcendence_dev` network, so they reach each other by service name (e.g. `otel-collector:4318`).
+Only two things are reachable from the browser, and both use HTTPS: the `proxy` container (nginx) for the app, and Grafana. nginx serves everything over HTTPS with a self-signed certificate made when its image is built, and redirects `http://localhost:3000` to `https://`. The `web`, `socket`, `prometheus` and `otel-collector` containers have **no public ports**: they only talk to each other inside Docker, over the `transcendence_dev` network, by service name (e.g. `otel-collector:4318`, `prometheus:9090`). To look at the metrics, use Grafana (it reads Prometheus for you).
 
-The match engine **does not hot reload**. After editing `socket/server.js`, restart it:
+`proxy`, `web` and `socket` have `restart: unless-stopped`, so if one of them ever crashes, Docker starts it again by itself.
+
+Neither the web app nor the match engine hot reloads: their code is copied into their images. After changing code, rebuild the one you changed:
 
 ```bash
-docker compose restart socket
+docker compose up -d --build web
 ```
+
+```bash
+docker compose up -d --build socket
+```
+
+For day-to-day coding with hot reload, run `npm run dev` outside Docker instead.
 
 ### Using a different web port
 
@@ -372,16 +417,16 @@ WEB_PORT=3003 docker compose up --build
 This is the default setup. In `.env.local`:
 
 ```
-NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
-SOCKET_ALLOWED_ORIGINS=http://localhost:3000
+NEXT_PUBLIC_SOCKET_URL=
+SOCKET_ALLOWED_ORIGINS=https://localhost:3000
 ```
 
-Open http://localhost:3000 in two browser windows (one of them incognito) and sign in as two different players.
+Open https://localhost:3000 in two browser windows (one of them incognito), accept the certificate warning, and sign in as two different players.
 
-If you change `.env.local` while the stack is running, **recreate** the containers. A plain `restart` doesn't work here: the socket container only reads `.env.local` when it's created, and the web app only reads `NEXT_PUBLIC_*` values when it starts.
+If you change `.env.local` while the stack is running, **rebuild and recreate** the containers. A plain `restart` doesn't work here: the containers only read `.env.local` when they're created, and the `NEXT_PUBLIC_*` values are written into the web app's browser code when its image is built.
 
 ```bash
-docker compose up -d --force-recreate --no-deps socket web
+docker compose up -d --build --force-recreate --no-deps socket web
 ```
 
 ### Playing across two computers (ngrok)
@@ -404,20 +449,20 @@ Open Docker Desktop, then run the tunnel script. It starts the Docker stack for 
 The script:
 
 1. Builds and starts the whole stack in the background (`docker compose up -d --build`).
-2. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml) (web, socket, and Grafana).
-3. Writes the new URLs into `.env.local` (`NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS`). This happens every run because free-tier URLs change each time ngrok restarts.
-4. Recreates the `socket` and `web` containers so they pick up the new values.
+2. Opens the tunnels listed in [`ngrok.yml`](ngrok.yml): the web app (which also carries the match engine, through the proxy) and Grafana.
+3. Adds the tunnel URL to `SOCKET_ALLOWED_ORIGINS` in `.env.local`. This happens every run because free-tier URLs change each time ngrok restarts.
+4. Recreates the `socket` container so it picks up the new value.
 5. Waits for the web app to respond, then prints the web URL. **Both players open that URL.**
 
-Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the containers again. The stack keeps running afterwards; stop it with `docker compose down`.
+Press **Ctrl+C** to close the tunnels. The script puts the localhost values back in `.env.local` and recreates the `socket` container again. The stack keeps running afterwards; stop it with `docker compose down`.
 
 Things already set up in the code for ngrok:
 
-- `next.config.ts` has `allowedDevOrigins` for `*.ngrok-free.app` and `*.ngrok-free.dev`, so the dev server accepts requests from the tunnel.
+- `next.config.ts` has `allowedDevOrigins` for `*.ngrok-free.app` and `*.ngrok-free.dev`. This only matters if you run `npm run dev` instead of Docker: the dev server would otherwise refuse requests from the tunnel.
 - The socket client uses `transports: ["websocket"]` (`lib/match/socket-transport.ts`). ngrok's free tier answers normal browser HTTP requests with a warning page, which breaks Socket.IO's polling handshake. WebSocket connections aren't affected.
 - The OAuth callback (`app/auth/callback/route.ts`) builds its redirect from the `x-forwarded-host` / `x-forwarded-proto` headers, so you land back on the tunnel URL after login.
 
-**If a match never connects or hangs in the countdown**, check that `.env.local` has the *current* tunnel URLs (the script prints them), and that no other ngrok agent is already running. The free tier allows only one at a time.
+**If a match never connects or hangs in the countdown**, check that no other ngrok agent is already running. The free tier allows only one at a time.
 
 ### Playing on the same network (LAN)
 
@@ -427,9 +472,9 @@ If both computers are on the same network (e.g. the 42 cluster), you don't need 
 ./run_lan.sh
 ```
 
-The script finds this machine's local IP (`ip route` on Linux, `ipconfig getifaddr` on macOS), points `NEXT_PUBLIC_SOCKET_URL` and `SOCKET_ALLOWED_ORIGINS` at it, recreates the containers, and prints the URL. **Both players open that URL**, including the host. Press **Ctrl+C** to switch `.env.local` back to localhost.
+The script finds this machine's local IP (`ip route` on Linux, `ipconfig getifaddr` on macOS), adds `https://<your-ip>:3000` to `SOCKET_ALLOWED_ORIGINS`, recreates the `socket` container, and prints the URL. **Both players open that URL**, including the host, and accept the certificate warning once. Press **Ctrl+C** to switch `.env.local` back to localhost.
 
-`next.config.ts` allows private IP ranges (`10.*`, `172.*`, `192.168.*`) in `allowedDevOrigins`; without that, the dev server blocks its own JS and login does nothing. For Google login, add `http://<your-ip>:3000/**` to the Supabase redirect URLs. If the other computer can't connect at all, check the host's firewall.
+`next.config.ts` allows private IP ranges (`10.*`, `172.*`, `192.168.*`) in `allowedDevOrigins`. That only matters for `npm run dev` (the dev server blocks its own JS for other addresses and login does nothing); the Docker production build doesn't need it. For Google login, add `https://<your-ip>:3000/**` to the Supabase redirect URLs. If the other computer can't connect at all, check the host's firewall.
 
 ### Stop the stack
 
@@ -446,6 +491,7 @@ The Next.js web app is deployed on **Vercel**. Vercel can't host the match engin
 - Live match state lives in the socket server's memory. If the engine restarts, running matches are lost (stale ones are closed by `closeStaleMatches`).
 - Prices are **replayed, not live**: each match replays the most recent real 1-minute candles, sped up to one every 0.5 s. Three markets are supported: BTC, ETH and SOL (against USDT).
 - Market data depends on Coinbase's public API being reachable.
+- The HTTPS certificate is self-signed (made by `docker/nginx/Dockerfile`), so each browser shows a warning once before the app loads. The built-in browsers of some tools refuse self-signed certificates entirely.
 - **Browsers:** tested on the latest Chrome, Edge and Brave. Each browser shows its own warning page for Grafana's self-signed certificate, and you have to accept it once per browser before the dashboards load.
 
 ## Resources

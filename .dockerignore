@@ -5,3 +5,15 @@ npm-debug.log*
 Dockerfile
 docker-compose*.yml
 .DS_Store
+*.tsbuildinfo
+
+# Never copy real env files into an image. The build borrows .env.local as a
+# secret instead (see Dockerfile), and the running container gets it through
+# env_file in docker-compose.yml.
+.env
+.env.*
+!.env.example
+monitoring/.env
+
+# Other parts of the stack with their own images
+socket/node_modules

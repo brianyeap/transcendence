@@ -15,7 +15,7 @@ const PORT = 4000;
 const TICK_MS = 500;
 const MIN_TRADE_AMOUNT = 1;
 const ALLOWED_ORIGINS = (
-  process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000"
+  process.env.SOCKET_ALLOWED_ORIGINS ?? "https://localhost:3000"
 )
   .split(",")
   .map((origin) => origin.trim());

@@ -2,20 +2,37 @@ include:
   - monitoring/docker-compose.yml
 
 services:
+  # The only way in from the browser. Serves everything over HTTPS and
+  # passes requests on to "web" and "socket" (see docker/nginx/nginx.conf).
+  proxy:
+    build: ./docker/nginx
+    restart: unless-stopped # come back up on its own if it ever crashes
+    ports:
+      - "${WEB_PORT:-3000}:443" # https://localhost:3000 (or your WEB_PORT)
+    depends_on:
+      - web
+      - socket
+    networks:
+      - transcendence
+
+  # The Next.js app, as a production build: the image runs `next build` once,
+  # then the container only runs `next start`. Pages are already compiled, so
+  # they load fast and nothing gets rebuilt while you use the app.
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    command: npm run dev -- --hostname 0.0.0.0 # Listen on all interfaces
-    environment:
-      NEXT_TELEMETRY_DISABLED: "1" # Disable Next.js collecting telemetry data
-      WATCHPACK_POLLING: "true" # Enable polling for file changes
-    ports:
-      - "${WEB_PORT:-3000}:3000" # use web port from .env or default to 3000
-    volumes:
-      - .:/app # Mount the entire project directory to /app in the container
-      - web_node_modules:/app/node_modules # Mount the node_modules directory to persist dependencies
-      - web_next_cache:/app/.next # Mount the .next directory to persist build cache
+      # `next build` needs .env.local (the NEXT_PUBLIC_* values are written
+      # into the browser code at build time). It is lent to the build as a
+      # secret, so it is never saved inside the image. See the Dockerfile.
+      secrets:
+        - env_local
+    restart: unless-stopped
+    # The server-side values (e.g. SUPABASE_SERVICE_ROLE_KEY for the avatar
+    # route) are read while the app runs, so hand them to the container too.
+    env_file:
+      - .env.local
+    # No "ports": the browser reaches the web app only through the HTTPS proxy.
     networks:
       - transcendence
 
@@ -23,19 +40,21 @@ services:
     build:
       context: ./socket
       dockerfile: Dockerfile
+    # If the match engine ever crashes, Docker starts it again straight away.
+    restart: unless-stopped
     # Give the socket container the Supabase URL + secret key it needs to write
     # match data. env_file loads them straight from .env.local into the container
     # (the server's dotenv line only works when running outside Docker).
     env_file:
       - .env.local
-    ports:
-      - "4000:4000"
+    # No "ports": the browser reaches the match engine only through the HTTPS proxy.
     networks:
       - transcendence
 
-volumes:
-  web_node_modules:
-  web_next_cache:
+# Files lent to a build without being copied into the image.
+secrets:
+  env_local:
+    file: ./.env.local
 
 networks:
   transcendence:
