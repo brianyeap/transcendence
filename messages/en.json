@@ -30,7 +30,8 @@
     "continueWithGoogle": "Continue with Google",
     "alreadyHaveAccount": "Already have an account?",
     "newHere": "New here?",
-    "createAnAccount": "Create an account"
+    "createAnAccount": "Create an account",
+    "passwordRules": "At least 8 characters, with at least one letter and one number."
   },
   "SideNav": {
     "newMatch": "New Match",
@@ -543,6 +544,7 @@
     "nothingMoves": "Nothing moves until the server confirms your Trade.",
     "enterAmount": "Enter an amount.",
     "amountGreaterThanZero": "Amount must be greater than zero.",
+    "amountBelowMinimum": "The smallest order is {amount}.",
     "amountExceedsLimit": "More than you can trade — at most {amount}."
   },
   "PositionPanel": {
@@ -676,6 +678,8 @@
     "invalidRequest": "Invalid request.",
     "invalidCapital": "Invalid starting capital.",
     "invalidSymbol": "Invalid symbol.",
+    "invalidDuration": "Pick a match length from the list.",
+    "invalidRoomId": "That room link is not valid.",
     "loginRequired": "Please log in first.",
     "friendsOnly": "You can only invite your friends.",
     "alreadyInGameCreate": "You already have an active game. End or delete it before creating another.",
@@ -756,7 +760,7 @@
   "AuthErrors": {
     "invalidCredentials": "Wrong email or password.",
     "emailTaken": "An account with this email already exists.",
-    "weakPassword": "Password is too weak. Use at least 6 characters.",
+    "weakPassword": "Password is too weak. Use 8 to 72 characters, with at least one letter and one number.",
     "emailNotConfirmed": "Please confirm your email before logging in.",
     "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
     "signupDisabled": "Sign-ups are currently disabled.",
@@ -789,6 +793,8 @@
     "matchNotActive": "Match is not active.",
     "invalidSide": "Side must be long or short.",
     "invalidAmount": "Amount must be a positive number.",
+    "amountTooSmall": "The smallest order is $1.",
+    "tooManyDecimals": "Use at most 2 decimal places.",
     "notInMatch": "You are not in this match.",
     "noPriceYet": "No price yet, try again in a moment.",
     "notEnoughBalance": "Not enough balance.",

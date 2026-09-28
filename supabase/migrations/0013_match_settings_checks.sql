@@ -20,6 +20,14 @@ alter table public.matches
     check (name is null or (char_length(name) between 1 and 40
                             and name ~ '^[A-Za-z0-9 _''!?.-]+$')),
 
+  -- Starting capital: 5K, 10K or 20K.
+  add constraint matches_starting_capital_check
+    check (starting_capital in (5000, 10000, 20000)),
+
+  -- Match length: 30, 60 or 90 seconds (null on a few very old rows).
+  add constraint matches_duration_seconds_check
+    check (duration_seconds is null or duration_seconds in (30, 60, 90)),
+
   -- Market: Bitcoin, Ethereum or Solana.
   add constraint matches_symbol_check
     check (symbol in ('BTC/USDT', 'ETH/USDT', 'SOL/USDT'));

@@ -7,7 +7,7 @@ import { SideNav } from "../components/duel/side-nav";
 import { LogoutButton } from "../components/auth/logout-button";
 import { Avatar } from "../components/duel/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { resizeImage, AVATAR_MIME_TYPES } from "@/lib/avatar-upload";
+import { resizeImage, AVATAR_MIME_TYPES, AVATAR_MAX_BYTES } from "@/lib/avatar-upload";
 import { messageKeyFor } from "@/lib/i18n/error-codes";
 import {
   USERNAME_MIN_LENGTH,
@@ -134,6 +134,13 @@ export default function SettingsPage() {
     // instead of after pressing Save.
     if (!AVATAR_MIME_TYPES.includes(file.type)) {
       setStatusMessage(tErrors("invalidFormat"));
+      return;
+    }
+
+    // Too big? Say so now instead of uploading it first.
+    // The server checks the same 5 MB limit again.
+    if (file.size > AVATAR_MAX_BYTES) {
+      setStatusMessage(tErrors("fileTooLarge"));
       return;
     }
 

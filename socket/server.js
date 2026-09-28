@@ -13,6 +13,7 @@ const { gamesStarted, gamesCompleted, activeGames, matchesPlayed } = require("./
 // Settings
 const PORT = 4000;
 const TICK_MS = 500;
+const MIN_TRADE_AMOUNT = 1;
 const ALLOWED_ORIGINS = (
   process.env.SOCKET_ALLOWED_ORIGINS ?? "http://localhost:3000"
 )
@@ -569,9 +570,21 @@ io.on("connection", (socket) => {
       reject("invalidSide");
       return;
     }
-    const orderAmount = Number(amount);
-    if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+    // The amount must be a real number (not a string, not `true`)...
+    if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
       reject("invalidAmount");
+      return;
+    }
+    const orderAmount = amount;
+    // ...of at least MIN_TRADE_AMOUNT USDT (tiny orders round to a 0 position)...
+    if (orderAmount < MIN_TRADE_AMOUNT) {
+      reject("amountTooSmall");
+      return;
+    }
+    // ...with at most 2 decimals (whole cents). toFixed(2) rounds to cents,
+    // so if that changes the number, it had more than 2 decimals.
+    if (Number(orderAmount.toFixed(2)) !== orderAmount) {
+      reject("tooManyDecimals");
       return;
     }
 

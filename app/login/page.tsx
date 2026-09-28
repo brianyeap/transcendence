@@ -9,6 +9,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { validateSafeRedirect } from "@/lib/auth/redirect";
 import { authErrorKey } from "@/lib/auth/auth-error-key";
 import { validateUsername, USERNAME_MAX_LENGTH } from "@/lib/validation/username";
+import { isValidPassword, PASSWORD_MAX_LENGTH } from "@/lib/validation/password";
 import { messageKeyFor } from "@/lib/i18n/error-codes";
 import Link from "next/link";
 import { Languages } from "lucide-react";
@@ -66,6 +67,13 @@ function LoginForm() {
       setError(tErrors(messageKeyFor(checked.code) ?? "generic"));
       return;
     }
+    // Password rules (8-72 characters, a letter and a number) live in
+    // lib/validation/password.ts. Supabase Auth checks them again on its side.
+    if (isRegister && !isValidPassword(password)) {
+      setError(tAuth("weakPassword"));
+      return;
+    }
+
     // Trimmed version of the name, so no leading/trailing spaces get saved.
     const cleanUsername = checked.ok ? checked.username : "";
 
@@ -204,7 +212,13 @@ function LoginForm() {
             value={password}
             onChange={setPassword}
             placeholder={t("passwordPlaceholder")}
+            maxLength={PASSWORD_MAX_LENGTH}
           />
+
+          {/* Show the password rules while creating an account. */}
+          {isRegister && (
+            <p className="-mt-2 mb-4 text-xs text-muted">{t("passwordRules")}</p>
+          )}
 
           {error && (
             <p className="mb-4 rounded-md border border-loss px-3 py-2 text-sm text-loss">

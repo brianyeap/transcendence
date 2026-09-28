@@ -30,7 +30,8 @@
     "continueWithGoogle": "Teruskan dengan Google",
     "alreadyHaveAccount": "Sudah mempunyai akaun?",
     "newHere": "Pengguna baharu?",
-    "createAnAccount": "Cipta akaun"
+    "createAnAccount": "Cipta akaun",
+    "passwordRules": "Sekurang-kurangnya 8 aksara, dengan sekurang-kurangnya satu huruf dan satu nombor."
   },
   "SideNav": {
     "newMatch": "Perlawanan Baru",
@@ -543,6 +544,7 @@
     "nothingMoves": "Tiada apa-apa berlaku sehingga pelayan mengesahkan Dagangan anda.",
     "enterAmount": "Masukkan jumlah.",
     "amountGreaterThanZero": "Jumlah mestilah lebih besar daripada sifar.",
+    "amountBelowMinimum": "Pesanan terkecil ialah {amount}.",
     "amountExceedsLimit": "Melebihi jumlah yang boleh anda dagangkan — maksimum {amount}."
   },
   "PositionPanel": {
@@ -676,6 +678,8 @@
     "invalidRequest": "Permintaan tidak sah.",
     "invalidCapital": "Modal permulaan tidak sah.",
     "invalidSymbol": "Simbol tidak sah.",
+    "invalidDuration": "Pilih tempoh perlawanan daripada senarai.",
+    "invalidRoomId": "Pautan bilik itu tidak sah.",
     "loginRequired": "Sila log masuk dahulu.",
     "friendsOnly": "Anda hanya boleh menjemput rakan anda.",
     "alreadyInGameCreate": "Anda sudah mempunyai permainan aktif. Tamatkan atau padamnya sebelum mencipta yang lain.",
@@ -756,7 +760,7 @@
   "AuthErrors": {
     "invalidCredentials": "E-mel atau kata laluan salah.",
     "emailTaken": "Akaun dengan e-mel ini sudah wujud.",
-    "weakPassword": "Kata laluan terlalu lemah. Gunakan sekurang-kurangnya 6 aksara.",
+    "weakPassword": "Kata laluan terlalu lemah. Gunakan 8 hingga 72 aksara, dengan sekurang-kurangnya satu huruf dan satu nombor.",
     "emailNotConfirmed": "Sila sahkan e-mel anda sebelum log masuk.",
     "tooManyRequests": "Terlalu banyak percubaan. Sila tunggu sebentar dan cuba lagi.",
     "signupDisabled": "Pendaftaran dilumpuhkan buat masa ini.",
@@ -789,6 +793,8 @@
     "matchNotActive": "Perlawanan tidak aktif.",
     "invalidSide": "Arah mesti long atau short.",
     "invalidAmount": "Jumlah mesti nombor positif.",
+    "amountTooSmall": "Pesanan terkecil ialah $1.",
+    "tooManyDecimals": "Gunakan paling banyak 2 tempat perpuluhan.",
     "notInMatch": "Anda tiada dalam perlawanan ini.",
     "noPriceYet": "Belum ada harga, cuba lagi sebentar.",
     "notEnoughBalance": "Baki tidak mencukupi.",

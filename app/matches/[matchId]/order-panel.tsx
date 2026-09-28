@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { PlayerState, Side, TradeFill, TradeRejection } from "@/lib/match/types";
 import { fmtUSD } from "../../components/duel/format";
 import { fmtPrice } from "../../components/duel/format";
+import { MIN_TRADE_AMOUNT } from "@/lib/match/rules";
 
 const PRESETS = [0.25, 0.5, 0.75, 1] as const;
 
@@ -75,6 +76,7 @@ export function OrderPanel({
   const error = validate(raw, amount, player, {
     enterAmount: t("enterAmount"),
     amountGreaterThanZero: t("amountGreaterThanZero"),
+    amountBelowMinimum: t("amountBelowMinimum", { amount: fmtUSD(MIN_TRADE_AMOUNT) }),
     amountExceedsLimit: (amount) => t("amountExceedsLimit", { amount }),
   });
   const canSubmit = !locked && amount !== null && error === null;
@@ -363,10 +365,12 @@ function Feedback({
     </p>
   );
 }
+// Keep only digits and one dot, with at most 2 digits after the dot (whole
+// cents), so the box can't hold an amount the match engine would reject.
 function sanitise(value: string) {
   const cleaned = value.replace(/[^0-9.]/g, "");
   const [whole, ...rest] = cleaned.split(".");
-  return rest.length === 0 ? whole : `${whole}.${rest.join("")}`;
+  return rest.length === 0 ? whole : `${whole}.${rest.join("").slice(0, 2)}`;
 }
 function parseAmount(raw: string): number | null {
   const trimmed = raw.trim();
@@ -407,12 +411,14 @@ function validate(
   messages: {
     enterAmount: string;
     amountGreaterThanZero: string;
+    amountBelowMinimum: string;
     amountExceedsLimit: (amount: string) => string;
   }
 ): string | null {
   if (raw.trim() === "") return null;
   if (amount === null) return messages.enterAmount;
   if (amount <= 0) return messages.amountGreaterThanZero;
+  if (amount < MIN_TRADE_AMOUNT) return messages.amountBelowMinimum;
   if (player !== null) {
     const ceiling = Math.max(maxForSide(player, "long"), maxForSide(player, "short"));
     if (amount > ceiling) {

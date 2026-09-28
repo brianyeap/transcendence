@@ -1,14 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  ALLOWED_CAPITAL,
   ALLOWED_DURATIONS,
   ALLOWED_SYMBOLS,
   DEFAULT_SYMBOL,
   MATCH_DURATION_SECONDS,
+  isRoomId,
   roomNameError,
 } from "@/lib/match/rules";
 
-const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
+const ALLOWED_CAPITAL_SET = new Set(ALLOWED_CAPITAL);
 const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
 
 type CreateRoomRequest = {
@@ -89,18 +91,25 @@ function formatRoom(
 function getStartingCapital(value: unknown) {
   const capital = Number(value);
 
-  if (!Number.isFinite(capital) || !ALLOWED_CAPITAL.has(capital)) {
+  if (!Number.isFinite(capital) || !ALLOWED_CAPITAL_SET.has(capital)) {
     return null;
   }
 
   return capital;
 }
 
+// Match length: not sent at all = the default (1 minute). Anything else must
+// be one of the allowed lengths, or we return null and the request gets a 400
+// (a bad value is refused, not silently swapped for the default).
 function getDurationSeconds(value: unknown) {
+  if (value === undefined) {
+    return MATCH_DURATION_SECONDS;
+  }
+
   const duration = Number(value);
 
   if (!Number.isFinite(duration) || !ALLOWED_DURATION.has(duration)) {
-    return MATCH_DURATION_SECONDS;
+    return null;
   }
 
   return duration;
@@ -250,6 +259,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (durationSeconds === null) {
+    return Response.json(
+      { error: t("invalidDuration") },
+      { status: 400 }
+    );
+  }
+
   if (typeof symbol !== "string" || !ALLOWED_SYMBOLS.includes(symbol)) {
     return Response.json(
       { error: t("invalidSymbol") },
@@ -377,6 +393,11 @@ export async function DELETE(request: Request) {
   }
 
   const roomId = body.roomId.trim();
+
+  // Not even shaped like a room id? Say so now (400), don't ask the database.
+  if (!isRoomId(roomId)) {
+    return Response.json({ error: t("invalidRoomId") }, { status: 400 });
+  }
 
   const { count, error: deleteError } = await supabase
     .from("matches")

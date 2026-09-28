@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { AVATAR_MAX_BYTES } from "@/lib/avatar-upload";
 
 /**
  * POST /api/profile/avatar
@@ -30,7 +31,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
  */
 
 /** Hard ceiling for the incoming request body. */
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_UPLOAD_BYTES = AVATAR_MAX_BYTES; // 5 MB, same limit as the settings page
 
 /** Output size. Matches the old client-side resize so avatars look the same. */
 const AVATAR_SIZE = 256;
