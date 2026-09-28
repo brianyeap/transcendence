@@ -473,10 +473,23 @@ io.use(async (socket, next) => {
   next();
 });
 
+// Prevent crashing the whole server because submitting one trade with socket.emit("trade:submit") with no data at all can crash the ntire the server
+function safeHandler(socket, eventName, handler) {
+  return async (payload) => {
+    try {
+      await handler(payload ?? {});
+    } catch (err) {
+      console.error(`${eventName} failed:`, err);
+      // `reason` is a translation key (see "TradeErrors" in messages/*.json).
+      socket.emit("error", { reason: "unknown" });
+    }
+  };
+}
+
 io.on("connection", (socket) => {
   console.log("client connected:", socket.id);
 
-  socket.on("match:join", async ({ matchId }) => {
+  socket.on("match:join", safeHandler(socket, "match:join", async ({ matchId }) => {
     const userId = socket.data.userId;
 
     if (typeof matchId !== "string") {
@@ -541,10 +554,10 @@ io.on("connection", (socket) => {
     sendPlayerState(socket, match, userId);
     // Give the newcomer both capitals straight away so the header isn't blank.
     broadcastCapitals(match);
-  });
+  }));
 
   // buy and sell orders
-  socket.on("trade:submit", async ({ matchId, side, amount }) => {
+  socket.on("trade:submit", safeHandler(socket, "trade:submit", async ({ matchId, side, amount }) => {
     // Same rule as match:join - the trader is whoever the token says they are.
     const userId = socket.data.userId;
     console.log("trade:submit from", userId, "->", side, amount, "in match", matchId);
@@ -631,9 +644,16 @@ io.on("connection", (socket) => {
     sendPlayerState(socket, match, userId);
     // The trade changed this player's capital — refresh it for both of them.
     broadcastCapitals(match);
-  });
+  }));
 
   socket.on("disconnect", () => console.log("client disconnected:", socket.id));
+});
+
+// Last safety net: a promise that fails with nobody catching it (e.g. a
+// database call deep inside a timer) is logged instead of stopping Node.
+// If the engine does still crash, docker-compose.yml restarts it.
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandled promise rejection:", reason);
 });
 
 server.listen(PORT, "0.0.0.0", () => {
