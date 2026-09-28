@@ -23,6 +23,7 @@
     "validEmail": "Enter a valid email address.",
     "usernameMinLength": "Pick a username with at least 3 characters.",
     "accountCreated": "Account created.",
+    "checkEmail": "Account created. Check your email to confirm it, then log in.",
     "somethingWentWrong": "Something went wrong.",
     "loading": "Loading...",
     "createAccount": "Create account",

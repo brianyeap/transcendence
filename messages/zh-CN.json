@@ -23,6 +23,7 @@
     "validEmail": "请输入有效的电子邮箱地址。",
     "usernameMinLength": "用户名至少需要 3 个字符。",
     "accountCreated": "账户创建成功。",
+    "checkEmail": "账户创建成功。请查收邮件完成验证，然后登录。",
     "somethingWentWrong": "出现了一些问题。",
     "loading": "正在加载...",
     "createAccount": "创建账户",

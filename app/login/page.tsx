@@ -102,10 +102,18 @@ function LoginForm() {
           return;
         }
 
-        if (data.user) {
-          await supabase
-            .from("profiles")
-            .upsert({ id: data.user.id, username: cleanUsername }, { onConflict: "id" });
+        // When email confirmation is on, Supabase does NOT return an error for
+        // an email that is already Instead it returns a fake user with no identities.
+        if (data.user && data.user.identities?.length === 0) {
+          setError(tAuth("emailTaken"));
+          return;
+        }
+
+        // No session means Supabase sent a confirmation email first.
+        if (!data.session) {
+          toast.success(t("checkEmail"));
+          setMode("login");
+          return;
         }
 
         toast.success(t("accountCreated"));

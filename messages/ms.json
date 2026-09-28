@@ -23,6 +23,7 @@
     "validEmail": "Masukkan alamat e-mel yang sah.",
     "usernameMinLength": "Pilih nama pengguna dengan sekurang-kurangnya 3 aksara.",
     "accountCreated": "Akaun berjaya dicipta.",
+    "checkEmail": "Akaun berjaya dicipta. Semak e-mel anda untuk mengesahkannya, kemudian log masuk.",
     "somethingWentWrong": "Sesuatu telah berlaku.",
     "loading": "Memuatkan...",
     "createAccount": "Cipta akaun",
