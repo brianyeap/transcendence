@@ -120,20 +120,20 @@ export default async function LeaderboardPage() {
 					<div className="absolute top-1/3 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-600/[.05] blur-3xl" />
 				</div>
 
-				<div className="relative p-6 md:p-8 text-[#eef2f8] max-w-5xl mx-auto">
+				<div className="relative mx-auto w-full min-w-0 max-w-6xl p-4 text-[#eef2f8] md:px-7 md:py-8">
 					{/* Header */}
-					<div className="mb-8 flex items-end justify-between flex-wrap gap-4">
+					<div className="-mx-4 mb-6 border-b border-line px-4 pb-4 md:-mx-7 md:mb-8 md:px-7 flex items-end justify-between flex-wrap gap-4">
 						<div>
 							<div className="flex items-center gap-2 mb-2">
 								<div className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
-								<span className="text-[11px] uppercase tracking-[0.2em] text-[#5d6877] font-medium">
+								<span className="text-[11px] uppercase tracking-[0.2em] text-dim font-medium">
 									{t("competition")}
 								</span>
 							</div>
-							<h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#eef2f8] to-[#8a95a8] bg-clip-text text-transparent">
+							<h1 className="text-2xl md:text-3xl font-bold text-ink">
 								{t("title")}
 							</h1>
-							<p className="text-sm text-[#5d6877] mt-1.5">
+							<p className="mt-1 text-sm text-muted">
 								{t("subtitle")}
 							</p>
 						</div>

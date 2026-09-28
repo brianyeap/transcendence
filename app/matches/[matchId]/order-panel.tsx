@@ -140,7 +140,7 @@ export function OrderPanel({
           value={raw}
           disabled={locked}
           onChange={(e) => setRaw(sanitise(e.target.value))}
-          className="h-11 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-base text-red transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-10 sm:text-[14px]"
+          className="h-11 w-full rounded-[7px] border border-white/[.07] bg-[#151b25] pr-3 pl-7 font-mono text-[#eef2f8] text-red transition placeholder:text-[#3a434f] hover:border-white/[.12] focus:border-[#4d86ff]/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4d86ff] disabled:opacity-50 sm:h-10 sm:text-[14px]"
         />
       </div>
 

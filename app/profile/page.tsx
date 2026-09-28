@@ -122,13 +122,13 @@ export default async function ProfilePage()
 
 				{/* CONTENT AREA */}
 				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
-				<div className="mt-24 px-6 sm:mt-28 flex flex-col items-center text-center">
+				<div className="mx-auto mt-24 flex w-full max-w-6xl flex-col items-center px-4 text-center md:px-7 sm:mt-28">
 
 					{/* USERNAME WITH MOTION GLOW AURA */}
 					<div className="relative group">
 						<div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-70 blur-lg animate-pulse" />
 
-						<h1 className="relative text-2xl sm:text-3xl font-bold tracking-wide text-white">
+						<h1 className="relative text-2xl md:text-3xl font-bold tracking-wide text-white">
 							{displayUsername}
 						</h1>
 					</div>

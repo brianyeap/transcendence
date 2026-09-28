@@ -54,6 +54,7 @@
     "termsOfService": "服务条款"
   },
   "Lobby": {
+    "eyebrow": "匹配对战",
     "title": "游戏",
     "subtitle": "寻找未开始的对决或直接加入行动",
     "createRoom": "创建房间",
@@ -123,6 +124,7 @@
     "you": "你"
   },
   "Settings": {
+    "eyebrow": "账户",
     "title": "设置",
     "subtitle": "管理您的账户、语言和安全偏好。",
     "account": "账户",
@@ -344,6 +346,7 @@
     "tradeTooltip": "{username}：{side} {amount} USDT @ ${price}"
   },
   "TermsOfServices": {
+    "eyebrow": "法律",
     "title": "服务条款",
     "backToApp": "返回应用",
     "lastUpdated": "最后更新：{date}",
@@ -389,6 +392,7 @@
     "email": "support.duel@proton.me"
   },
   "PrivacyPolicy": {
+    "eyebrow": "法律",
     "title": "隐私政策",
     "backToApp": "返回应用",
     "lastUpdated": "最后更新：{date}",
@@ -450,6 +454,7 @@
     "section12Note": "根据您所在的地区，您也可能有权向当地的数据保护机构提出投诉。"
   },
   "HowToPlay": {
+    "eyebrow": "游戏指南",
     "title": "如何游玩",
     "intro": "两名玩家、一张价格图表（BTC、ETH 或 SOL 对 USDT），以及相同的初始资金。图表会以加速方式重放最近几个小时的真实 1 分钟价格，每半秒一根K线。比赛结束时资金更多的玩家获胜。",
     "facts": {
@@ -706,6 +711,7 @@
     "matchUnavailableDetail": "比赛可能不存在，您可能不是该比赛的玩家，或者与比赛服务器的连接可能已断开。"
   },
   "Friends": {
+    "eyebrow": "社交",
     "title": "好友",
     "description": "通过用户名或从比赛结果页面添加玩家。状态每 5 秒更新一次。",
     "loading": "正在加载好友...",

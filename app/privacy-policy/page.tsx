@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { SectionLabel } from "../components/duel/section-label";
+import { ArrowLeft } from "lucide-react";
 
 const LAST_UPDATED = new Date("2026-09-28");
 
@@ -10,12 +11,12 @@ export default function PrivacyScreen() {
   const t = useTranslations("PrivacyPolicy");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 sm:px-7">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-8 pt-4 md:gap-8 md:px-7 md:pt-8">
       <Link
         href="/"
-        className="inline-flex w-fit items-center gap-1.5 text-[12.5px] text-[#4d86ff] hover:underline"
+        className="shrink-0 self-start inline-flex items-center gap-1.5 text-sm text-[#4d86ff] hover:text-[#eef2f8] transition-colors"
       >
-        <span aria-hidden>←</span>
+        <ArrowLeft className="w-4 h-4" />
         {t("backToApp")}
       </Link>
 
@@ -118,8 +119,12 @@ function Hero({
 	const format = useFormatter();
 
   return (
-    <header>
-      <h1 className="text-[27px] font-bold tracking-[-.02em] text-[#eef2f8]">
+    <header className="-mx-4 border-b border-line px-4 pb-4 md:-mx-7 md:px-7">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
+        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-dim">{t("eyebrow")}</span>
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold tracking-[-.02em] text-[#eef2f8]">
         {t("title")}
       </h1>
 
@@ -147,7 +152,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section className="w-full max-w-3xl">
       <SectionLabel>{title}</SectionLabel>
 
       <div className="mt-3 rounded-[7px] border border-white/[.07] bg-[#0f131b] px-4 py-3.5 text-[13px] leading-relaxed text-[#9aa6b6]">

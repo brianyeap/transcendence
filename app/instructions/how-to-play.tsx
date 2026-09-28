@@ -16,7 +16,7 @@ export function HowToPlayScreen() {
   const t = useTranslations("HowToPlay");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 sm:px-7">
+    <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-8 p-4 md:px-7 md:py-8">
       <Hero t={t} />
       <Flow t={t} />
       <Trading t={t} />
@@ -34,15 +34,21 @@ function Hero({
 }) {
   return (
     <header>
-      <h1 className="text-[27px] font-bold tracking-[-.02em] text-[#eef2f8]">
-        {t("title")}
-      </h1>
+      <div className="-mx-4 mb-6 border-b border-line px-4 pb-4 md:-mx-7 md:mb-8 md:px-7">
+        <div className="mb-2 flex items-center gap-2">
+          <div className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
+          <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-dim">{t("eyebrow")}</span>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-ink">
+          {t("title")}
+        </h1>
 
-      <p className="mt-2 max-w-lg text-[14px] leading-relaxed text-[#9aa6b6]">
-        {t("intro")}
-      </p>
+        <p className="mt-1 max-w-lg text-sm leading-relaxed text-muted">
+          {t("intro")}
+        </p>
+      </div>
 
-      <dl className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Fact
           icon={Users}
           label={t("facts.players")}

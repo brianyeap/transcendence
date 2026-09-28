@@ -327,12 +327,16 @@ export default function SettingsPage() {
 
   return (
     <SideNav user={username || userEmail}>
-      <div className="p-8 text-[#eef2f8] max-w-2xl">
+      <div className="mx-auto w-full min-w-0 max-w-6xl p-4 text-[#eef2f8] md:px-7 md:py-8">
 
         {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
-          <p className="text-sm text-[#5d6877] mt-1">{t("subtitle")}</p>
+        <div className="-mx-4 mb-6 border-b border-line px-4 pb-4 md:-mx-7 md:mb-8 md:px-7">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
+            <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-dim">{t("eyebrow")}</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-ink">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted">{t("subtitle")}</p>
         </div>
 
         {/* Account section */}
