@@ -108,10 +108,13 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 						))}
 					</div>
 					<div className="my-3 h-px bg-line" />
-					<div className="flex items-center gap-3 px-2 py-2">
+					<Link
+						href="/profile"
+						className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised"
+					>
 						<Avatar name={displayName} imageUrl={fetchedAvatar} />
 						<span className="truncate text-sm font-semibold">{displayName}</span>
-					</div>
+					</Link>
 					<LogoutButton />
 
 					{/* Legal links: small and muted so they don't compete with the main nav */}
