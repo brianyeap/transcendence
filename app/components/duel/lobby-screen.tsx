@@ -289,10 +289,14 @@ export function LobbyScreen() {
   return (
     <>
       {/* Page header: title on the left, refresh and create on the right */}
-      <header className="flex items-center gap-4 border-b border-line px-6 py-4">
+      <header className="mx-auto flex w-full min-w-0 max-w-6xl items-center gap-4 border-b border-line px-4 pb-4 pt-4 md:px-7 md:pb-4 md:pt-8">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold">{t("title")}</h1>
-          <p className="text-sm text-muted">{t("subtitle")}</p>
+          <div className="mb-2 flex items-center gap-2">
+            <div className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-400 to-emerald-400" />
+            <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-dim">{t("eyebrow")}</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-ink">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted">{t("subtitle")}</p>
         </div>
 
         <Button variant="quiet" onClick={refresh} disabled={pageLoading}>
@@ -311,7 +315,7 @@ export function LobbyScreen() {
 
       <CreateMatchModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-y-auto px-4 pb-4 pt-6 md:px-7 md:pb-8 md:pt-8">
         {/* Your game in progress. Shown above the list so it is the first thing
             you see when you come back to the lobby mid-match. */}
         {activeMatch ? (

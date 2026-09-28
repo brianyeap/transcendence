@@ -54,6 +54,7 @@
     "termsOfService": "Terms of Service"
   },
   "Lobby": {
+    "eyebrow": "Matchmaking",
     "title": "Games",
     "subtitle": "Find an open match or jump into the action",
     "createRoom": "Create Room",
@@ -123,6 +124,7 @@
     "you": "You"
   },
   "Settings": {
+    "eyebrow": "Account",
     "title": "Settings",
     "subtitle": "Manage your account, language, and security preferences.",
     "account": "Account",
@@ -370,6 +372,7 @@
     "tradeTooltip": "{username}: {side} {amount} USDT @ ${price}"
   },
   "TermsOfServices": {
+    "eyebrow": "Legal",
     "title": "Terms of Service",
     "backToApp": "Back to app",
     "lastUpdated": "Last updated: {date}",
@@ -415,6 +418,7 @@
     "email": "support.duel@proton.me"
   },
   "PrivacyPolicy": {
+    "eyebrow": "Legal",
     "title": "Privacy Policy",
     "backToApp": "Back to app",
     "lastUpdated": "Last updated: {date}",
@@ -476,6 +480,7 @@
     "section12Note": "You may also have the right to complain to your local data protection authority."
   },
   "HowToPlay": {
+    "eyebrow": "Game guide",
     "title": "How to play",
     "intro": "Two players, one chart (BTC, ETH or SOL against USDT), equal starting capital. The chart replays the last few hours of real 1-minute prices, sped up to one candle every half second. Whoever finishes the match with more capital wins.",
     "facts": {
@@ -732,6 +737,7 @@
     "matchUnavailableDetail": "It may not exist, you may not be one of its players, or the connection to the match server may be down."
   },
   "Friends": {
+    "eyebrow": "Social",
     "title": "Friends",
     "description": "Add players by username or from the match result screen. Status updates every 5 seconds.",
     "loading": "Loading friends...",

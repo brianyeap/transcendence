@@ -54,6 +54,7 @@
     "termsOfService": "Terma Perkhidmatan"
   },
   "Lobby": {
+    "eyebrow": "Padanan",
     "title": "Permainan",
     "subtitle": "Cari perlawanan terbuka atau mula bertindak",
     "createRoom": "Cipta Bilik",
@@ -123,6 +124,7 @@
     "you": "Anda"
   },
   "Settings": {
+    "eyebrow": "Akaun",
     "title": "Tetapan",
     "subtitle": "Urus akaun, bahasa dan pilihan keselamatan anda.",
     "account": "Akaun",
@@ -370,6 +372,7 @@
     "tradeTooltip": "{username}: {side} {amount} USDT @ ${price}"
   },
   "TermsOfServices": {
+    "eyebrow": "Perundangan",
     "title": "Terma Perkhidmatan",
     "backToApp": "Kembali ke aplikasi",
     "lastUpdated": "Kemas kini terakhir: {date}",
@@ -415,6 +418,7 @@
     "email": "support.duel@proton.me"
   },
   "PrivacyPolicy": {
+    "eyebrow": "Perundangan",
     "title": "Dasar Privasi",
     "backToApp": "Kembali ke aplikasi",
     "lastUpdated": "Kemas kini terakhir: {date}",
@@ -476,6 +480,7 @@
     "section12Note": "Anda juga mungkin mempunyai hak untuk membuat aduan kepada pihak berkuasa perlindungan data tempatan anda."
   },
   "HowToPlay": {
+    "eyebrow": "Panduan permainan",
     "title": "Cara bermain",
     "intro": "Dua pemain, satu carta (BTC, ETH atau SOL berbanding USDT), modal permulaan yang sama. Carta memainkan semula harga sebenar 1 minit bagi beberapa jam terakhir, dipercepatkan kepada satu lilin setiap setengah saat. Pemain yang menamatkan perlawanan dengan modal lebih tinggi akan menang.",
     "facts": {
@@ -732,6 +737,7 @@
     "matchUnavailableDetail": "Perlawanan ini mungkin tidak wujud, anda mungkin bukan salah seorang pemainnya, atau sambungan ke pelayan perlawanan mungkin terputus."
   },
   "Friends": {
+    "eyebrow": "Sosial",
     "title": "Rakan",
     "description": "Tambah pemain melalui nama pengguna atau dari skrin keputusan perlawanan. Status dikemas kini setiap 5 saat.",
     "loading": "Memuatkan rakan...",

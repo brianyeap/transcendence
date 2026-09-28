@@ -1,17 +1,3 @@
-{/* Date : 3/9/2026 .
-	- The modification of the Profile page starts here, I realized that this page is too simple and there are many tools online which I
-	I can use to my advantage, for example Daisy UI is a website that provides the code for components found in most web-pages now days.
-	But I would also like to incorporate some newer things too. Thus I am going to work on this profile page, but then use the previously made helpers to my advantage.
-
-	COMING UP :
-	- Banner.
-	- Profile Pic.
-	- Light Dark Mode.
-	- Adding Picture to Banner.
-	- Adding colour for default banner.
-	
-*/}
-
 import { SideNav } from "../components/duel/side-nav";
 // Importing the Sidenav for it to be displayed in this page.
 import { redirect } from "next/navigation";
@@ -134,13 +120,13 @@ export default async function ProfilePage()
 
 				{/* CONTENT AREA */}
 				{/* Pushing the content down so the overlapping avatar doesn't cover the text or like stats */}
-				<div className="mt-24 px-6 sm:mt-28 flex flex-col items-center text-center">
+				<div className="mx-auto mt-24 flex w-full max-w-6xl flex-col items-center px-4 text-center md:px-7 sm:mt-28">
 
 					{/* USERNAME WITH MOTION GLOW AURA */}
 					<div className="relative group">
 						<div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-70 blur-lg animate-pulse" />
 
-						<h1 className="relative text-2xl sm:text-3xl font-bold tracking-wide text-white">
+						<h1 className="relative text-2xl md:text-3xl font-bold tracking-wide text-white">
 							{displayUsername}
 						</h1>
 					</div>

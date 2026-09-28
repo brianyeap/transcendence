@@ -297,12 +297,12 @@ export default async function MatchDetailPage({
 			{/* Mobile: exactly one screen tall, nothing on the page scrolls.
 			    md and up: normal page flow. If SideNav adds a top or bottom bar on mobile,
 			    swap 100dvh for calc(100dvh - <bar height>). */}
-			<div className="flex flex-col gap-3 md:gap-6 p-4 md:p-8 h-[100dvh] md:h-auto overflow-hidden md:overflow-visible text-[#eef2f8] w-full max-w-5xl mx-auto min-w-0">
+			<div className="flex flex-col gap-3 md:gap-6 p-4 md:px-7 md:py-8 h-[100dvh] md:h-auto overflow-hidden md:overflow-visible text-[#eef2f8] w-full max-w-6xl mx-auto min-w-0">
 
 				{/* BACK BUTTON */}
 				<Link
 					href="/history"
-					className="shrink-0 self-start inline-flex items-center gap-1.5 text-sm text-[#5d6877] hover:text-[#eef2f8] transition-colors"
+					className="shrink-0 self-start inline-flex items-center gap-1.5 text-sm text-[#4d86ff] hover:text-[#eef2f8] transition-colors"
 				>
 					<ArrowLeft className="w-4 h-4" />
 					{t("backToHistory")}
@@ -329,7 +329,7 @@ export default async function MatchDetailPage({
 						<div className="flex items-start md:items-center justify-center gap-3 md:gap-4 min-w-0">
 							<div className="text-right min-w-0 flex-1 md:flex-none">
 								<div className="text-sm font-semibold truncate">{currentPlayer.username}</div>
-								<div className={`text-base md:text-xl font-bold font-mono ${pnlTone(currentPlayer.realized_pnl)}`}>
+								<div className={`text-[#eef2f8] md:text-xl font-bold font-mono ${pnlTone(currentPlayer.realized_pnl)}`}>
 									${currentPlayer.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 								</div>
 								<div className={`text-xs font-mono ${pnlTone(currentPlayer.realized_pnl)}`}>
@@ -344,7 +344,7 @@ export default async function MatchDetailPage({
 
 							<div className="text-left min-w-0 flex-1 md:flex-none">
 								<div className="text-sm font-semibold truncate">{opponent.username}</div>
-								<div className={`text-base md:text-xl font-bold font-mono ${pnlTone(opponent.realized_pnl)}`}>
+								<div className={`text-[#eef2f8] md:text-xl font-bold font-mono ${pnlTone(opponent.realized_pnl)}`}>
 									${opponent.final_capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
 								</div>
 								<div className={`text-xs font-mono ${pnlTone(opponent.realized_pnl)}`}>
@@ -359,19 +359,19 @@ export default async function MatchDetailPage({
 				<div className="shrink-0 grid grid-cols-2 md:grid-cols-4 gap-3">
 					<div className="min-w-0 rounded-[10px] border border-white/[.07] bg-[#090b11] p-4">
 						<div className="text-[11px] uppercase tracking-wide text-[#5d6877] mb-2 truncate">{t("startTime")}</div>
-						<div className="text-[13px] md:text-base font-semibold break-words"><LocalDateTime iso={match.starts_at} locale={locale} /></div>
+						<div className="text-[13px] md:text-[#eef2f8] font-semibold break-words"><LocalDateTime iso={match.starts_at} locale={locale} /></div>
 					</div>
 					<div className="min-w-0 rounded-[10px] border border-white/[.07] bg-[#090b11] p-4">
 						<div className="text-[11px] uppercase tracking-wide text-[#5d6877] mb-2 truncate">{t("endTime")}</div>
-						<div className="text-[13px] md:text-base font-semibold break-words"><LocalDateTime iso={match.ends_at} locale={locale} /></div>
+						<div className="text-[13px] md:text-[#eef2f8] font-semibold break-words"><LocalDateTime iso={match.ends_at} locale={locale} /></div>
 					</div>
 					<div className="min-w-0 rounded-[10px] border border-white/[.07] bg-[#090b11] p-4">
 						<div className="text-[11px] uppercase tracking-wide text-[#5d6877] mb-2 truncate">{t("duration")}</div>
-						<div className="text-[13px] md:text-base font-semibold">{formatDuration(match.starts_at, match.ends_at, t)}</div>
+						<div className="text-[13px] md:text-[#eef2f8] font-semibold">{formatDuration(match.starts_at, match.ends_at, t)}</div>
 					</div>
 					<div className="min-w-0 rounded-[10px] border border-white/[.07] bg-[#090b11] p-4">
 						<div className="text-[11px] uppercase tracking-wide text-[#5d6877] mb-2 truncate">{t("finalPrice")}</div>
-						<div className="text-[13px] md:text-base font-semibold font-mono truncate">${match.final_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+						<div className="text-[13px] md:text-[#eef2f8] font-semibold font-mono truncate">${match.final_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
 					</div>
 				</div>
 
