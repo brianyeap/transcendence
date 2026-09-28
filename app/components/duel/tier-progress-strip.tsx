@@ -69,20 +69,16 @@ const TIER_STYLES: Record<
 	},
 };
 
-export function TierProgressStrip({
-	currentTier,
-	requiredWinRate,
-	matchesNeeded,
-	nextTier,
-}: {
-	currentTier: RiskRating;
-	/** Percent (e.g. 62.5) or null when no specific rate is required. */
-	requiredWinRate: number | null;
-	/** Games that must be played to satisfy the size gate, 0 when none needed. */
-	matchesNeeded: number;
-	/** The tier being chased, or null at the top. */
-	nextTier: RiskRating | null;
-}) {
+// The win rate each tier asks for, shown under its name. Rookie and beginner
+// have no rate bar, so they are left out and show nothing. Keep these in sync
+// with getRiskRating() in lib/stats.ts.
+const TIER_WIN_RATE: Partial<Record<RiskRating, number>> = {
+	amateur: 45,
+	pro: 57,
+	elite: 65,
+};
+
+export function TierProgressStrip({ currentTier }: { currentTier: RiskRating }) {
 	const t = useTranslations("profile");
 
 	const currentIndex = TIER_ORDER.indexOf(currentTier);
@@ -144,53 +140,32 @@ export function TierProgressStrip({
 								{t(`tierLabel.${tier}`)}
 							</span>
 
-							{/* Only one of these chips ever renders, so the tile height
-							    stays consistent across the row. */}
+							{/* Win-rate requirement, only for tiers that have one. */}
+							{TIER_WIN_RATE[tier] !== undefined && (
+								<span className="text-[10px] leading-tight text-gray-500">
+									{t("tierProgress.requirement", { rate: TIER_WIN_RATE[tier] })}
+								</span>
+							)}
+
+							{/* Only one of these chips ever renders. `mt-auto` pins it to
+							    the bottom so chips line up even when some tiles have the
+							    extra requirement line and others do not. */}
 							{isCurrent ? (
-								<span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+								<span className="mt-auto rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
 									{t("tierProgress.current")}
 								</span>
 							) : isUnlocked ? (
-								<span className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
+								<span className="mt-auto rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
 									{t("tierProgress.unlocked")}
 								</span>
 							) : (
-								<span className="rounded-full border border-white/[.06] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-600">
+								<span className="mt-auto rounded-full border border-white/[.06] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-600">
 									{t("tierProgress.locked")}
 								</span>
 							)}
 						</div>
 					);
 				})}
-			</div>
-
-			{/* NEXT-TIER REQUEST
-			    Three distinct situations, and they must not be confused:
-			      1. no next tier      -> "you are at the top"
-			      2. a rate is required -> "win X% of your next N"
-			      3. only games needed  -> "play N more" (no rate is meaningful) */}
-			<div className="mt-4 rounded-lg border border-white/[.06] bg-white/[0.02] px-4 py-3 text-left">
-				{nextTier === null ? (
-					<p className="text-xs text-gray-400">{t("tierProgress.maxTier")}</p>
-				) : (
-					<>
-						<p className="text-[11px] uppercase tracking-wider text-gray-500 mb-1">
-							{t("tierProgress.nextTier", { tier: t(`tierLabel.${nextTier}`) })}
-						</p>
-						{requiredWinRate !== null ? (
-							<p className="text-sm font-semibold text-indigo-300">
-								{t("tierProgress.needsWinRate", {
-									rate: requiredWinRate,
-									count: matchesNeeded,
-								})}
-							</p>
-						) : (
-							<p className="text-sm font-semibold text-indigo-300">
-								{t("tierProgress.needsMatches", { count: matchesNeeded })}
-							</p>
-						)}
-					</>
-				)}
 			</div>
 		</div>
 	);

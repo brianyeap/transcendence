@@ -236,10 +236,7 @@
       "current": "Current",
       "unlocked": "Unlocked",
       "locked": "Locked",
-      "nextTier": "Next: {tier}",
-      "needsWinRate": "Win {rate}% of your next {count} matches",
-      "needsMatches": "Play {count} more matches",
-      "maxTier": "You have reached the highest tier"
+      "requirement": "Have >{rate}% win rate"
     },
     "provisional": "Provisional",
     "winsLeft": "{count, plural, =1 {# Win Left} other {# Wins Left}}",

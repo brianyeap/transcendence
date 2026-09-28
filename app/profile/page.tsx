@@ -18,7 +18,7 @@ import {
 } from "../components/duel/achievement-card";
 // The achievement cards are a client component (they need tap-to-expand state),
 // so the icons are imported from there too and this page stays a server component.
-import { getRiskRating, getWinStats, getNextTierProgress } from "@/lib/stats";
+import { getRiskRating, getWinStats } from "@/lib/stats";
 // The tier and the win rate come from the shared module so the profile, the
 // leaderboard and the history page can never disagree about the numbers.
 import { TierProgressStrip } from "../components/duel/tier-progress-strip";
@@ -71,7 +71,6 @@ export default async function ProfilePage()
 	const totalMatches = wins + losses + draws;
 	const { winRate, winPct, drawPct, lossPct, provisional } = getWinStats(wins, losses, draws);
 	const riskRating = getRiskRating(wins, losses, draws);
-	const tierProgress = getNextTierProgress(wins, losses, draws);
 	const shortUserId = user.id.slice(0, 8);
 
 	return(
@@ -286,14 +285,8 @@ export default async function ProfilePage()
 															{/* TRADER TIER PROGRESSION
 
 																Sits below the achievement cards. Shows all five ranks, keeps
-																every rank the player has passed lit, marks the current one, and
-																states what is needed to reach the next. */}
-															<TierProgressStrip
-																currentTier={riskRating}
-																requiredWinRate={tierProgress.requiredWinRate}
-																matchesNeeded={tierProgress.matchesNeeded}
-																nextTier={tierProgress.nextTier}
-															/>
+																every rank the player has passed lit, and marks the current one. */}
+															<TierProgressStrip currentTier={riskRating} />
 														</div>
 													</main>
 												</SideNav>

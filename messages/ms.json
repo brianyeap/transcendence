@@ -236,10 +236,7 @@
       "current": "Semasa",
       "unlocked": "Dibuka",
       "locked": "Berkunci",
-      "nextTier": "Seterusnya: {tier}",
-      "needsWinRate": "Menang {rate}% daripada {count} perlawanan seterusnya",
-      "needsMatches": "Main {count} perlawanan lagi",
-      "maxTier": "Anda telah mencapai pangkat tertinggi"
+      "requirement": "Kadar menang >{rate}%"
     },
     "provisional": "Sementara",
     "winsLeft": "{count, plural, =1 {# Kemenangan Lagi} other {# Kemenangan Lagi}}",

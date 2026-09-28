@@ -236,10 +236,7 @@
       "current": "当前",
       "unlocked": "已解锁",
       "locked": "未解锁",
-      "nextTier": "下一级：{tier}",
-      "needsWinRate": "在接下来 {count} 场中赢下 {rate}%",
-      "needsMatches": "再打 {count} 场",
-      "maxTier": "你已达到最高段位"
+      "requirement": "胜率 >{rate}%"
     },
     "provisional": "暂定",
     "winsLeft": "{count, plural, =1 {还差 # 场胜利} other {还差 # 场胜利}}",
