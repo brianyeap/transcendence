@@ -14,15 +14,15 @@ The goal of the project was to build a complete, multi-user, real-time web appli
 
 - **Real-time 1v1 trading matches**: both players see the same replayed real-market candles (BTC, ETH or SOL), streamed by our own Socket.IO match engine
 - **Server-side trading**: every order is checked on the server, positions and PnL are tracked, and the match is settled fairly
-- **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left
+- **Lobby**: create a match, join an open one, invite a friend to a private one, and rejoin a match you left. The room list refreshes itself every 3 seconds, so new rooms appear and taken ones disappear without reloading.
 - **Game customization**: the match creator picks the market (BTC / ETH / SOL), the match length (30s / 1 min / 1.5 min), the starting capital (5K / 10K / 20K USDT), a room name, and whether anyone or only one friend can join. Leaving everything as it is gives the standard game (BTC, 1 min, 10K, public room).
 - **Accounts**: email/password sign-up, Google sign-in (OAuth 2.0) and TOTP two-factor authentication
-- **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements
+- **Profiles**: avatar upload (with a default avatar), stats, win rate, trader tier and achievements. Winning a match that unlocks an achievement shows a toast with a link to your progress.
 - **Friends**: find players by username and send them a request, accept requests, see which friends are online, and challenge a friend to a private match
 - **Leaderboard and match history**, with a detailed page for each past match
 - **3 languages**: English, Bahasa Melayu and Simplified Chinese
 - **Monitoring**: OpenTelemetry → Prometheus → Grafana, with dashboards and email alerts
-- **Privacy Policy, Terms of Service and a How-to-Play page**
+- **Privacy Policy, Terms of Service and a How-to-Play page**, linked from the side menu on every page
 - **HTTPS everywhere**: the browser only talks to an nginx proxy over HTTPS, which forwards to the web app and the match engine inside Docker
 
 ## Team Information
@@ -209,11 +209,11 @@ Row Level Security is on for every table. Players can only change their own data
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
-| Game customization (server side) | `/api/rooms` checks the chosen market, length and capital against `lib/match/rules.ts` and saves them on the match. A database CHECK (migration `0013`) refuses an unknown market even if someone skips the API. The match engine then replays that market's candles for that length with that capital. | Brian |
+| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match.
 | HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
-| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges | Zep, Raja |
+| Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges. A toast announces a newly unlocked one at the end of a match, with a link to your progress. | Zep, Raja |
 | Match history | A list of past matches and a detail page for each one | Raja |
 | Settings | Username, avatar upload (through a secure server route), 2FA settings | Raja |
 | Shared components | Most of the reusable UI components | Raja |
@@ -267,20 +267,20 @@ Row Level Security is on for every table. Players can only change their own data
    - *Why Major:* it's a complete server-side subsystem with its own state machine, maths (`socket/engine-math.js`) and persistence. It's about as much work as any other Major module.
 8. **OAuth 2.0.** "Sign in with Google" through Supabase Auth. The redirect URL is set up in the Google Cloud project, and a database trigger creates the profile row for new Google users.
 9. **2FA.** TOTP (authenticator app) through Supabase MFA. Players enrol from Settings, and have to pass `/auth/verify-mfa` when they log in.
-10. **Multiple languages.** `next-intl` with `messages/en.json`, `ms.json` and `zh-CN.json`, plus a language switcher in the UI. All the text players see comes from the message files.
+10. **Multiple languages.** `next-intl` with `messages/en.json`, `ms.json` and `zh-CN.json`, plus a language switcher in the UI. All the text players see comes from the message files. `npm run check:locales` (also run before every build) fails if `ms.json` or `zh-CN.json` is missing a key from `en.json`, has a leftover key, or uses different `{placeholders}`.
 11. **Game statistics and match history.** Wins, losses, draws and win rate on the profile. A history list with a detail page for each match (trades and chart). A global leaderboard.
 12. **SSR.** Most pages (home, lobby, leaderboard, profile, match and match detail) are React Server Components rendered on the server, and they load their data there before sending the HTML.
-13. **File upload.** Avatars are checked on both sides: the client checks the file type, and the server caps the size and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
-14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile.
+13. **File upload.** Avatars are checked on both sides: the client checks the file type and the 5 MB size limit, and the server checks the size again and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
+14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile (each locked achievement shows how many wins are left). When a win unlocks an achievement, a toast pops up at the end of the match with a "See your progress" link to the profile.
 15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
 16. **Game customization.** When creating a match, the creator chooses:
     - **Market:** Bitcoin, Ethereum or Solana (against USDT). Each one moves differently (SOL is usually the most volatile), so the same strategy doesn't always work.
     - **Match length:** 30 seconds, 1 minute or 1.5 minutes. A short match rewards quick decisions, and a longer one gives the price more time to move.
     - **Starting capital:** 5K, 10K or 20K USDT. Both players always start with the same amount, so the match stays fair.
     - **Who can join:** anyone in the lobby, or one chosen friend (a private room only that friend can see).
-    - **Room name:** optional. If left blank, the room is called "&lt;creator&gt;'s Room".
+    - **Room name:** optional, at most 40 characters: letters, numbers, spaces and `- _ ' ! ? .` If left blank, the room is called "&lt;creator&gt;'s Room". The form, `/api/rooms` and a database CHECK all enforce these rules.
 
-    **Default game:** the modal starts on BTC, 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects any market or capital that isn't in the allowed list, and falls back to the 1-minute default if the length isn't one of the lengths in `lib/match/rules.ts`. They're saved on the `matches` row (`symbol`, `duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values. A database CHECK (`supabase/migrations/0013_match_settings_checks.sql`) also refuses an unknown market, because a logged-in player could otherwise insert a match straight into Supabase.
+    **Default game:** the modal starts on BTC, 1 minute, 10K and a public room, so a player who just clicks *Create* gets the standard game. The settings aren't only checked in the browser: `/api/rooms` rejects (400) any room name, market, capital or length that breaks the rules in `lib/match/rules.ts`; only a length that isn't sent at all gets the 1-minute default. They're saved on the `matches` row (`symbol`, `duration_seconds`, `starting_capital`, `invited_user_id`), so the match engine, the lobby cards and match history all use the same values.
 
 ## Individual Contributions
 
@@ -372,9 +372,13 @@ Fill in `monitoring/.env`:
 
 Both files are git-ignored.
 
-### 2. Set up the database
+### 2. Set up Supabase
 
 Run the SQL files in `supabase/migrations/` **in order** in the Supabase SQL editor.
+
+Then, in the Supabase dashboard:
+
+- **Password rules** (the server-side half of the sign-up check in `lib/validation/password.ts`): Authentication → Sign In / Providers → Email → *Minimum password length* `8`, *Password requirements* "Letters and digits".
 
 ### 3. Start the stack
 
@@ -485,6 +489,17 @@ docker compose down
 ### Deployment
 
 The Next.js web app is deployed on **Vercel**. Vercel can't host the match engine, because it's a long-running process that keeps live matches in memory. To make matches playable fully online, deploy `socket/` to a VPS and point `NEXT_PUBLIC_SOCKET_URL` at it. That server's `SOCKET_ALLOWED_ORIGINS` must include the Vercel domain.
+
+`deploy/socket/` runs just the match engine on a cloud server (we use AWS Lightsail), behind Caddy for automatic HTTPS. Full walkthrough: [docs/deploy-socket-aws.md](docs/deploy-socket-aws.md). On the server:
+
+```bash
+git clone https://github.com/brianyeap/transcendence.git
+cd transcendence/deploy/socket
+cp .env.example .env   # fill in SOCKET_DOMAIN, Supabase values, Vercel origin
+docker compose up -d --build
+```
+
+To ship a new version later: `git pull && docker compose up -d --build` (this restarts the engine, so running matches end).
 
 ## Known Limitations
 

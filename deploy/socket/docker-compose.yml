@@ -1,0 +1,35 @@
+# Runs ONLY the match engine (socket/) on a cloud server, e.g. AWS.
+# The website stays on Vercel and the database on Supabase.
+#
+# On the server:  docker compose up -d --build
+# Values come from the .env file next to this one (copy .env.example).
+
+services:
+  # The front door. Caddy gets a free HTTPS certificate (Let's Encrypt) for
+  # SOCKET_DOMAIN by itself and forwards everything to the match engine.
+  # The Vercel site is HTTPS, so the socket must be HTTPS (wss://) too.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80" # Let's Encrypt checks the domain over plain HTTP once
+      - "443:443" # players connect here
+    environment:
+      SOCKET_DOMAIN: ${SOCKET_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro # RO is for read only
+      - caddy_data:/data # keeps the certificate between restarts
+    depends_on:
+      - socket
+
+  # The match engine, built from the same socket/Dockerfile used locally.
+  socket:
+    build: ../../socket
+    restart: unless-stopped # start again on its own if it crashes
+    # NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SOCKET_ALLOWED_ORIGINS
+    env_file:
+      - .env
+    # No "ports": only Caddy can reach it (as socket:4000).
+
+volumes:
+  caddy_data:

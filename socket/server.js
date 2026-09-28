@@ -11,7 +11,9 @@ const { round2, applyTrade, settlePlayer, equity } = require("./engine-math");
 const { gamesStarted, gamesCompleted, activeGames, matchesPlayed } = require("./metrics");
 
 // Settings
-const PORT = 4000;
+// Hosting services tell us which port to use via PORT so we can listen on the right one.
+// Locally and in Docker it isn't set, so we fall back to 4000.
+const PORT = process.env.PORT || 4000;
 const TICK_MS = 500;
 const MIN_TRADE_AMOUNT = 1;
 const ALLOWED_ORIGINS = (
@@ -39,7 +41,7 @@ const liveMatches = new Map();
 
 // Helpers
 
-// e.g. "ETH/USDT" -> "ETH-USD". Unknown or old rows fall back to Bitcoin.
+// fall back to btc
 function coinbaseProduct(symbol) {
   return COINBASE_PRODUCTS[symbol] ?? "BTC-USD";
 }
