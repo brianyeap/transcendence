@@ -190,7 +190,6 @@ export function AchievementCard({
             }`}
           >
             {description}
-            {unlocked ? "" : requirement === 500 ? ` (${Math.min(wins, 500)} / 500)` : ""}
           </p>
         </div>
       </div>

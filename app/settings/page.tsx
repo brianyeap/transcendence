@@ -227,6 +227,10 @@ export default function SettingsPage() {
   // calls the authenticated DELETE on our own route, which clears the column
   // server-side. On success we drop the local copy so the <Avatar> immediately
   // re-renders with initials, with no reload.
+  //
+  // toast.promise reports the three states, exactly like the upload above.
+  // The rejection carries the TRANSLATED message, so the `error` callback can
+  // surface it unchanged and we keep the i18n mapping we already had.
   async function handleRemovePhoto() {
     if (removing) return;
 
@@ -234,7 +238,7 @@ export default function SettingsPage() {
     setUploadError(null);
     setStatusMessage("");
 
-    try {
+    const remove = async () => {
       const response = await fetch("/api/profile/avatar", {
         method: "DELETE",
       });
@@ -245,15 +249,27 @@ export default function SettingsPage() {
         // Leave avatarUrl as it was: the photo is still there, so showing
         // initials would misrepresent the server state.
         const key = messageKeyFor(payload?.code);
-        setUploadError(key ? tErrors(key) : t("removeFailed"));
-        return;
+        throw new Error(key ? tErrors(key) : t("removeFailed"));
       }
 
       setAvatarUrl(null);
       setPreviewUrl(null);
       setPendingFile(null);
       setUploadError(null);
+
+      return t("removingDone");
+    };
+
+    try {
+      await toast.promise(remove(), {
+        loading: t("removingPhoto"),
+        success: (message) => message,
+        error: (err) =>
+          err instanceof Error ? err.message : t("removeFailed"),
+      });
     } catch {
+      // toast.promise re-throws, so the inline error text under the avatar
+      // row still appears alongside the toast.
       setUploadError(t("removeFailed"));
     } finally {
       setRemoving(false);
@@ -296,13 +312,16 @@ export default function SettingsPage() {
       return;
     }
 
-    setStatusMessage(t("saving"));
+    setStatusMessage("");
 
     // The browser no longer writes profiles.username directly. It calls our
     // own route, which authenticates from the session, validates server-side,
     // and only then writes. The route returns a machine-readable error CODE,
     // which we translate here so the message follows the user's language.
-    try {
+    //
+    // toast.promise replaces the old manual "Saving..." statusMessage. The
+    // rejection carries the translated message, so `error` surfaces it as-is.
+    const save = async () => {
       const response = await fetch("/api/profile/username", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -313,14 +332,26 @@ export default function SettingsPage() {
 
       if (!response.ok) {
         const key = messageKeyFor(payload?.code);
-        setStatusMessage(key ? tErrors(key) : t("usernameSaveFailed"));
-        return;
+        throw new Error(key ? tErrors(key) : t("usernameSaveFailed"));
       }
 
       setUsername(payload?.username ?? newName);
       setEditingUsername(false);
       setStatusMessage("");
+
+      return t("usernameSaved");
+    };
+
+    try {
+      await toast.promise(save(), {
+        loading: t("saving"),
+        success: (message) => message,
+        error: (err) =>
+          err instanceof Error ? err.message : t("usernameSaveFailed"),
+      });
     } catch {
+      // toast.promise re-throws, so the inline status line under the account
+      // card still shows the failure alongside the toast.
       setStatusMessage(t("usernameSaveFailed"));
     }
   }

@@ -136,6 +136,7 @@
     "changePhoto": "Change photo",
     "removePhoto": "Remove photo",
     "removingPhoto": "Removing…",
+    "removingDone": "Removed!",
     "removeFailed": "Could not remove your photo. Try again.",
     "email": "Email",
     "readOnly": "Read only",
@@ -157,6 +158,7 @@
     "usernameMaxLength": "Username cannot be longer than 20 characters.",
     "usernameInvalidChars": "Only letters, numbers, spaces, underscores and hyphens are allowed.",
     "usernameTaken": "That username is already taken.",
+    "usernameSaved": "Username saved!",
     "usernameSaveFailed": "Could not save username."
   },
   "ApiErrors": {
@@ -219,14 +221,38 @@
     "performanceStats": "Performance Stats",
     "winRateSuffix": "% Win Rate",
     "traderTier": "{tier} Trader",
+    "tierLabel": {
+      "rookie": "Rookie Trader",
+      "beginner": "Beginner Trader",
+      "amateur": "Amateur Trader",
+      "pro": "Pro Trader",
+      "elite": "Elite Trader"
+    },
+    "tierProgress": {
+      "title": "Trader Progression",
+      "subtitle": "Your rank rises as you win. Every tier you have passed stays lit.",
+      "current": "Current",
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "nextTier": "Next: {tier}",
+      "needsWinRate": "Win {rate}% of your next {count} matches",
+      "needsMatches": "Play {count} more matches",
+      "maxTier": "You have reached the highest tier"
+    },
+    "provisional": "Provisional",
     "winsLeft": "{count, plural, =1 {# Win Left} other {# Wins Left}}",
     "tiers": {
+      "rookie": "Rookie",
       "novice": "Novice",
       "bronze": "Bronze",
       "silver": "Silver",
       "special": "Special",
       "crypto": "Crypto",
-      "legendary": "Legendary"
+      "legendary": "Legendary",
+      "beginner": "Beginner",
+      "amateur": "Amateur",
+      "pro": "Pro",
+      "elite": "Elite"
     },
     "achievements": {
       "create_an_account": {

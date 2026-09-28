@@ -136,6 +136,7 @@
     "changePhoto": "更换头像",
     "removePhoto": "移除头像",
     "removingPhoto": "正在移除…",
+    "removingDone": "已移除！",
     "removeFailed": "无法移除您的头像，请重试。",
     "email": "电子邮箱",
     "readOnly": "只读",
@@ -157,6 +158,7 @@
     "usernameMaxLength": "用户名不能超过 20 个字符。",
     "usernameInvalidChars": "仅允许使用字母、数字、空格、下划线和连字符。",
     "usernameTaken": "该用户名已被使用。",
+    "usernameSaved": "用户名已保存！",
     "usernameSaveFailed": "无法保存用户名。"
   },
   "ApiErrors": {
@@ -219,14 +221,38 @@
     "performanceStats": "战绩统计",
     "winRateSuffix": "% 胜率",
     "traderTier": "{tier}交易员",
+    "tierLabel": {
+      "rookie": "新手交易员",
+      "beginner": "初级交易员",
+      "amateur": "业余交易员",
+      "pro": "专业交易员",
+      "elite": "精英交易员"
+    },
+    "tierProgress": {
+      "title": "交易员进阶",
+      "subtitle": "随着胜场增加，你的段位会提升。已通过的段位将保持点亮。",
+      "current": "当前",
+      "unlocked": "已解锁",
+      "locked": "未解锁",
+      "nextTier": "下一级：{tier}",
+      "needsWinRate": "在接下来 {count} 场中赢下 {rate}%",
+      "needsMatches": "再打 {count} 场",
+      "maxTier": "你已达到最高段位"
+    },
+    "provisional": "暂定",
     "winsLeft": "{count, plural, =1 {还差 # 场胜利} other {还差 # 场胜利}}",
     "tiers": {
-      "novice": "新手",
+      "rookie": "新手",
+      "novice": "入门",
       "bronze": "青铜",
       "silver": "白银",
       "special": "特别",
       "crypto": "加密",
-      "legendary": "传奇"
+      "legendary": "传奇",
+      "beginner": "初级",
+      "amateur": "业余",
+      "pro": "专业",
+      "elite": "精英"
     },
     "achievements": {
       "create_an_account": {

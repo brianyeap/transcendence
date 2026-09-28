@@ -32,13 +32,10 @@ import {
 } from "../components/duel/achievement-card";
 // The achievement cards are a client component (they need tap-to-expand state),
 // so the icons are imported from there too and this page stays a server component.
-
-function getRiskRating(wins: number, losses: number): "pro" | "amateur" | "beginner"
-{
-	if (wins > losses) return "pro";
-	if (wins === losses) return "amateur";
-	return "beginner";
-}
+import { getRiskRating, getWinStats, getNextTierProgress } from "@/lib/stats";
+// The tier and the win rate come from the shared module so the profile, the
+// leaderboard and the history page can never disagree about the numbers.
+import { TierProgressStrip } from "../components/duel/tier-progress-strip";
 
 export default async function ProfilePage()
 {
@@ -86,8 +83,9 @@ export default async function ProfilePage()
 
 
 	const totalMatches = wins + losses + draws;
-	const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100 ) : 0;
-	const riskRating = getRiskRating(wins, losses);
+	const { winRate, winPct, drawPct, lossPct, provisional } = getWinStats(wins, losses, draws);
+	const riskRating = getRiskRating(wins, losses, draws);
+	const tierProgress = getNextTierProgress(wins, losses, draws);
 	const shortUserId = user.id.slice(0, 8);
 
 	return(
@@ -153,22 +151,35 @@ export default async function ProfilePage()
 							ID: {shortUserId}
 						</span>
 
-						<span className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${
-							riskRating === "pro"
-							? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-							: riskRating === "amateur"
-							? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-							: "border-slate-500/30 bg-slate-500/10 text-slate-400"
+							<span className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wider uppercase ${
+						riskRating === "elite"
+						? "border-violet-500/30 bg-violet-500/10 text-violet-400"
+						: riskRating === "pro"
+						? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+						: riskRating === "amateur"
+						? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+						: riskRating === "beginner"
+						? "border-sky-500/30 bg-sky-500/10 text-sky-400"
+						: "border-slate-500/30 bg-slate-500/10 text-slate-400"
 						}`}>
-							{t("traderTier", { tier: t(riskRating) })}
+						{t(`tierLabel.${riskRating}`)}
 						</span>
 					</div>
 
 					{/* PERFORMANCE STATS GRID & WIN/LOSS/DRAW BAR */}
 					<div className="w-full mt-10 p-6 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
-						<div className="flex justify-between items-center mb-4">
-							<h2 className="text-xl font-semibold text-gray-200">{t("performanceStats")}</h2>
-							<span className="text-sm font-mono text-indigo-400">{winRate}{t("winRateSuffix")}</span>
+							<div className="flex justify-between items-center mb-4">
+						<h2 className="text-xl font-semibold text-gray-200">{t("performanceStats")}</h2>
+						<span className="flex items-center gap-2">
+						{provisional && (
+						<span className="rounded-full border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] uppercase tracking-wider text-gray-500">
+						{t("provisional")}
+						</span>
+						)}
+						<span className="text-sm font-mono text-indigo-400">
+						{winRate === null ? "—" : winRate.toFixed(1)}{t("winRateSuffix")}
+						</span>
+						</span>
 						</div>
 
 						{/* STAT CARDS */}
@@ -187,16 +198,16 @@ export default async function ProfilePage()
 							</div>
 						</div>
 
-						<div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden flex">
-							{totalMatches > 0 ? (
-								<>
-									<div style={{width: `${(wins / totalMatches) * 100}%` }} className="bg-emerald-500 h-full" title={`${t("wins")}: ${wins}`} />
-									<div style={{ width: `${(draws / totalMatches) * 100}%` }} className="bg-amber-500 h-full" title={`${t("draws")}: ${draws}`} />
-									<div style={{ width: `${(losses / totalMatches) * 100}%` }} className="bg-rose-500 h-full" title={`${t("losses")}: ${losses}`} />
-								</>
-							) : (
-								<div className="w-full h-full bg-gray-700/50" />
-							)}
+							<div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden flex">
+						{totalMatches > 0 ? (
+						<>
+						<div style={{width: `${winPct}%` }} className="bg-emerald-500 h-full" title={`${t("wins")}: ${wins}`} />
+						<div style={{ width: `${drawPct}%` }} className="bg-amber-500 h-full" title={`${t("draws")}: ${draws}`} />
+						<div style={{ width: `${lossPct}%` }} className="bg-rose-500 h-full" title={`${t("losses")}: ${losses}`} />
+						</>
+						) : (
+						<div className="w-full h-full bg-gray-700/50" />
+						)}
 						</div>
 					</div>
 
@@ -280,13 +291,25 @@ export default async function ProfilePage()
 								tier={t("tiers.legendary")}
 								requirement={500}
 								wins={wins}
-								unlocked={wins >= 500}
-								accent="yellow"
-							/>
-						</div>
-					</div>
-				</div>
-			</main>
-		</SideNav>
+																		unlocked={wins >= 500}
+																		accent="yellow"
+																	/>
+																</div>
+															</div>
+
+															{/* TRADER TIER PROGRESSION
+
+																Sits below the achievement cards. Shows all five ranks, keeps
+																every rank the player has passed lit, marks the current one, and
+																states what is needed to reach the next. */}
+															<TierProgressStrip
+																currentTier={riskRating}
+																requiredWinRate={tierProgress.requiredWinRate}
+																matchesNeeded={tierProgress.matchesNeeded}
+																nextTier={tierProgress.nextTier}
+															/>
+														</div>
+													</main>
+												</SideNav>
 	);
 }
