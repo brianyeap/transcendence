@@ -11,3 +11,21 @@ export const ALLOWED_CAPITAL = [5000, 10000, 20000];
 
 export const ALLOWED_SYMBOLS = ["BTC/USDT", "ETH/USDT", "SOL/USDT"];
 export const DEFAULT_SYMBOL = "BTC/USDT";
+
+export const ROOM_NAME_MAX_LENGTH = 40;
+//  Letters, numbers, spaces and - _ ' ! ? .
+export const ROOM_NAME_PATTERN = /^[A-Za-z0-9 _'!?.-]+$/;
+
+//  Check a room name. Returns the key of the error message
+//  (in "RoomErrors" in messages/*.json), or null when the name is fine.
+export function roomNameError(name: string) {
+  const trimmed = name.trim();
+
+  // Blank is allowed: the room is then called "<creator>'s Room".
+  if (trimmed.length === 0) return null;
+
+  if (trimmed.length > ROOM_NAME_MAX_LENGTH) return "roomNameTooLong";
+  if (!ROOM_NAME_PATTERN.test(trimmed)) return "roomNameInvalidChars"; // tets is built in js to check if matches regex
+
+  return null;
+}

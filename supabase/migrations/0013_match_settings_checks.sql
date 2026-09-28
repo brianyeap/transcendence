@@ -14,6 +14,12 @@
 update public.matches set symbol = 'BTC/USDT' where symbol = 'BTC-USD';
 
 alter table public.matches
+  -- Room name: optional, at most 40 characters, only letters, numbers,
+  -- spaces and - _ ' ! ? .
+  add constraint matches_name_check
+    check (name is null or (char_length(name) between 1 and 40
+                            and name ~ '^[A-Za-z0-9 _''!?.-]+$')),
+
   -- Market: Bitcoin, Ethereum or Solana.
   add constraint matches_symbol_check
     check (symbol in ('BTC/USDT', 'ETH/USDT', 'SOL/USDT'));

@@ -5,13 +5,11 @@ import {
   ALLOWED_SYMBOLS,
   DEFAULT_SYMBOL,
   MATCH_DURATION_SECONDS,
+  roomNameError,
 } from "@/lib/match/rules";
 
 const ALLOWED_CAPITAL = new Set([5000, 10000, 20000]);
 const ALLOWED_DURATION = new Set(ALLOWED_DURATIONS);
-
-// max room name
-const MAX_NAME_LENGTH = 40;
 
 type CreateRoomRequest = {
   symbol?: unknown;
@@ -96,16 +94,6 @@ function getStartingCapital(value: unknown) {
   }
 
   return capital;
-}
-
-function getRoomName(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const name = value.trim();
-
-  return name.length === 0 ? null : name.slice(0, MAX_NAME_LENGTH);
 }
 
 function getDurationSeconds(value: unknown) {
@@ -244,7 +232,13 @@ export async function POST(request: Request) {
 
   const startingCapital = getStartingCapital(body.startingCapital);
   const durationSeconds = getDurationSeconds(body.durationSeconds);
-  const name = getRoomName(body.name);
+
+  const rawName = typeof body.name === "string" ? body.name : "";
+  const nameError = roomNameError(rawName);
+  if (nameError !== null) {
+    return Response.json({ error: t(nameError) }, { status: 400 });
+  }
+  const name = rawName.trim() || null; // null = user's name room
 
   // Market: one of the allowed ones. Not sent at all = the default (BTC).
   const symbol = body.symbol === undefined ? DEFAULT_SYMBOL : body.symbol;

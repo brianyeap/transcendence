@@ -691,7 +691,9 @@
     "roomNotDeletable": "找不到房间，或你没有权限删除它。",
     "couldNotDelete": "无法删除房间。",
     "couldNotJoin": "无法加入房间。",
-    "couldNotLoad": "无法加载房间。"
+    "couldNotLoad": "无法加载房间。",
+    "roomNameTooLong": "房间名称太长（最多 40 个字符）。",
+    "roomNameInvalidChars": "房间名称只能包含字母、数字、空格以及 - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "加载安全验证因素失败。",

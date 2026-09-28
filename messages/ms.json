@@ -691,7 +691,9 @@
     "roomNotDeletable": "Bilik tidak dijumpai atau anda tiada kebenaran untuk memadamnya.",
     "couldNotDelete": "Tidak dapat memadam bilik.",
     "couldNotJoin": "Tidak dapat menyertai bilik.",
-    "couldNotLoad": "Tidak dapat memuatkan bilik."
+    "couldNotLoad": "Tidak dapat memuatkan bilik.",
+    "roomNameTooLong": "Nama bilik terlalu panjang (maksimum 40 aksara).",
+    "roomNameInvalidChars": "Nama bilik hanya boleh mengandungi huruf, nombor, ruang dan - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Gagal memuatkan faktor keselamatan.",

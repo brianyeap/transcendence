@@ -691,7 +691,9 @@
     "roomNotDeletable": "Room not found or you do not have permission to delete it.",
     "couldNotDelete": "Could not delete the room.",
     "couldNotJoin": "Could not join the room.",
-    "couldNotLoad": "Could not load rooms."
+    "couldNotLoad": "Could not load rooms.",
+    "roomNameTooLong": "Room name is too long (40 characters max).",
+    "roomNameInvalidChars": "Room name can only use letters, numbers, spaces and - _ ' ! ? ."
   },
   "MfaSettings": {
     "failedToLoadSecurityFactors": "Failed to load security factors.",

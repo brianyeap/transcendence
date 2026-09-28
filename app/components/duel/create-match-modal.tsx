@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Room } from "./types";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { ALLOWED_SYMBOLS, DEFAULT_SYMBOL } from "@/lib/match/rules";
+import { ALLOWED_SYMBOLS, DEFAULT_SYMBOL, ROOM_NAME_MAX_LENGTH, roomNameError } from "@/lib/match/rules";
 
 // The match lengths a creator can pick. Values are in seconds and must match
 // ALLOWED_DURATIONS in lib/match/rules.ts, or the server will reject them.
@@ -77,6 +77,13 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
     }, [isOpen])
 
     async function handleCreate() {
+        // check before asking server, server aslso got chekc
+        const nameError = roomNameError(name)
+        if (nameError !== null) {
+            setError(tErrors(nameError))
+            return
+        }
+
         setIsCreating(true)
         setError(null)
 
@@ -136,7 +143,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     <label htmlFor="room-name" className="text-[13px] font-semibold text-[#9aa6b6]">{t("roomName")}</label>
                     <input
                         type="text" id="room-name" name="room-name" disabled={isCreating}
-                        value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
+                        value={name} onChange={(e) => setName(e.target.value)} maxLength={ROOM_NAME_MAX_LENGTH}
                         placeholder={t("roomNamePlaceholder")}
                         className="rounded-lg border border-white/[.07] bg-[#0f131b] px-3 py-2 text-sm text-[#eef2f8] outline-none transition placeholder:text-[#3a434f] focus:border-[#4d86ff]/50 disabled:opacity-50"
                     />
