@@ -93,10 +93,13 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 				{/* mt-auto pushes this block to the bottom of the menu */}
 				<div className="mt-auto">
 					<div className="my-3 h-px bg-line" />
-					<div className="flex items-center gap-3 px-2 py-2">
-						<Avatar name={displayName} imageUrl={fetchedAvatar} /> 
+					<Link
+						href="/profile"
+						className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised"
+					>
+						<Avatar name={displayName} imageUrl={fetchedAvatar} />
 						<span className="truncate text-sm font-semibold">{displayName}</span>
-					</div>
+					</Link>
 					<LogoutButton />
 
 					{/* Legal pages, reachable from every page that has the menu. */}
