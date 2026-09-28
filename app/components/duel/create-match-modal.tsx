@@ -134,7 +134,7 @@ export function CreateMatchModal({ isOpen, onClose }: Props) {
                     <h2 className="text-lg font-semibold text-[#eef2f8]">{t("title")}</h2>
                     <button
                         onClick={handleClose}
-                        aria-label="Close"
+                        aria-label={t("close")}
                         className="grid size-7 place-items-center rounded-md text-[#5d6877] transition-colors hover:bg-white/[.06] hover:text-[#eef2f8]"
                     >✕</button>
                 </div>

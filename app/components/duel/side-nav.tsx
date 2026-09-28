@@ -98,6 +98,16 @@ export function SideNav({ children, user }: { children: React.ReactNode; user?: 
 						<span className="truncate text-sm font-semibold">{displayName}</span>
 					</div>
 					<LogoutButton />
+
+					{/* Legal pages, reachable from every page that has the menu. */}
+					<div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-2 text-[11px] text-faint">
+						<Link href="/privacy-policy" className="hover:text-ink hover:underline">
+							{t("privacyPolicy")}
+						</Link>
+						<Link href="/terms-services" className="hover:text-ink hover:underline">
+							{t("termsOfService")}
+						</Link>
+					</div>
 				</div>
 			</aside>
 

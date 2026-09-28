@@ -43,7 +43,9 @@
     "profile": "个人资料",
     "settings": "设置",
     "howtoplay": "如何游玩",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款"
   },
   "Lobby": {
     "title": "游戏",
@@ -83,7 +85,8 @@
     "creating": "正在创建...",
     "playWith": "对战对象",
     "anyone": "任何人",
-    "market": "市场"
+    "market": "市场",
+    "close": "关闭"
   },
   "Leaderboard": {
     "competition": "竞技排行",
@@ -605,7 +608,8 @@
         "detail": "您和{opponent}的最终资金完全相同。",
         "footnote": "比赛已结束，无法进行更多交易。"
       }
-    }
+    },
+    "opponent": "对手"
   },
   "MatchResult": {
     "finalResult": "最终结果",
@@ -801,5 +805,9 @@
     "matchIdRequired": "缺少对局信息。",
     "matchNotFound": "找不到对局。",
     "unknown": "出现了一些问题。"
+  },
+  "AchievementToast": {
+    "unlocked": "成就解锁：{name}！",
+    "seeProgress": "查看你的进度"
   }
 }

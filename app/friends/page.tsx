@@ -126,7 +126,12 @@ export default function FriendsPage() {
 				</div>
 
 				{/* frined request */}
-				<AddByUsername onSent={(friend) => setFriends((list) => [...list, friend])} />
+				<AddByUsername
+					onSent={(friend) =>
+						// Skip it if the auto-refresh already added this friend (same key twice = console error).
+						setFriends((list) => (list.some((f) => f.id === friend.id) ? list : [...list, friend]))
+					}
+				/>
 
 				{loading ? (
 					<p className="text-sm text-dim">{t("loading")}</p>

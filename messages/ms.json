@@ -43,7 +43,9 @@
     "profile": "Profil",
     "settings": "Tetapan",
     "howtoplay": "Cara Bermain",
-    "logout": "Log keluar"
+    "logout": "Log keluar",
+    "privacyPolicy": "Dasar Privasi",
+    "termsOfService": "Terma Perkhidmatan"
   },
   "Lobby": {
     "title": "Permainan",
@@ -83,7 +85,8 @@
     "creating": "Mencipta...",
     "playWith": "Main dengan",
     "anyone": "Sesiapa sahaja",
-    "market": "Pasaran"
+    "market": "Pasaran",
+    "close": "Tutup"
   },
   "Leaderboard": {
     "competition": "Pertandingan",
@@ -605,7 +608,8 @@
         "detail": "Anda dan {opponent} tamat dengan jumlah modal yang sama.",
         "footnote": "Perlawanan telah tamat. Tiada dagangan lanjut boleh dibuat."
       }
-    }
+    },
+    "opponent": "Lawan"
   },
   "MatchResult": {
     "finalResult": "Keputusan akhir",
@@ -801,5 +805,9 @@
     "matchIdRequired": "Perlawanan tidak dinyatakan.",
     "matchNotFound": "Perlawanan tidak dijumpai.",
     "unknown": "Sesuatu telah berlaku."
+  },
+  "AchievementToast": {
+    "unlocked": "Pencapaian dibuka: {name}!",
+    "seeProgress": "Lihat kemajuan anda"
   }
 }

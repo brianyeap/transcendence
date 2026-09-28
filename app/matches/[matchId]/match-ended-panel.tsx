@@ -4,6 +4,7 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 import { MatchResultCard } from "./match-result-card";
 import { AddFriendButton } from "./add-friend-button";
+import { useAchievementToast } from "./use-achievement-toast";
 import type { Match, MatchEnded } from "@/lib/match/types";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -18,6 +19,9 @@ export function MatchEndedPanel({
   viewerUserId: string;
 }): React.ReactElement {
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Just won? Maybe that unlocked an achievement: show a toast if so.
+  useAchievementToast(ended.winnerUserId === viewerUserId, viewerUserId);
 
   useEffect(() => {
     const card = cardRef.current;

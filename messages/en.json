@@ -43,7 +43,9 @@
     "profile": "Profile",
     "settings": "Settings",
     "howtoplay": "How To Play",
-    "logout": "Log out"
+    "logout": "Log out",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "Lobby": {
     "title": "Games",
@@ -83,7 +85,8 @@
     "creating": "Creating...",
     "playWith": "Play with",
     "anyone": "Anyone",
-    "market": "Market"
+    "market": "Market",
+    "close": "Close"
   },
   "Leaderboard": {
     "competition": "Competition",
@@ -605,7 +608,8 @@
         "detail": "You and {opponent} finished on exactly the same capital.",
         "footnote": "The match is over. No further trades can be placed."
       }
-    }
+    },
+    "opponent": "Opponent"
   },
   "MatchResult": {
     "finalResult": "Final result",
@@ -801,5 +805,9 @@
     "matchIdRequired": "Match is missing.",
     "matchNotFound": "Match not found.",
     "unknown": "Something went wrong."
+  },
+  "AchievementToast": {
+    "unlocked": "Achievement unlocked: {name}!",
+    "seeProgress": "See your progress"
   }
 }

@@ -21,6 +21,8 @@ type ActiveMatch = {
   endsAt: string | null;
 };
 
+const AUTO_REFRESH_MS = 3000;
+
 //  Your own room goes to the top of the list, then the newest rooms.
 function ownRoomFirst(rooms: Room[]) {
   return rooms.toSorted((roomA, roomB) => {
@@ -110,8 +112,9 @@ export function LobbyScreen() {
     router.push(`/matches/${room.id}`);
   }, [router]);
 
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
+  //  queite means no refreshing spinning 
+  const refresh = useCallback(async (quiet = false) => {
+    if (!quiet) setRefreshing(true);
 
     try {
       const response = await fetch("/api/rooms", { cache: "no-store" });
@@ -119,7 +122,7 @@ export function LobbyScreen() {
 
       if (!response.ok) {
         // The API already sends its error in the player's language.
-        toast.error(result.error ?? tErrors("couldNotLoad"));
+        if (!quiet) toast.error(result.error ?? tErrors("couldNotLoad"));
         return;
       }
 
@@ -127,14 +130,29 @@ export function LobbyScreen() {
       setActiveMatch(result.activeMatch ?? null);
     } catch {
       // Network problem or a broken response: show our own translated message.
-      toast.error(tErrors("couldNotLoad"));
+      if (!quiet) toast.error(tErrors("couldNotLoad"));
     } finally {
-      setRefreshing(false);
+      if (!quiet) setRefreshing(false);
     }
   }, [tErrors]);
 
   useEffect(() => {
     refresh();
+
+    const timer = setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      refresh(true);
+    }, AUTO_REFRESH_MS);
+
+    function onVisible() {
+      if (document.visibilityState === "visible") refresh(true);
+    }
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {  // cleanup when the lobby is closed
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [refresh]);
 
   return (
@@ -146,7 +164,7 @@ export function LobbyScreen() {
           <p className="text-sm text-muted">{t("subtitle")}</p>
         </div>
 
-        <Button variant="quiet" onClick={refresh}>
+        <Button variant="quiet" onClick={() => refresh()}>
           <Icon name="refresh" className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
         </Button>
 
