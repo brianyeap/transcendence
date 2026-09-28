@@ -209,8 +209,7 @@ Row Level Security is on for every table. Players can only change their own data
 | Frontend ↔ backend connection | Connecting the UI to Supabase and the socket server | Zep, Brian |
 | Match lifecycle UI | Waiting room, countdown, live match page, results page | Amber |
 | Create-match modal | The form for creating a match: room name, who can join (anyone or one friend), market (BTC / ETH / SOL), length (30 / 60 / 90 s) and starting capital (5K / 10K / 20K) | Amber |
-| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match.
-| HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
+| Game customization (server side) | `/api/rooms` checks the room name, market, length and capital against `lib/match/rules.ts` and saves them on the match. | Amber, Brian || HTTPS proxy | nginx container with a self-signed certificate in front of the web app and the match engine | Brian |
 | Friends | Search by username and send a request, accept and remove friends, an online status dot, and inviting a friend to a private match (with a pop-up for the invited friend) | Brian |
 | Profile page | Stats, win/loss/draw bar, win rate, trader tier, avatar | Raja |
 | Achievements | Unlocked from your match record (first win, 5 / 10 / 42 wins…), shown as animated custom badges. A toast announces a newly unlocked one at the end of a match, with a link to your progress. | Zep, Raja |
@@ -271,7 +270,12 @@ Row Level Security is on for every table. Players can only change their own data
 11. **Game statistics and match history.** Wins, losses, draws and win rate on the profile. A history list with a detail page for each match (trades and chart). A global leaderboard.
 12. **SSR.** Most pages (home, lobby, leaderboard, profile, match and match detail) are React Server Components rendered on the server, and they load their data there before sending the HTML.
 13. **File upload.** Avatars are checked on both sides: the client checks the file type and the 5 MB size limit, and the server checks the size again and checks the real format from the file's magic bytes (JPEG, PNG, GIF, WebP or AVIF), so a faked file type is rejected. Every upload is decoded and re-encoded to a 256×256 JPEG, so whatever format goes in, what is stored and displayed is always a plain JPEG. The image is stored in a locked-down Supabase Storage bucket through `/api/profile/avatar`, and previewed in Settings.
-14. **Gamification.** Achievements (first win, 5 / 10 / 42 wins, and more), badges (trader tier: beginner / amateur / pro) and a leaderboard. They're all calculated from match results saved in the database, and shown with visual feedback on the profile (each locked achievement shows how many wins are left). When a win unlocks an achievement, a toast pops up at the end of the match with a "See your progress" link to the profile.
+14. **Gamification.** Three features, all driven by the match results saved in the database (`matches.winner_user_id`):
+    - **Achievements:** six win milestones (1, 5, 10, 42, 100 and 500 wins), shown as animated badges. A toast announces a new one at the end of a match.
+    - **Trader tier:** rookie / beginner / amateur / pro / elite, from `lib/stats.ts`. A draw counts as half a win and the score starts from a neutral prior, so one lucky win cannot make you Pro: `score = (wins + 0.5 × draws + 5) / (played + 10)`. Rookie is under 5 matches, Pro needs 10+ matches and a score of at least 0.57, Elite needs 20+ matches and at least 0.65, Amateur is at least 0.45, and anything lower is Beginner.
+    - **Leaderboard:** ranked across all players (see the Leaderboard row above).
+
+    Nothing is stored twice: the results are persisted in `matches`, and achievements and tier are computed from them on each page load, so they can never drift from the real match record.
 15. **Additional browsers.** Besides Chrome, the whole app was tested in **Microsoft Edge** and **Brave**: sign-up and login (including Google OAuth and 2FA), the lobby, live matches and rejoining, avatar upload, friends, the language switcher and the monitoring dashboards. Everything works and looks the same in all three. The only browser-specific difference we found is listed under [Known Limitations](#known-limitations).
 16. **Game customization.** When creating a match, the creator chooses:
     - **Market:** Bitcoin, Ethereum or Solana (against USDT). Each one moves differently (SOL is usually the most volatile), so the same strategy doesn't always work.

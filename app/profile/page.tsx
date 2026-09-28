@@ -1,17 +1,3 @@
-{/* Date : 3/9/2026 .
-	- The modification of the Profile page starts here, I realized that this page is too simple and there are many tools online which I
-	I can use to my advantage, for example Daisy UI is a website that provides the code for components found in most web-pages now days.
-	But I would also like to incorporate some newer things too. Thus I am going to work on this profile page, but then use the previously made helpers to my advantage.
-
-	COMING UP :
-	- Banner.
-	- Profile Pic.
-	- Light Dark Mode.
-	- Adding Picture to Banner.
-	- Adding colour for default banner.
-	
-*/}
-
 import { SideNav } from "../components/duel/side-nav";
 // Importing the Sidenav for it to be displayed in this page.
 import { redirect } from "next/navigation";
