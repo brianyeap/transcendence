@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { SideNav } from "../components/duel/side-nav";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useTranslations, useLocale } from "next-intl";
@@ -14,6 +14,7 @@ import {
 	Flame,
 	Swords,
 	Activity,
+	ChevronLeft,
 	ChevronRight,
 	ChevronDown,
 	Loader2,
@@ -21,6 +22,8 @@ import {
 import { formatMoney, formatDuration, dateLocaleFromAppLocale, formatDateTime, formatPct } from "./format";
 import { CandlestickChart } from "./candlestick-chart";
 import { pnlTone } from "@/app/components/duel/format";
+
+const PAGE_SIZE = 10;
 
 // --- Reusable UI Helpers ---
 function getResultColor(result: string) { return result === "WIN" ? "text-emerald-400" : result === "LOSS" ? "text-rose-400" : "text-gray-400"; }
@@ -85,7 +88,18 @@ export default function HistoryPage() {
 
 	const [matchHistory, setMatchHistory] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [pageLoading, setPageLoading] = useState(false);
+	const [page, setPage] = useState(0);
+	const [totalCount, setTotalCount] = useState<number | null>(null);
 	const [filter, setFilter] = useState<"ALL" | "WIN" | "LOSS" | "DRAW">("ALL");
+
+	const [isEditingPage, setIsEditingPage] = useState(false);
+	const [inputPage, setInputPage] = useState("");
+	const [pageError, setPageError] = useState<string | null>(null);
+
+	const pageCacheRef = useRef<Record<number, any[]>>({});
+	const fetchingPageRef = useRef<number | null>(null);
+	const userRef = useRef<any>(null);
 
 	// Multi-match expansion support via Set and dictionary maps
 	const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
@@ -93,31 +107,95 @@ export default function HistoryPage() {
 	const [loadingDetailsMap, setLoadingDetailsMap] = useState<Record<string, boolean>>({});
 	const [detailsErrorMap, setDetailsErrorMap] = useState<Record<string, string | null>>({});
 
-	useEffect(() => { loadHistory(); }, []);
+	useEffect(() => { loadHistory(0); }, []);
 
-	async function loadHistory() {
-		setLoading(true);
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) { setLoading(false); return; }
+	async function loadHistory(targetPage: number = 0) {
+		if (pageCacheRef.current[targetPage]) {
+			setMatchHistory(pageCacheRef.current[targetPage]);
+			setPage(targetPage);
+			setExpandedMatchIds(new Set());
+			return;
+		}
 
-		const { data: matches } = await supabase.from("matches").select("*").or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`).eq("status", "completed").order("ends_at", { ascending: false });
-		if (!matches || matches.length === 0) { setMatchHistory([]); setLoading(false); return; }
+		if (fetchingPageRef.current !== null) return;
+		fetchingPageRef.current = targetPage;
 
-		const matchIds = matches.map((m) => m.id);
-		const { data: playerStats } = await supabase.from("match_players").select("*").in("match_id", matchIds);
-		// Drop nulls (a match with no second player): a literal "null" in the id list is not a valid uuid, so Postgres rejects the whole query
-		const userIds = [...new Set(matches.flatMap((m) => [m.player_one_user_id, m.player_two_user_id]))].filter(Boolean) as string[];
-		const { data: profiles } = await supabase.from("profiles").select("id, username").in("id", userIds);
-		const usernameMap = new Map(profiles?.map((p) => [p.id, p.username]) ?? []);
+		if (targetPage === 0 && !userRef.current) {
+			setLoading(true);
+		} else {
+			setPageLoading(true);
+		}
 
-		const history = matches.map((match) => {
-			const myStats = playerStats?.find((p) => p.match_id === match.id && p.user_id === user.id);
-			const opponentId = match.player_one_user_id === user.id ? match.player_two_user_id : match.player_one_user_id;
-			let result: "WIN" | "LOSS" | "DRAW" = match.winner_user_id === null ? "DRAW" : match.winner_user_id === user.id ? "WIN" : "LOSS";
-			return { id: match.id, opponent: usernameMap.get(opponentId) ?? "Unknown", result, symbol: match.symbol, starting_capital: Number(match.starting_capital), final_capital: Number(myStats?.final_capital ?? 0), realized_pnl: Number(myStats?.realized_pnl ?? 0), starts_at: match.starts_at, ends_at: match.ends_at };
-		});
-		setMatchHistory(history);
-		setLoading(false);
+		try {
+			let user = userRef.current;
+			if (!user) {
+				const { data: { user: authUser } } = await supabase.auth.getUser();
+				user = authUser;
+				userRef.current = authUser;
+			}
+			if (!user) {
+				return;
+			}
+
+			const from = targetPage * PAGE_SIZE;
+			const to = from + PAGE_SIZE - 1;
+
+			const { data: matches, count } = await supabase
+				.from("matches")
+				.select("*", { count: "exact" })
+				.or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
+				.eq("status", "completed")
+				.order("ends_at", { ascending: false })
+				.range(from, to);
+
+			if (count !== null && count !== undefined) {
+				setTotalCount(count);
+			}
+
+			if (!matches || matches.length === 0) {
+				pageCacheRef.current[targetPage] = [];
+				setMatchHistory([]);
+				setPage(targetPage);
+				setExpandedMatchIds(new Set());
+				return;
+			}
+
+			const matchIds = matches.map((m) => m.id);
+			const { data: playerStats } = await supabase.from("match_players").select("*").in("match_id", matchIds);
+			// Drop nulls (a match with no second player): a literal "null" in the id list is not a valid uuid, so Postgres rejects the whole query
+			const userIds = [...new Set(matches.flatMap((m) => [m.player_one_user_id, m.player_two_user_id]))].filter(Boolean) as string[];
+			const { data: profiles } = await supabase.from("profiles").select("id, username").in("id", userIds);
+			const usernameMap = new Map(profiles?.map((p) => [p.id, p.username]) ?? []);
+
+			const history = matches.map((match) => {
+				const myStats = playerStats?.find((p) => p.match_id === match.id && p.user_id === user.id);
+				const opponentId = match.player_one_user_id === user.id ? match.player_two_user_id : match.player_one_user_id;
+				let result: "WIN" | "LOSS" | "DRAW" = match.winner_user_id === null ? "DRAW" : match.winner_user_id === user.id ? "WIN" : "LOSS";
+				return {
+					id: match.id,
+					// Keep null here and translate the fallback at render time so cached pages follow locale changes
+					opponent: usernameMap.get(opponentId) ?? null,
+					result,
+					symbol: match.symbol,
+					starting_capital: Number(match.starting_capital),
+					final_capital: Number(myStats?.final_capital ?? 0),
+					realized_pnl: Number(myStats?.realized_pnl ?? 0),
+					starts_at: match.starts_at,
+					ends_at: match.ends_at,
+				};
+			});
+
+			pageCacheRef.current[targetPage] = history;
+			setMatchHistory(history);
+			setPage(targetPage);
+			setExpandedMatchIds(new Set());
+		} catch (error) {
+			console.error("Failed to load match history:", error);
+		} finally {
+			setLoading(false);
+			setPageLoading(false);
+			fetchingPageRef.current = null;
+		}
 	}
 
 	// Lazy load function for individual match details by ID
@@ -152,7 +230,8 @@ export default function HistoryPage() {
 				const pData = playersData?.find((p) => p.user_id === pid);
 				return {
 					user_id: pid,
-					username: usernameMap.get(pid) ?? "Unknown",
+					// Null falls through to tDetail("unknown") at render time
+					username: usernameMap.get(pid) ?? null,
 					final_capital: Number(pData?.final_capital ?? matchData.starting_capital ?? 0),
 					realized_pnl: Number(pData?.realized_pnl ?? 0),
 					is_current_user: pid === user.id,
@@ -169,7 +248,7 @@ export default function HistoryPage() {
 				...tr,
 				amount_usdt: Number(tr.amount_usdt),
 				execution_price: Number(tr.execution_price),
-				username: usernameMap.get(tr.user_id) ?? "Unknown",
+				username: usernameMap.get(tr.user_id) ?? tDetail("unknown"),
 			}));
 			const candles = (candlesData ?? []).map((c) => ({
 				...c,
@@ -218,6 +297,40 @@ export default function HistoryPage() {
 
 	const cumulativeData = useMemo(() => { let cumulative = 0; return [...matchHistory].reverse().map((match) => { cumulative += match.realized_pnl; return { value: cumulative, result: match.result }; }); }, [matchHistory]);
 	const filteredMatches = filter === "ALL" ? matchHistory : matchHistory.filter((m) => m.result === filter);
+
+	const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
+	const hasNextPage = totalCount !== null ? (page + 1) * PAGE_SIZE < totalCount : matchHistory.length === PAGE_SIZE;
+
+	const handleNextPage = () => {
+		if (pageLoading || fetchingPageRef.current !== null || !hasNextPage) return;
+		setIsEditingPage(false);
+		setPageError(null);
+		loadHistory(page + 1);
+	};
+
+	const handlePrevPage = () => {
+		if (pageLoading || fetchingPageRef.current !== null || page <= 0) return;
+		setIsEditingPage(false);
+		setPageError(null);
+		loadHistory(page - 1);
+	};
+
+	const handleJumpToPage = () => {
+		if (pageLoading || fetchingPageRef.current !== null) return;
+		const trimmed = inputPage.trim();
+		const num = Number(trimmed);
+		if (!trimmed || !/^\d+$/.test(trimmed) || !Number.isInteger(num) || num < 1 || num > totalPages) {
+			setPageError(totalPages > 1 ? t("invalidPageRange", { totalPages }) : t("invalidPageSingle"));
+			return;
+		}
+
+		setPageError(null);
+		setIsEditingPage(false);
+		const targetPageIndex = num - 1;
+		if (targetPageIndex !== page) {
+			loadHistory(targetPageIndex);
+		}
+	};
 
 	const filters: { key: "ALL" | "WIN" | "LOSS" | "DRAW"; label: string; count: number }[] = [
 		{ key: "ALL", label: t("filterAll"), count: matchHistory.length }, { key: "WIN", label: t("filterWins"), count: stats.wins },
@@ -272,7 +385,7 @@ export default function HistoryPage() {
 						))}
 					</div>
 
-					<div className="flex flex-col gap-2.5">
+					<div className={`flex flex-col gap-2.5 transition-opacity duration-150 ${pageLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
 						{filteredMatches.length === 0 ? (
 							<div className="rounded-[10px] border border-white/[.07] bg-[#0f131b] p-12 text-center"><Swords className="w-8 h-8 text-[#5d6877] mx-auto mb-3" /><p className="text-sm text-[#5d6877]">{t("noMatchesFilter")}</p></div>
 						) : (
@@ -295,7 +408,7 @@ export default function HistoryPage() {
 														{match.result === "WIN" ? <TrendingUp className="w-4 h-4" /> : match.result === "LOSS" ? <TrendingDown className="w-4 h-4" /> : <span>—</span>}
 													</div>
 													<div className="min-w-0">
-														<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent}</span></div>
+														<div className="flex items-center gap-1.5"><span className="text-[10px] uppercase tracking-wider text-[#5d6877]">{t("vs")}</span><span className="text-sm font-semibold truncate">{match.opponent ?? tDetail("unknown")}</span></div>
 														<div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#5d6877]"><span className="font-mono">{match.symbol}</span><span className="opacity-40">•</span><span>{getRelativeTime(match.starts_at, t)}</span></div>
 													</div>
 												</div>
@@ -395,6 +508,114 @@ export default function HistoryPage() {
 							})
 						)}
 					</div>
+
+					{/* Pagination Controls */}
+					{(totalCount !== null ? totalCount > 0 : matchHistory.length > 0) && (
+						<div className="mt-6 pt-4 border-t border-white/[.07]">
+							<div className="flex items-center justify-between">
+								<div className="text-xs text-[#5d6877]">
+									{totalCount !== null && totalCount > 0 ? (
+										<span>
+											{t("showingMatchesRange", {
+												from: page * PAGE_SIZE + 1,
+												to: Math.min((page + 1) * PAGE_SIZE, totalCount),
+												total: totalCount,
+											})}
+										</span>
+									) : (
+										<span>{t("pageNumber", { page: page + 1 })}</span>
+									)}
+								</div>
+								<div className="flex items-center gap-2">
+									<button
+										id="history-prev-page"
+										type="button"
+										onClick={handlePrevPage}
+										disabled={page === 0 || pageLoading}
+										aria-label={t("previousPage")}
+										className="inline-flex items-center justify-center p-2 rounded-lg border border-white/[.07] bg-[#0f131b] text-[#eef2f8] hover:border-white/[.14] hover:bg-white/[.04] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/[.07] disabled:hover:bg-[#0f131b] transition-all"
+									>
+										<ChevronLeft className="w-4 h-4" />
+									</button>
+
+									{isEditingPage ? (
+										<form
+											onSubmit={(e) => {
+												e.preventDefault();
+												handleJumpToPage();
+											}}
+											className="inline-flex items-center gap-1.5"
+										>
+											<input
+												id="history-page-input"
+												type="text"
+												inputMode="numeric"
+												value={inputPage}
+												onChange={(e) => {
+													setInputPage(e.target.value);
+													if (pageError) setPageError(null);
+												}}
+												onKeyDown={(e) => {
+													if (e.key === "Escape") {
+														setIsEditingPage(false);
+														setPageError(null);
+													}
+												}}
+												autoFocus
+												className={`w-12 h-8 px-1.5 text-center text-xs font-mono bg-[#151a23] border rounded-[6px] text-[#eef2f8] outline-none transition-colors ${pageError
+													? "border-rose-500 focus:border-rose-400"
+													: "border-white/[.15] focus:border-blue-400"
+													}`}
+											/>
+											<span className="text-xs font-mono text-[#8a95a8]">/ {totalPages}</span>
+											<button
+												id="history-page-submit"
+												type="submit"
+												disabled={pageLoading}
+												className="px-2 py-1 text-xs font-medium rounded-[6px] bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors disabled:opacity-40"
+											>
+												{t("go")}
+											</button>
+										</form>
+									) : (
+										<button
+											id="history-current-page-btn"
+											type="button"
+											onClick={() => {
+												setIsEditingPage(true);
+												setInputPage(String(page + 1));
+												setPageError(null);
+											}}
+											title={t("jumpToPage")}
+											className="text-xs font-mono text-[#8a95a8] hover:text-[#eef2f8] px-2 py-1 rounded-[6px] hover:bg-white/[.04] border border-transparent hover:border-white/[.07] transition-all cursor-pointer flex items-center gap-1"
+										>
+											<span className="font-semibold text-[#eef2f8] underline decoration-dotted underline-offset-4 decoration-white/30 hover:decoration-white">
+												{page + 1}
+											</span>
+											<span>/</span>
+											<span>{totalPages}</span>
+										</button>
+									)}
+
+									<button
+										id="history-next-page"
+										type="button"
+										onClick={handleNextPage}
+										disabled={!hasNextPage || pageLoading}
+										aria-label={t("nextPage")}
+										className="inline-flex items-center justify-center p-2 rounded-lg border border-white/[.07] bg-[#0f131b] text-[#eef2f8] hover:border-white/[.14] hover:bg-white/[.04] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/[.07] disabled:hover:bg-[#0f131b] transition-all"
+									>
+										<ChevronRight className="w-4 h-4" />
+									</button>
+								</div>
+							</div>
+							{pageError && (
+								<div id="history-page-error" className="text-right text-xs text-rose-400 mt-2 font-medium">
+									{pageError}
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 		</SideNav>

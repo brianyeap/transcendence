@@ -280,7 +280,7 @@
     "final": "最终资金",
     "netPnl": "净盈亏",
     "duration": "时长",
-	"durationValue": "{minutes} 分 {seconds} 秒",
+    "durationValue": "{minutes} 分 {seconds} 秒",
     "justNow": "刚刚",
     "minutesAgo": "{count} 分钟前",
     "hoursAgo": "{count} 小时前",
@@ -288,7 +288,15 @@
     "weeksAgo": "{count} 周前",
     "monthsAgo": "{count} 个月前",
     "yearsAgo": "{count} 年前",
-    "loadingHistory": "正在加载历史记录..."
+    "loadingHistory": "正在加载历史记录...",
+    "previousPage": "上一页",
+    "nextPage": "下一页",
+    "showingMatchesRange": "第 {from}–{to} 场，共 {total} 场",
+    "pageNumber": "第 {page} 页",
+    "jumpToPage": "点击跳转到指定页",
+    "go": "前往",
+    "invalidPageRange": "页码必须在 1 到 {totalPages} 之间",
+    "invalidPageSingle": "页码必须为 1"
   },
   "HistoryDetail": {
     "backToHistory": "返回对决历史",
