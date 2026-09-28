@@ -507,7 +507,8 @@
     "startingCapital": "初始资金",
     "eachPlayer": "每位玩家",
     "backToGames": "返回游戏",
-    "awayMessage": "您离开期间，比赛仍会保持开放。您可以随时从大厅返回。"
+    "awayMessage": "您离开期间，比赛仍会保持开放。您可以随时从大厅返回。",
+    "duration": "时长"
   },
   "PlayerSlot": {
     "waitingForPlayer": "等待玩家",

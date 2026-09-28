@@ -507,7 +507,8 @@
     "startingCapital": "Starting capital",
     "eachPlayer": "Each player",
     "backToGames": "Back to games",
-    "awayMessage": "The match stays open while you are away. Return from the lobby at any time."
+    "awayMessage": "The match stays open while you are away. Return from the lobby at any time.",
+    "duration": "Duration"
   },
   "PlayerSlot": {
     "waitingForPlayer": "Waiting for a player",

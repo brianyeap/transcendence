@@ -7,6 +7,7 @@ import { fmtUSD } from "../../components/duel/format";
 import { ActionLink, CentredScreen } from "./message-screen";
 import { PlayerPair } from "./player-slot";
 import type { Match } from "@/lib/match/types";
+import { fmtClock } from "../../components/duel/format";
 
 export function WaitingRoom({
   match,
@@ -59,9 +60,9 @@ function MatchSettings({ match }: { match: Match }) {
 
   return (
     <div className="mt-5 rounded-[7px] border border-white/[.07] bg-[#151b25] px-4 py-3.5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("market")}
           </p>
 
@@ -71,7 +72,17 @@ function MatchSettings({ match }: { match: Match }) {
         </div>
 
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
+            {t("duration")}
+          </p>
+
+          <p className="mt-1 font-mono text-[15px] font-semibold tabular-nums text-[#eef2f8]">
+            {fmtClock(match.durationSeconds)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[10.5px] font-bold uppercase tracking-[.08em] text-[#3a434f]">
             {t("startingCapital")}
           </p>
 
@@ -79,7 +90,7 @@ function MatchSettings({ match }: { match: Match }) {
             {fmtUSD(Math.round(match.startingCapital))}
           </p>
 
-          <p className="mt-0.5 text-[11px] text-[#5d6877]">
+          <p className="mt-0.5 text-[10.5px] text-[#5d6877]">
             {t("eachPlayer")}
           </p>
         </div>
