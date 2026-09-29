@@ -105,7 +105,40 @@ export default function HistoryPage() {
 	const [loadingDetailsMap, setLoadingDetailsMap] = useState<Record<string, boolean>>({});
 	const [detailsErrorMap, setDetailsErrorMap] = useState<Record<string, string | null>>({});
 
-	useEffect(() => { loadHistory(0); }, []);
+	// Every completed match of this user (newest first), only the two fields the
+	// stat cards and the PnL chart need. Kept apart from matchHistory, which only
+	// holds the current page, so the stats don't change when you switch page.
+	const [allResults, setAllResults] = useState<{ result: "WIN" | "LOSS" | "DRAW"; realized_pnl: number }[]>([]);
+
+	async function loadAllResults() {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return;
+
+		// Same filter as the paginated list, but every row and only the columns we need.
+		// Already newest first, so the streak counts from the latest match.
+		const { data: matches } = await supabase
+			.from("matches")
+			.select("id, winner_user_id")
+			.or(`player_one_user_id.eq.${user.id},player_two_user_id.eq.${user.id}`)
+			.eq("status", "completed")
+			.order("ends_at", { ascending: false });
+
+		// My PnL per match. Some completed matches (e.g. draws with no trades)
+		// have no match_players row, so those count as 0, like in the list.
+		const { data: myRows } = await supabase
+			.from("match_players")
+			.select("match_id, realized_pnl")
+			.eq("user_id", user.id);
+		const pnlByMatch = new Map((myRows ?? []).map((r) => [r.match_id, Number(r.realized_pnl ?? 0)]));
+
+		const rows = (matches ?? []).map((m) => ({
+			result: (m.winner_user_id === null ? "DRAW" : m.winner_user_id === user.id ? "WIN" : "LOSS") as "WIN" | "LOSS" | "DRAW",
+			realized_pnl: pnlByMatch.get(m.id) ?? 0,
+		}));
+		setAllResults(rows);
+	}
+
+	useEffect(() => { loadHistory(0); loadAllResults(); }, []);
 
 	async function loadHistory(targetPage: number = 0) {
 		if (pageCacheRef.current[targetPage]) {
@@ -280,20 +313,22 @@ export default function HistoryPage() {
 		});
 	};
 
+	// All-time stats: built from allResults, not the current page
 	const stats = useMemo(() => {
-		const wins = matchHistory.filter((m) => m.result === "WIN").length;
-		const losses = matchHistory.filter((m) => m.result === "LOSS").length;
-		const draws = matchHistory.filter((m) => m.result === "DRAW").length;
-		const totalPnl = matchHistory.reduce((sum, m) => sum + m.realized_pnl, 0);
-		const winRate = matchHistory.length > 0 ? (wins / matchHistory.length) * 100 : 0;
-		const bestTrade = matchHistory.length > 0 ? Math.max(...matchHistory.map((m) => m.realized_pnl)) : 0;
-		const worstTrade = matchHistory.length > 0 ? Math.min(...matchHistory.map((m) => m.realized_pnl)) : 0;
+		const wins = allResults.filter((m) => m.result === "WIN").length;
+		const losses = allResults.filter((m) => m.result === "LOSS").length;
+		const draws = allResults.filter((m) => m.result === "DRAW").length;
+		const totalPnl = allResults.reduce((sum, m) => sum + m.realized_pnl, 0);
+		const winRate = allResults.length > 0 ? (wins / allResults.length) * 100 : 0;
+		const bestTrade = allResults.length > 0 ? Math.max(...allResults.map((m) => m.realized_pnl)) : 0;
+		const worstTrade = allResults.length > 0 ? Math.min(...allResults.map((m) => m.realized_pnl)) : 0;
 		let streak = 0, streakType = "";
-		for (const match of matchHistory) { if (streak === 0) { streakType = match.result; streak = 1; } else if (match.result === streakType) { streak++; } else { break; } }
+		for (const match of allResults) { if (streak === 0) { streakType = match.result; streak = 1; } else if (match.result === streakType) { streak++; } else { break; } }
 		return { wins, losses, draws, totalPnl, winRate, bestTrade, worstTrade, streak, streakType };
-	}, [matchHistory]);
+	}, [allResults]);
 
-	const cumulativeData = useMemo(() => { let cumulative = 0; return [...matchHistory].reverse().map((match) => { cumulative += match.realized_pnl; return { value: cumulative, result: match.result }; }); }, [matchHistory]);
+	// The chart ends at stats.totalPnl, so it is drawn from all matches too
+	const cumulativeData = useMemo(() => { let cumulative = 0; return [...allResults].reverse().map((match) => { cumulative += match.realized_pnl; return { value: cumulative, result: match.result }; }); }, [allResults]);
 	const filteredMatches = filter === "ALL" ? matchHistory : matchHistory.filter((m) => m.result === filter);
 
 	const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
@@ -330,9 +365,11 @@ export default function HistoryPage() {
 		}
 	};
 
+	// The filter tabs only filter the current page, so their counts stay per page
+	const pageCount = (result: string) => matchHistory.filter((m) => m.result === result).length;
 	const filters: { key: "ALL" | "WIN" | "LOSS" | "DRAW"; label: string; count: number }[] = [
-		{ key: "ALL", label: t("filterAll"), count: matchHistory.length }, { key: "WIN", label: t("filterWins"), count: stats.wins },
-		{ key: "LOSS", label: t("filterLosses"), count: stats.losses }, { key: "DRAW", label: t("filterDraws"), count: stats.draws },
+		{ key: "ALL", label: t("filterAll"), count: matchHistory.length }, { key: "WIN", label: t("filterWins"), count: pageCount("WIN") },
+		{ key: "LOSS", label: t("filterLosses"), count: pageCount("LOSS") }, { key: "DRAW", label: t("filterDraws"), count: pageCount("DRAW") },
 	];
 
 	if (loading) return (<SideNav><div className="flex min-h-screen bg-[#090b11]"><div className="flex-1 flex items-center justify-center p-8 text-white font-medium tracking-wide"><div className="animate-pulse">{t("loadingHistory")}</div></div></div></SideNav>);
@@ -355,7 +392,7 @@ export default function HistoryPage() {
 					</div>
 
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-						<StatCard label={t("totalPnl")} value={formatMoney(stats.totalPnl)} sub={t("matchesPlayed", { count: matchHistory.length })} icon={<Activity className="w-3.5 h-3.5" />} accent={stats.totalPnl >= 0 ? "emerald" : "rose"} />
+						<StatCard label={t("totalPnl")} value={formatMoney(stats.totalPnl)} sub={t("matchesPlayed", { count: allResults.length })} icon={<Activity className="w-3.5 h-3.5" />} accent={stats.totalPnl >= 0 ? "emerald" : "rose"} />
 						<StatCard label={t("winRate")} value={`${stats.winRate.toFixed(1)}%`} sub={t("winsLossesDraws", { wins: stats.wins, losses: stats.losses, draws: stats.draws })} icon={<Target className="w-3.5 h-3.5" />} accent={stats.winRate >= 50 ? "emerald" : "rose"} />
 						<StatCard label={t("currentStreak")} value={`${stats.streak} ${stats.streakType === "WIN" ? t("winPlural") : stats.streakType === "LOSS" ? t("lossPlural") : t("drawPlural")}`} sub={stats.streak >= 3 ? t("onFire") : t("keepPushing")} icon={<Flame className="w-3.5 h-3.5" />} accent={stats.streakType === "WIN" ? "amber" : stats.streakType === "LOSS" ? "rose" : "gray"} />
 						<StatCard label={t("bestTrade")} value={formatMoney(stats.bestTrade)} sub={t("worstTradeSub", { worst: formatMoney(stats.worstTrade) })} icon={<Trophy className="w-3.5 h-3.5" />} accent="blue" />

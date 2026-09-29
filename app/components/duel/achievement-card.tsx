@@ -127,12 +127,15 @@ export function AchievementCard({
 
   const winsLeft = Math.max(requirement - wins, 0);
 
+  //  It is a <button> only so phones can tap it open. On sm+ tapping does
+  //  nothing, so `sm:cursor-default!` drops the pointer cursor there. The `!`
+  //  is needed because globals.css gives every button `cursor: pointer`.
   return (
     <button
       type="button"
       aria-expanded={open}
       onClick={() => setOpen((wasOpen) => !wasOpen)}
-      className={`flex flex-col gap-3 rounded-lg border p-4 text-left transition-all duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${
+      className={`flex flex-col gap-3 rounded-lg border p-4 text-left transition-all duration-300 sm:cursor-default! sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${
         unlocked ? a.card : a.cardLocked
       }`}
     >
